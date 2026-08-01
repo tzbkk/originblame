@@ -1,0 +1,112 @@
+%%
+%% CIKM 2026 Demo Track Paper
+%% OriginBlame: Record-Level Data Provenance for Machine Unlearning Compliance
+%%
+
+%% ---- Document Class ----
+%% acmart.cls is included locally in paper/ (copy from texlive if needed)
+\documentclass[sigconf]{acmart}
+
+%% ---- Packages ----
+\usepackage{booktabs}
+\usepackage{pifont}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{colortbl}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc, backgrounds, decorations.pathreplacing, matrix}
+
+%% ---- ACM Metadata ----
+%% CIKM '26, Rome, Italy
+\copyrightyear{2026}
+\acmYear{2026}
+\setcopyright{none}
+\acmDOI{}
+\acmISBN{}
+\acmConference[CIKM '26]{Proceedings of the 35th ACM International Conference on Information and Knowledge Management}{November 7--11, 2026}{Rome, Italy}
+\acmBooktitle{Proceedings of the 35th ACM International Conference on Information and Knowledge Management (CIKM '26), November 7--11, 2026, Rome, Italy}
+
+\setlength{\emergencystretch}{12pt}
+\begin{document}
+
+%% ---- Title and Authors ----
+\title{OriginBlame: Record- and Token-Level Data Provenance for AI Training Datasets}
+
+\author{Haolin Xue}
+\affiliation{
+  \institution{School of Computer Science, Northwestern Polytechnical University}
+  \city{Xi'an}
+  \country{China}
+}
+\email{hxue@mail.nwpu.edu.cn}
+
+%% ---- CCS Concepts ----
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10002951.10002952.10002953.10010820.10003623</concept_id>
+<concept_desc>Information systems~Data provenance</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10002978.10003029.10011150</concept_id>
+<concept_desc>Security and privacy~Privacy protections</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+<concept>
+<concept_id>10010147.10010257</concept_id>
+<concept_desc>Computing methodologies~Machine learning</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Information systems~Data provenance}
+\ccsdesc[300]{Security and privacy~Privacy protections}
+\ccsdesc[300]{Computing methodologies~Machine learning}
+
+%% ---- Abstract ----
+\input{sections-cikm/abstract}
+
+%% ---- Keywords ----
+\keywords{data provenance, training data management, record-level attribution, machine unlearning, compliance}
+
+\maketitle
+
+%% ---- Section Budget (total: 4 pages) ----
+%% Abstract:     0.15p (in header)
+%% Introduction: 0.70p
+%% System:       1.30p
+%% Demo:         0.20p
+%% Evaluation:   1.30p
+%% Availability: 0.20p
+%% Conclusion:   0.15p
+%% References:   unlimited (does not count toward page limit)
+
+\input{sections-cikm/intro}
+\input{sections-cikm/system}
+\input{sections-cikm/demo}
+\input{sections-cikm/evaluation}
+\input{sections-cikm/conclusion}
+\input{sections-cikm/availability}
+\input{sections-cikm/acknowledgements}
+
+%% ---- GenAI Disclosure ----
+%% Per CIKM 2026 / ACM policy: does NOT count toward page limit
+\section*{Statement on Generative AI Use}
+
+During the preparation of this work, the authors used the following generative AI tools:
+
+\begin{itemize}
+	\item \textbf{GLM-5.1 (ZhipuAI)}: Used via OpenCode for code development (Rust, Python, React/FastAPI), LaTeX paper formatting, and manuscript drafting. All generated text and code were reviewed, tested, and revised by the authors.
+\end{itemize}
+
+The authors accept full responsibility for the accuracy, integrity, and originality of all content in this submission.
+
+%% ---- Bibliography ----
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}
