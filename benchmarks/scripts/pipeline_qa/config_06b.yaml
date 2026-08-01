@@ -1,0 +1,68 @@
+# 0.6B Full FT on RTX 4060 Ti 16GB
+# NPO only, 3 forget set types × 2 authors = 6 runs
+# Pipeline: build_forget_sets → SFT → NPO → evaluate
+
+seed: 42
+output_dir: "benchmarks/results/pipeline_qa/pilot_06b"
+
+model:
+  base_path: "benchmarks/models/Qwen3-0.6B"
+  name: "qwen3-0.6b"
+  max_seq_length: 256
+  enable_thinking: false
+  compute_dtype: "bfloat16"
+
+data:
+  ob_data_dir: "benchmarks/results/pipeline_qa/qa_chatml"
+  data_file: "benchmarks/results/pipeline_qa/qa_chatml/jsonl/data.jsonl"
+  forget_sets_file: "benchmarks/scripts/pipeline_qa/results/forget_sets.json"
+
+authors:
+  - name: "InternetArchiveBot"
+    expected_pct: 18.1
+  - name: "佛祖西来"
+    expected_pct: 6.0
+
+forget_set_types:
+  - line              # ob provenance
+  - page_prototype    # page-level embedding max-similarity
+  - random            # random baseline
+
+sft:
+  num_train_epochs: 1
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-5
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+  fp16: false
+  bf16: true
+  logging_steps: 10
+  save_steps: 500
+  output_dir: "benchmarks/results/pipeline_qa/checkpoints_06b/sft"
+
+npo:
+  num_train_epochs: 5
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-5
+  beta: 0.1
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  output_dir: "benchmarks/results/pipeline_qa/checkpoints_06b/npo"
+
+eval:
+  per_device_eval_batch_size: 4
+  max_new_tokens: 128
+  output_dir: "benchmarks/results/pipeline_qa"
+
+pipeline:
+  max_attempts: 3
+  timeouts:
+    npo: 36000
+  gpu_min_vram_gb: 8.0
+  eval_batch_size: 4
+  eval_num_samples: 200

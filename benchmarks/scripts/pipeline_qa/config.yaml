@@ -1,0 +1,91 @@
+# Machine Unlearning Experiment Configuration
+# 2 algorithms × 3 forget sets × 3 authors = 18 unlearn + 9 retrain runs
+# Pipeline phases: 2=build_forget_sets → 1=SFT → 3=unlearning(NPO+RMU) → 3r=retrain → 4=evaluate
+# All seeds are fixed to config.seed for full reproducibility.
+#
+# ALL parameters are for FULL FINE-TUNING (bf16, no quantization).
+# QLoRA is NOT used. Requires >=24 GB VRAM (RTX PRO 6000 96GB).
+# Full FT learning rates are lower than QLoRA because all 1.7B params are updated.
+
+seed: 42                              # global seed (training, forget sets, RMU control vector)
+
+model:
+  base_path: "benchmarks/models/qwen3-1.7b"
+  name: "qwen3-1.7b"
+  max_seq_length: 256              # short context: QA pairs avg ~100 tokens
+  enable_thinking: false           # Qwen3 thinking mode (not used for short QA)
+  compute_dtype: "bfloat16"        # Full FT in bf16
+
+data:
+  ob_data_dir: "benchmarks/results/pipeline_qa/qa_chatml"
+  data_file: "benchmarks/results/pipeline_qa/qa_chatml/jsonl/data.jsonl"
+  forget_sets_file: "benchmarks/scripts/pipeline_qa/results/forget_sets.json"
+
+authors:
+  - name: "InternetArchiveBot"
+    expected_pct: 18.1
+  - name: "佛祖西来"
+    expected_pct: 6.0
+  - name: "Ohtashinichiro"
+    expected_pct: 2.7
+
+forget_set_types:
+  - line
+  - page_prototype
+  - random
+
+sft:
+  num_train_epochs: 1
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 4    # effective batch = 16
+  learning_rate: 2.0e-5
+  warmup_ratio: 0.03
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+  fp16: false
+  bf16: true
+  logging_steps: 10
+  save_steps: 500
+  output_dir: "benchmarks/results/pipeline_qa/checkpoints/sft"
+
+npo:
+  num_train_epochs: 5
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-5
+  beta: 0.1
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 1.0
+  output_dir: "benchmarks/results/pipeline_qa/checkpoints/npo"
+
+rmu:
+  # RMU hyperparameters from WMDP original (centerforaisafety/wmdp)
+  # and pilot validation on Qwen3-0.6B Full FT.
+  per_device_train_batch_size: 4
+  max_steps: 400                    # WMDP original: 400 batches
+  learning_rate: 5.0e-5            # WMDP original lr (works for Full FT RMU)
+  alpha: 50.0                       # retain weight (Zephyr 7B published value)
+  steering_coeff: 300.0             # control vector magnitude (WMDP original: 300)
+  target_layer: "auto"              # "auto" = num_hidden_layers // 2; or set explicit int
+  max_grad_norm: 1.0
+  weight_decay: 0.01
+  output_dir: "benchmarks/results/pipeline_qa/checkpoints/rmu"
+
+# grad_ascent: disabled — GA and NPO belong to the same gradient-optimization family;
+# NPO (SOTA) + RMU (representation-level) cover two fundamentally different mechanisms.
+
+eval:
+  per_device_eval_batch_size: 4
+  max_new_tokens: 128
+  output_dir: "benchmarks/results/pipeline_qa"
+
+pipeline:
+  max_attempts: 3
+  timeouts:
+    npo: 36000
+    rmu: 7200
+  gpu_min_vram_gb: 24.0            # Full FT needs >=24 GB
+  eval_batch_size: 4
+  eval_num_samples: 200

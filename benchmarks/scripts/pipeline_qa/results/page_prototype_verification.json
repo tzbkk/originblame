@@ -1,0 +1,12 @@
+{
+  "InternetArchiveBot": {
+    "records": 12981,
+    "pages": 3138,
+    "avg": {
+      "sim_gap": 0.011433920756436788,
+      "lift": 1.013507761237674,
+      "overlap": 6041,
+      "overlap_pct": 46.537246745243046
+    },
+    "page_max": {
+      "sim_gap": 
