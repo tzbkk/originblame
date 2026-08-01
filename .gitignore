@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.venv/
+benchmarks/raw_data/
+benchmarks/scales/
+benchmarks/split/
+benchmarks/*_synthetic/
+benchmarks/results/
+benchmarks/models/
+benchmarks/.venv/
+.ob/
+logs/
+.env
+.sisyphus/boulder.json
+.sisyphus/run-continuation/
+
+# Generated figures (export from .odg)
+paper/figures/fig*.pdf
+paper/figures/fig*.png
+paper/originblame.pdf
