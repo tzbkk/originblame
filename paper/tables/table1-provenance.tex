@@ -1,0 +1,23 @@
+\begin{table}[t]
+	\centering
+	\caption{Provenance Tools Comparison}
+	\label{tab:provenance-comparison}
+	\resizebox{\columnwidth}{!}{%
+		\begin{tabular}{lcccc}
+			\toprule
+			\textbf{Tool/System}                   & \textbf{Granularity}       & \textbf{Author Revoke?} & \textbf{License?} & \textbf{Adoption (Stars)} \\
+			\midrule
+			DVC \cite{dvc}                         & File/dataset               & $\times$                & $\times$          & 15k+                      \\
+			LakeFS \cite{lakefs}                   & Dataset/table              & $\times$                & $\times$          & 5k+                       \\
+			Delta Lake \cite{deltalake}            & Table                      & $\times$                & $\times$          & 5k+                       \\
+			MLflow \cite{mlflow}                   & Experiment                 & $\times$                & $\times$          & Very active               \\
+			W\&B \cite{wandb}                      & Experiment                 & $\times$                & $\times$          & Very active               \\
+			yProv4ML \cite{padovani2025yprov4ml}   & Dataset                    & $\times$                & $\times$          & Low (Jul 2025)            \\
+			DLProv \cite{pina2025dlprov}           & Task                       & $\times$                & $\times$          & Low                       \\
+			Dolt \cite{dolt}                       & Row (last modifier)        & $\times$                & $\times$          & 18k+                      \\
+			WikiWho \cite{flock2014wikiwho}        & Token                      & $\times$                & $\times$          & Academic                  \\
+			\rowcolor{blue!10}\textbf{OriginBlame} & \textbf{Line (authorship)} & \textbf{$\checkmark$}   & \textbf{Yes}      & \textbf{--}               \\
+			\bottomrule
+		\end{tabular}%
+	}
+\end{table}

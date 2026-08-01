@@ -1,0 +1,19 @@
+\begin{table}[t]
+	\centering
+	\footnotesize
+	\caption{Operation latency across scales (3-run avg., ms). HuggingFace pipeline data: 1k--220k lines. \emph{idx} = binary index with author-to-section routing.}
+	\label{tab:scalability}
+	\setlength{\tabcolsep}{3pt}
+	\begin{tabular}{@{}lrrrrrr@{}}
+		\toprule
+		& \multicolumn{2}{c}{show} & revoke & purge & \multicolumn{2}{c}{purge\_author} \\
+		\cmidrule(lr){2-3}\cmidrule(lr){4-4}\cmidrule(lr){5-5}\cmidrule(lr){6-7}
+		Scale & base & idx & & dry & base & idx \\
+		\midrule
+		1k              & 4.6  & 4.5  & 1.6  & 0.005 & 1.4  & 1.4  \\
+		10k             & 6.8  & 7.4  & 2.6  & 0.005 & 1.8  & 1.8  \\
+		100k            & 38.6 & 38.8 & 11.5 & 0.008 & 9.3  & 9.3  \\
+		220k            & 79.7 & 80.6 & 21.9 & 0.006 & 17.0 & 17.0 \\
+		\bottomrule
+	\end{tabular}
+\end{table}

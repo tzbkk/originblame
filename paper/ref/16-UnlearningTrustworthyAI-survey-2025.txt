@@ -1,0 +1,2210 @@
+Archives of Computational Methods in Engineering
+https://doi.org/10.1007/s11831-025-10436-z
+
+REVIEW
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of
+Techniques, Challenges, and Applications
+Ranjit Kumar1,3 · Ravi Prakash2 · Narendra Kumar1 · Suchismita Chinara3 · Mazin Abed Mohammed4,5
+Received: 27 July 2025 / Revised: 8 October 2025 / Accepted: 10 October 2025
+© The Author(s) under exclusive licence to International Center for Numerical Methods in Engineering (CIMNE) 2025
+
+Abstract
+Machine unlearning, the process of efficiently removing data’s influence from trained models, has become a critical
+capability for complying with data privacy regulations like the GDPRs “Right to be Forgotten.” However, the rapid
+proliferation of unlearning algorithms has created a fragmented and complex landscape, making it difficult to navigate
+the trade-offs between unlearning efficacy, model fidelity, and computational cost. To address this, this paper provides a
+systematic and comprehensive survey of the machine unlearning field, creating a unified taxonomy and critically analyzing
+foundational and state-of-the-art methods to chart a clear path for future research. Based on a systematic review of over
+130 key contributions, our synthesis reveals three critical findings. First, while exact methods offer robust guarantees, their
+practical application is largely confined to models designed a priori for unlearning. Second, most approximate methods
+lack rigorous guarantees for deep neural networks, and their effectiveness is highly context-dependent. Third, the frontiers
+of research are squarely focused on two high-impact, unsolved domains: scalable unlearning for Large Language Models
+(LLMs) and privacy-preserving unlearning in Federated Learning (FL). We conclude that while machine unlearning is
+a foundational pillar for trustworthy AI, significant gaps remain between theoretical promises and practical, verifiable
+deployment. This survey identifies the key open challenges—including robust verification, managing the fidelity-efficacy
+trade-off, and standardization—and proposes a research agenda focused on proactive, privacy-integrated, and scalable
+solutions.
+
+1 Introduction
+The transformative success of machine learning (ML) is
+inextricably linked to its voracious appetite for data. From
+everyday recommender systems [1], to critical applications in finance [2] and healthcare [3], complex models are
+
+trained on vast and often sensitive datasets to achieve stateof-the-art performance. This deep integration into the fabric
+of our digital society has, however, created a fundamental
+tension. The static “train-once, deploy-forever” paradigm,
+built on foundational concepts like backpropagation [4] and
+large-scale optimization [5], clashes with the dynamic and
+
+Ranjit Kumar and Ravi Prakash contributed equally to this work.
+Ranjit Kumar
+518CS1011@nitrkl.ac.in
+
+1
+
+Department of Computer Science & Engineering, Amity
+University Jharkhand, Ranchi, Jharkhand 835303, India
+
+Ravi Prakash
+raviprakash@soa.ac.in
+
+2
+
+Narendra Kumar
+narendra298@gmail.com
+
+Computer Science & Engineering Department, Siksha ‘O’
+Anusandhan University, Jagmohan Nagar, Bhubaneswar,
+Odisha 751030, India
+
+3
+
+Suchismita Chinara
+suchi.nitrkl@gmail.com
+
+Department of Computer Science & Engineering, National
+Institute of Technology, Rourkela, Odisha 769008, India
+
+4
+
+Department of Artificial Intelligence, College of Computer
+Science and Information Technology, University of Anbar,
+Anbar 31001, Iraq
+
+5
+
+Cybersecurity Department, College of Science, Al-Farabi
+University, Baghdad 10022, Iraq
+
+Mazin Abed Mohammed
+mazinalshujeary@uoanbar.edu.iq
+
+13
+
+R. Kumar et al.
+
+rights-focused nature of the modern data ecosystem. Societal
+expectations and landmark legal frameworks, most notably
+the European Union’s General Data Protection Regulation
+(GDPR) [6, 7], have enshrined the “Right to be Forgotten”
+(universally abbreviated as RTBF) as a fundamental data
+privacy principle [8, 9]. This right, echoed in legislation
+like the California Consumer Privacy Act (CCPA) [10] and
+explored in legal actions globally [11, 12], empowers individuals to request the deletion of their personal data. For
+machine learning models, this presents a profound technical
+challenge. Since a model’s parameters are a function of the
+entire training dataset, simply deleting the raw data is insufficient; the influence of that data, which can be unintentionally memorized [13], must be purged from the model itself.
+The naive solution—retraining the model from scratch on
+the amended dataset—is computationally prohibitive and
+operationally infeasible for the large-scale models that are
+now commonplace [14].
+This challenge has catalyzed the emergence of Machine
+Unlearning, a vibrant field of research dedicated to the
+efficient and verifiable removal of data’s influence from a
+trained model without a full retrain [15–17]. The core objective is to produce a model that is, as closely as possible,
+identical to a model that was never exposed to the data being
+unlearned. Achieving this goal requires navigating a complex landscape of trade-offs between several key desiderata
+[18]:
+● Efficacy: The extent to which the unlearned data’s influence is truly eliminated.
+● Efficiency: The computational cost of the unlearning
+process compared to full retraining.
+● Fidelity: The preservation of the model’s predictive performance on the remaining data.
+Since its initial formulation, the field has evolved from
+foundational theoretical concepts [19] to a diverse array of
+practical algorithms. Early research established a crucial
+
+dichotomy between exact unlearning, which guarantees
+a final model state identical to that of a retrained model
+[20, 21], and approximate unlearning, which relaxes this
+constraint in favor of significant efficiency gains [22, 23].
+Approximate methods, in turn, have matured from heuristic
+approaches to providing formal, probabilistic certificates of
+removal [24, 25], bridging the gap to provable guarantees.
+The recent proliferation of research in machine unlearning has been remarkable, driven by its direct relevance to
+building trustworthy AI. While several foundational surveys have provided excellent overviews of the early landscape [16, 17, 26], the field’s velocity presents a significant
+challenge: the center of gravity of unlearning research has
+rapidly shifted. Much of the foundational work focused on
+traditional models, but the most urgent and complex challenges now reside in modern architectures like Federated
+Learning (FL) [27] and, most critically, Large Language
+Models (LLMs). The unique difficulties of unlearning in
+LLMs—from catastrophic unlearning to the distributed
+nature of knowledge—have spurred a wave of specialized
+techniques that are not comprehensively covered in earlier
+reviews [28, 29].
+This survey provides a novel, structured synthesis of the
+machine unlearning field. As summarized in Table 1, our
+work is distinguished from prior reviews by three key contributions that address these recent shifts. First, we introduce a refined taxonomy that explicitly incorporates the
+emerging and critical paradigm of proactive, data-centric
+unlearning (e.g., unlearnable data [31]), a category often
+overlooked in prior work. Second, we provide a deep and
+focused analysis of the two most critical modern frontiers:
+a comprehensive review of the diverse strategies for Federated Unlearning and an extensive synthesis of the very
+latest techniques for unlearning in LLMs. Third, our forward-looking analysis connects these cutting-edge methods
+to a structured discussion of policy, standardization, and
+the interdisciplinary collaborations required to bridge the
+
+Table 1 Comparison of this survey with prior major reviews in machine unlearning
+Key topic / feature
+Nguyen et al. [16]
+Shaik et al. [17]
+Zhang et al. [30]
+Foundational Unlearning (Exact/Approx.)
+Security & Privacy
+Issues (MIAs, etc.)
+Detailed Federated
+Unlearning Review
+Deep Dive into LLM
+Unlearning
+Proactive / Data-Centric Unlearning
+Policy & Standardization Needs
+
+13
+
+✓ (Comprehensive)
+
+✓ (Comprehensive)
+
+✓ (Focused)
+
+Qu et al. (LLMs)
+[28]
+X (Brief)
+
+This survey
+
+✓ (Good)
+
+✓ (Good)
+
+✓ (Comprehensive)
+
+✓ (Focused)
+
+✓ (Comprehensive)
+
+X (Brief)
+
+✓ (Good)
+
+✓ (Good)
+
+X (Out of Scope)
+
+✓ (Comprehensive)
+
+X (Brief / Early)
+
+X (Brief / Early)
+
+X (Brief / Early)
+
+✓ (Comprehensive)
+
+X (Not Covered)
+
+X (Brief)
+
+X (Not Covered)
+
+X (Not Covered)
+
+X (Not Covered)
+
+X (Not Covered)
+
+X (Brief)
+
+X (Brief)
+
+✓ (Comprehensive
+Synthesis)
+✓ (Dedicated
+Coverage)
+✓ (Dedicated Section)
+
+✓ (Comprehensive)
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+significant gap between theoretical algorithms and practical, verifiable deployment.
+This paper provides a comprehensive and structured survey of the machine unlearning landscape. The primary contributions of this work are as follows:
+(1) We present a holistic taxonomy, visually summarized
+in Fig. 1, that organizes unlearning methods based on
+the strength of their guarantees, their data requirements,
+and their architectural approach.
+(2) We provide an in-depth review of seminal algorithms,
+dissecting their mechanisms, theoretical guarantees,
+
+Fig. 1 A taxonomy of machine unlearning methodologies. The field is
+broadly divided into exact unlearning, which provides perfect removal
+guarantees through structural means, and the more flexible approxi-
+
+and trade-offs, from certified removal and distributional
+guarantees to the zero-shot paradigm.
+(3) We dedicate specific analysis to the unique challenges
+and emerging solutions for unlearning in high-impact
+domains, namely Federated Learning and Large Language Models.
+(4) We explore the crucial intersection of unlearning with
+security and privacy, detailing evaluation methodologies for verifying removal, potential failure modes, and
+the proactive approach of creating “unlearnable” data.
+(5) We conclude by synthesizing our findings to identify
+key open research questions and chart promising future
+directions for trustworthy and adaptable ML systems.
+
+mate unlearning. Approximate methods are further subdivided by their
+core mechanism, including gradient-based optimization, influence
+function-based perturbation, and hybrid approaches
+
+13
+
+R. Kumar et al.
+
+The remainder of this paper is organized as follows. Section 3 and Sect. 4 establish the fundamentals and theoretical underpinnings of the field. Section 5 provides a detailed
+survey of exact, approximate, and hybrid unlearning methodologies. Section 5.4 delves into the critical challenges and
+solutions for unlearning in modern architectures. Section 7
+discusses overarching challenges, while Sect. 8 synthesizes
+the current state of research. Finally, Sect. 9 charts future
+directions, and Section 10 concludes the paper.
+
+2 Systematic Review Protocol
+To ensure a comprehensive, transparent, and reproducible
+review of the machine unlearning landscape, we adopted
+a systematic methodology aligned with the PRISMA (Preferred Reporting Items for Systematic Reviews and MetaAnalyses) guidelines as represented in Fig. 2. This protocol
+defines the scope and process of our literature search, screening, and selection.
+
+2.1 Search Strategy and Sources
+Our literature search was conducted across four major academic and pre-print databases to ensure broad coverage of
+both peer-reviewed and cutting-edge research: IEEE Xplore,
+ACM Digital Library, Google Scholar, and the arXiv e-Print
+server. The search covered publications from the conceptual inception of machine unlearning in 2015 through early
+2025. The search utilized a combination of primary and
+secondary keywords, including Boolean operators, such as:
+(“machine unlearning” OR “data deletion in machine learning” OR “right to be forgotten” OR “data erasure”) AND
+(“federated” OR “large language models” OR “LLM” OR
+“privacy” OR “security”).
+
+2.2 Inclusion and Exclusion Criteria
+
+Fig. 2 PRISMA flow diagram illustrating the systematic selection process for the 131 core references included in this survey
+
+13
+
+To be included in the final synthesis, a paper had to meet
+the following criteria: (1) be published in English; (2) be a
+primary research paper, a survey, or a well-regarded technical report proposing or analyzing an unlearning algorithm
+or its direct applications; and (3) be directly relevant to
+the technical implementation or theoretical underpinnings
+of machine unlearning. Papers were excluded if they only
+mentioned unlearning tangentially, focused on non-technical policy discussions without algorithmic implications, or
+were superseded by a more complete journal or conference
+version.
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+2.3 Screening and Selection Process
+The literature selection process followed the stages illustrated in the PRISMA flow diagram in Fig. 2. The initial
+database search yielded approximately 450 records. After an
+automated and manual deduplication process that removed
+65 overlapping entries, 385 unique records remained.
+These records were then screened based on their title and
+abstract, during which 180 articles were excluded for being
+out of scope. The remaining 205 full-text articles were then
+assessed for eligibility against the inclusion/exclusion criteria, which led to the exclusion of a further 74 articles. This
+structured process resulted in the final selection of the 131
+core studies that form the basis of this survey.
+
+3 Fundamentals of Machine Unlearning
+Machine unlearning constitutes a paradigm shift from
+the traditional static machine learning lifecycle, introducing the capability to dynamically manage and edit model
+knowledge post-training. This section formally defines the
+unlearning problem, delineates its core concepts, contrasts
+it with the conventional ML pipeline, and details the critical
+legal and ethical mandates that necessitate its development.
+
+3.1 Definition and Key Concepts
+At its core, machine unlearning is the process of algorithmically removing the influence of a specific subset of data from
+a fully trained machine learning model, without the need to
+retrain the model from scratch. Formally, let a model with
+parameters θ be trained on a dataset D, which is partitioned
+into a set of data to be unlearned, Df , and the remaining
+data, Dr , such that D = Df ∪ Dr and Df ∩ Dr = ∅. The
+“gold standard” or ideal outcome of unlearning is a new
+model, hereafter referred to as the retrained model, with
+parameters θretrain , which would be obtained by training
+from a fresh initialization on only the remaining data, Dr .
+The theoretical objective of an unlearning algorithm, U , is
+to efficiently compute a new set of parameters for what we
+will call the unlearned model, θu , that approximates this
+ideal state as closely as possible [19]:
+θu = U(θ, Df ) ≈ θretrain (1)
+
+However, while this retraining-based definition serves as
+the theoretical ideal, its inadequacy for large-scale models
+is a central theme of modern unlearning research and a primary focus of this review. For contemporary architectures
+like LLMs, the computational cost of generating θretrain
+is prohibitive, making direct comparison impossible. More
+
+fundamentally, for conceptual unlearning in LLMs, the
+retraining ideal is often ineffective. A concept is typically
+learned from countless diffuse samples across the training
+corpus, not a discrete, removable subset. Even if such a
+subset could be identified and removed, the model’s dense,
+associative knowledge web means the concept can often be
+reconstructed from remaining related information. Consequently, the practical goal of unlearning often shifts from
+perfectly replicating a retrained model to the verifiable and
+efficient removal of a data point’s influence, a process validated through empirical and security-based audits rather
+than by direct parameter matching. The development of
+such algorithms involves navigating a fundamental threeway trade-off between several key desiderata [16–18]. The
+first is unlearning efficacy, which measures the degree to
+which the influence of Df is successfully eliminated, often
+verified by the model’s ability to resist membership inference attacks [32]. The second is model fidelity, which
+ensures the preservation of the model’s predictive performance on test data. The final desideratum is computational
+efficiency, as the primary motivation for unlearning is to be
+significantly faster than retraining. The approaches to satisfying these criteria are broadly partitioned into two main
+categories, as illustrated in the taxonomy in Fig. 1. Exact
+unlearning provides a formal guarantee that θu is identical in distribution to θretrain [20], whereas approximate
+unlearning relaxes this strict requirement for greater efficiency and applicability [23, 24].
+
+3.2 Differences from Traditional Machine Learning
+The concept of machine unlearning introduces several fundamental departures from the traditional machine learning
+pipeline, which typically treats model training as a monolithic, one-off event [33]. Whereas traditional ML models are static artifacts, unlearning reframes the model as a
+dynamic entity that can be efficiently edited throughout its
+lifecycle [34], introducing concepts from continual learning such as decremental updates [35, 36]. It directly challenges the conventional assumption of data immutability by
+acknowledging that data rights are fluid and require model
+adaptability. This necessitates a new architectural design
+philosophy, where frameworks are inherently “unlearningaware.” For instance, methods like SISA [20] and other
+ensemble approaches [37] partition the training process
+itself, a stark contrast to the standard paradigm. Finally, the
+optimization objective itself is transformed; rather than a
+singular goal of minimizing loss, unlearning introduces a
+dual objective to remove the influence of Df while preserving the knowledge from Dr , a problem that can be viewed
+as a form of constrained or bi-level optimization [38].
+
+13
+
+R. Kumar et al.
+Table 2 Comparison of major data privacy regulations and their implications for machine unlearning
+Framework
+Key provision (“Right to Erasure”)
+Direct implication for ML models
+GDPR (EU) [6]
+Article 17 (“Right to be Forgotten”) grants data subjects the right Strongest and most direct mandate for unlearning.
+to have personal data erased without undue delay.
+Requires verifiable removal of a user’s influence
+from model parameters.
+CCPA/CPRA (Cali- Grants consumers the right to request a business delete any perCreates a clear need for unlearning in consumer-facfornia) [10]
+sonal information collected from them, with some exceptions.
+ing applications. The process is often termed “algorithmic disgorgement” in U.S. legal contexts [39].
+PIPL (China)
+Personal Information Protection Law grants individuals the
+Establishes a similar need for unlearning capabilities
+right to request the deletion of their personal information under
+for models trained on data from Chinese citizens,
+specific circumstances.
+expanding the global scope.
+PIPEDA (Canada)
+Federal law governing data privacy; interpretations have estabCase law precedent supports the principle of data
+[11]
+lished a right to de-indexing and data removal from search results removal, implying a need for unlearning in systems
+and systems.
+serving Canadian users.
+Fig. 3 Machine unlearning integrated into the modern AI lifecycle. Instead of a linear “trainthen-deploy” process, unlearning
+enables a dynamic cycle where
+trigger events (like privacy
+requests or bias detection) initiate
+an unlearning and verification
+phase, leading to an updated and
+safer deployed model
+
+3.3 Ethical and Legal Motivations
+The impetus for machine unlearning is not solely academic;
+it is driven by urgent real-world requirements rooted in law
+and ethics. The most significant driver is the global proliferation of data privacy regulations that codify an individual’s right to have their data erased. Translating these legal
+principles into technical requirements for ML models is a
+critical challenge. For instance, a legal mandate for “data
+erasure” implies a technical need for “influence removal”
+from a model’s parameters, while a right to “access and
+correct” implies a need for model editability. This legal-totechnical translation necessitates the development of frameworks that can verifiably purge a user’s contribution from a
+trained model.
+Table 2 summarizes the key provisions of several landmark data protection regulations and their direct implications for machine unlearning. While the specifics differ,
+they collectively create a strong international precedent for
+the necessity of unlearning capabilities in production AI
+systems.
+Beyond legal compliance, unlearning is motivated by
+broader ethical considerations of data ownership and the
+
+13
+
+need to build user trust through transparent and controllable
+AI systems [40]. Furthermore, unlearning serves a suite
+of critical model maintenance and security functions [30].
+It provides a mechanism to correct data errors discovered
+post-deployment, thereby repairing polluted systems [41].
+In adversarial settings, it serves as an “antidote” [42] to data
+poisoning attacks by excising the influence of malicious
+data [43–45]. It is also a vital tool for mitigating unfairness by removing the influence of biased data points [46,
+47] and for adapting to concept drift by unlearning outdated
+information, a process explored in applications like lifelong
+anomaly detection [48].
+This paradigm shift reframes the entire AI development
+process from a linear pipeline into a dynamic and continuous lifecycle, as illustrated in Fig. 3. The traditional “trainthen-deploy” model is replaced by a cycle where deployed
+models are continuously monitored. The occurrence of a
+trigger event—such as a user’s RTBF request, the discovery
+of poisoned data, or the identification of model bias—initiates a verification and unlearning phase. This process results
+in an updated, safer model that can be redeployed, ensuring
+that AI systems can adapt to new data realities and ethical
+requirements throughout their operational life. This lifecycle is not specific to any one architecture but represents a
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+general best practice for building trustworthy and maintainable AI.
+
+4 Theoretical Foundations
+The development of robust unlearning algorithms rests
+upon solid theoretical groundings in information theory,
+privacy, optimization, and statistics. This section examines
+the fundamental principles that govern the formulation and
+analysis of machine unlearning, establishing the mathematical and conceptual frameworks used to define, secure, and
+execute the data removal process.
+
+4.1 Information Theory in Unlearning
+From an information-theoretic perspective, the ultimate
+goal of machine unlearning is to minimize the mutual information between the unlearned model’s parameters, θu , and
+the unlearned dataset, Df , conditioned on the remaining
+data, Dr . An ideal unlearning process would ensure that
+I(θu ; Df |Dr ) = 0, signifying that the final model contains
+no more information about the unlearned data than a model
+that was never exposed to it. This goal is formalized in some
+works through a PAC-Bayesian framework, which aims to
+minimize the information risk associated with the unlearned
+data [49].
+While this objective is clear, directly quantifying mutual
+information for complex models like deep neural networks
+is generally intractable. Consequently, the field has developed powerful and measurable proxies. Exact unlearning
+methods, such as the SISA framework [20], achieve this
+information-theoretic ideal implicitly. By ensuring the
+unlearned model’s parameter distribution is identical to
+that of a retrained model, they guarantee that no additional
+information about Df is leaked. For approximate unlearning, the challenge lies in providing formal guarantees on
+how much information might remain. The most rigorous
+approaches aim for distributional indistinguishability, a
+concept pioneered in [22]. This framework guarantees that
+the distribution of unlearned models is statistically close to
+the distribution of retrained models. This is a significantly
+stronger guarantee than simple parameter proximity, as it
+ensures the model’s stochastic behavior is statistically indistinguishable from a model that has truly unlearned the data.
+Other theoretical approaches connect unlearning to the concept of algorithmic stability [50], arguing that if a learning algorithm is stable, the removal of a single data point
+should have a bounded and predictable effect on the model,
+enabling efficient unlearning. However, most approximate
+methods still use parameter distance, ∥θu − θretrain ∥, or
+
+differences in model output as more tractable proxies for
+bounding this residual information flow [24].
+
+4.2 Privacy and Security Considerations
+While unlearning is motivated by privacy, the unlearning
+process itself creates a new surface for privacy and security analysis [30, 51]. A central question is not just how to
+unlearn, but how to verify that unlearning has been successful, particularly against a determined adversary [40, 52]. A
+key threat model involves an adversary performing a Membership Inference Attack (MIA) to determine if a data point
+from Df was truly unlearned. The failure of an unlearning
+algorithm to defend against a powerful MIA would indicate
+that discernible traces of the unlearned data remain [32]. A
+seminal study in this area systematically explores the failure
+modes of various unlearning algorithms, demonstrating that
+common utility-based metrics can be insufficient to guarantee effective removal against such attacks [53]. Further
+research has shown that even if a model is unlearned, it may
+be vulnerable to targeted relearning attacks that can recover
+information about the unlearned data [54, 55]. The relationship between unlearning and Differential Privacy (DP)
+[56, 57] is a critical theoretical consideration. DP provides
+a formal guarantee on information leakage during the initial
+training phase, a concept originally explored in statistical
+databases and later applied to deep learning [58]. Unlearning addresses post-hoc data removal. These concepts are
+complementary and increasingly being integrated. Several
+works have proposed unlearning frameworks that provide
+DP-like guarantees for the unlearning process itself, ensuring that the act of unlearning a user’s data does not leak
+information [59–61].
+From a security standpoint, machine unlearning serves
+as a critical defense mechanism. It provides a direct remedy
+for data poisoning and backdoor attacks, where malicious
+data is injected into the training set to compromise model
+integrity [43, 45]. Foundational work on defending against
+such attacks [42] laid the conceptual groundwork for using
+data removal as a defense, a process now framed as unlearning [41].
+
+4.3 Mathematical Frameworks for Unlearning
+The diverse algorithms for machine unlearning are built
+upon a handful of core mathematical frameworks that define
+how the parameter space is traversed or reconstructed.
+4.3.1 Optimization-Based Unlearning
+The most direct approach frames unlearning as a continuous optimization problem. Given the parameters θ of the
+
+13
+
+R. Kumar et al.
+
+original model, the goal is to find a new set of parameters
+θu that approximates the minimum of the loss function over
+Dr . This is often achieved by performing gradient ascent on
+the loss with respect to Df [23], a method sometimes termed
+“descent-to-delete” [62]. The theoretical underpinnings of
+this popular fine-tuning heuristic have been rigorously analyzed, with the first formal bounds on the unlearning error
+decomposing it into terms related to optimization dynamics
+and approximation error [25]. Other works have explored
+how factors like stochasticity in SGD influence this optimization process [63], or have developed specialized optimizers like DeltaGrad for rapid model retraining [64]. The
+development of more sophisticated unlearning optimizers
+can also draw from a rich history of advanced optimization
+and metaheuristic research, including work on differential
+evolution [65], environmental adaptation methods [66, 67],
+and adaptive swarm intelligence [68].
+4.3.2 Perturbation Analysis and Influence Functions
+This framework views unlearning as a problem of perturbation analysis: how does removing data perturb the optimal parameters? The key mathematical tool is the influence
+function [69, 70], which uses a second-order Taylor expansion of the loss to approximate this change. The canonical
+unlearning approach formulates the update as a single Newton-like step and was introduced for convex models in [24]:
+θu ≈ θ −
+
+1 −1
+H ∇θ L(Df , θ)(2)
+n θ
+
+where Hθ−1 is the inverse Hessian of the loss function.
+This framework is foundational to certified unlearning and
+has been applied in finance [2], but its theoretical guarantees rely on convexity. The fragility of influence functions
+in deep, non-convex context has been a subject of critical
+analysis [71, 72].
+4.3.3 Structural Decomposition
+A third class of frameworks achieves unlearning through
+algorithmic design, shifting the mathematical basis from
+continuous optimization to a discrete, combinatorial
+approach. The seminal SISA framework by [20] exemplifies
+this. The training data is partitioned into disjoint shards, and
+separate models are trained on each. To unlearn a data point,
+only the model corresponding to its shard needs retraining.
+The final prediction is an aggregation of the sub-models.
+The mathematical guarantee of exact unlearning comes
+from the architectural guarantee that the operation is identical to a full retrain. This principle of partitioning and selective retraining forms the basis of many exact unlearning
+
+13
+
+Table 3 Illustrative unlearning performance on a security task: backdoor removal from CIFAR-10
+Method
+Backdoor ASR Retain
+MIA Acc. ↓
+(%) ↓
+Acc.
+Drop ↑
+Retrain
+50.1%
+0.2%
+0.0%
+SISA [20]
+−0.8%
+≈50.5%
+≈0.3%
+Influence Func. [24]
+−0.5%
+≈62.3%
+≈5.1%
+Grad. Ascent [23]
+−2.5%
+≈54.8%
+≈0.4%
+Zero-Shot [78]
+−1.2%
+≈71.0%
+≈15.2%
+Table 4 Illustrative unlearning performance on a fairness task: bias
+mitigation on adult census dataset
+Method
+MIA Acc. ↓ DPD (%) ↓ Retain Acc. Drop ↑
+Retrain
+Fair unlearning [46]
+Influence Func. [79]
+Grad. Ascent [47]
+SISA (Fair) [80]
+
+50.2%
+≈55.1%
+≈60.5%
+≈56.4%
+≈50.8%
+
+1.5%
+≈1.8%
+≈2.5%
+≈2.1%
+≈1.7%
+
+0.0%
+−1.1%
+-0.4%
+−2.2%
+−1.5%
+
+methods, including tree-based architectures like Arcane
+[21] and more general frameworks for non-linear splitting
+like Deep-Split [73].
+
+4.4 Quantitative Comparison on Canonical Tasks
+To provide practitioners with a tangible understanding of
+the trade-offs discussed, this section synthesizes the typical
+performance of key unlearning paradigms on two canonical tasks, presented in Table 3 and Table 4. The values
+are not the result of a single, new experiment but are a rigorous synthesis of the expected outcomes reported across
+the literature for standard benchmarks (e.g., CIFAR-10 for
+security, Adult census for fairness. They serve to illustrate
+the relative performance characteristics of each approach.
+In the context of security, Table 3 illustrates a backdoor
+removal task. Here, efficacy is measured by both Membership Inference Attack (MIA) accuracy and the Attack Success Rate (ASR) of the backdoor trigger. The ideal outcome
+is an MIA accuracy of 50% and an ASR of nearly 0%. The
+results show that while Gradient Ascent is highly effective at destroying the backdoor functionality (low ASR), it
+does so at a significant cost to model fidelity (high accuracy drop), a consequence of its non-targeted optimization.
+Conversely, Influence Functions, while preserving fidelity
+well, are less effective at removing the complex correlations
+of the backdoor, leading to weaker efficacy. Zero-Shot
+unlearning struggles with efficacy as its proxy data cannot
+fully model the specific nature of the poison attack. SISA,
+being an exact method, achieves near-perfect removal but
+with a moderate fidelity cost due to its ensembling nature.
+In the context of fairness, Table 4 illustrates a bias mitigation task, where the goal is to unlearn a group of data
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+points causing demographic bias. Efficacy is measured by
+the Demographic Parity Difference (DPD), where a lower
+value indicates greater fairness. The results highlight a different set of trade-offs. Specialized fair unlearning methods [46] and fair versions of SISA [80] achieve the best
+fairness outcomes (lowest DPD) while maintaining strong
+efficacy guarantees. Influence-based methods tailored for
+fairness, such as the Fair Infinitesimal Jackknife [79], excel
+at preserving model accuracy but are slightly less effective
+at reducing the fairness gap. This synthesis demonstrates
+that no single method is universally superior; the optimal
+choice is highly dependent on the specific application and
+whether the primary goal is security, fairness, or the absolute preservation of model performance.}
+
+5 Methodologies for Machine Unlearning
+The practical implementation of machine unlearning is realized through a diverse array of methodologies, each offering a distinct approach to the trade-offs between unlearning
+efficacy, model fidelity, and computational efficiency. This
+section provides a structured overview of the principal
+algorithmic families, categorized by the strength of their
+removal guarantees, and concludes by detailing the critical
+metrics used to evaluate their performance.
+
+5.1 Exact Unlearning Approaches
+Exact unlearning, also known as perfect unlearning, represents the most rigorous class of data removal. Methods in
+this category provide a formal guarantee that the unlearned
+model, θu , is identical in its parameter or output distribution
+to a model, θretrain , that has been retrained from scratch
+on the remaining data, Dr . This strong guarantee eliminates
+the need for the complex, often inconclusive, verification
+required by approximate methods, but it typically demands
+specialized, “unlearnable-by-design” training frameworks.
+A detailed comparison of these methodologies is presented
+in Table 5.
+The foundational paradigm for exact unlearning is based
+on structural decomposition, most famously articulated in
+the SISA (Sharded, Isolated, Sliced, and Aggregated)
+framework [20]. SISA partitions the training dataset into
+disjoint shards and trains an independent sub-model on
+each. To unlearn a data point, only the single sub-model
+corresponding to the affected shard needs to be retrained.
+While groundbreaking, SISAs simple partitioning has limitations, such as potential performance degradation and high
+overhead. Subsequent research has focused on evolving this
+core idea. Arcane [21] proposed a more efficient tree-based
+aggregation structure for distributed systems. Deep-Split
+[73] generalized SISA by allowing for non-linear, learnable
+
+Table 5 Comparison of key exact unlearning methodologies
+Method /
+Guarantee type Core mechanism
+paper
+SISA [20] ProbabilisData is partitioned into disjoint shards; an ensemble of
+tic (Identical
+models is trained. Unlearning involves retraining only
+Distribution)
+the model on the affected shard.
+Arcane
+Deterministic
+A tree-based hierarchical structure aggregates sub-mod[21]
+els. Unlearning is localized by updating nodes up the
+tree from the affected leaf model.
+Amnesia
+Deterministic
+Similar to SISA but tailored for key-value based models.
+[34]
+Stores intermediate model states (e.g., after each data
+shard) for fast rollback and retraining.
+Deep-Split ProbabilisGeneralizes SISA by allowing non-linear splitting
+[73]
+tic (Identical
+functions to partition data, creating a tree of specialized
+Distribution)
+sub-models.
+Shard
+ProbabilisExtends SISA by allowing shards to have overlapping
+Graphs
+tic (Identical
+data dependencies, represented as a graph. Unlearning a
+(Safe) [74] Distribution)
+point requires retraining all shards in its causal past.
+PEFTDeterministic
+based
+Unlearning
+[75]
+Bi-linear
+Deterministic
+Unlearning
+[76]
+Exact-Fun Deterministic
+(Federated) [77]
+
+Primary limitation(s)
+
+High initial training cost; inference
+latency due to ensembling; performance
+may degrade with many shards.
+Complex initial setup; architectural
+rigidity; aggregation strategy can be a
+bottleneck.
+Specialized for specific model classes
+(e.g., linear models); storage overhead
+for intermediate states can be high.
+Can be more complex to implement and
+tune than simple sharding; requires careful design of splitting functions.
+More complex dependency management;
+unlearning a single point can trigger a
+cascade of retraining if dependencies are
+dense.
+Uses Parameter-Efficient Fine-Tuning (PEFT) adapters. Reduced model capacity compared to
+Only the small set of adapter weights for an affected data full fine-tuning; potential for interference
+shard are retrained instead of a full sub-model.
+between adapters.
+For models based on bi-linear structures (e.g., matrix
+factorization), develops a highly efficient closed-form
+update to exactly remove user-item interactions.
+Uses cryptographic primitives (additive secret sharing) to allow a central server to perfectly reconstruct
+the aggregated global model without a departed client’s
+contribution.
+
+Highly specialized to bi-linear models;
+not generalizable to arbitrary deep neural
+networks.
+High communication and cryptographic
+overhead; requires cooperation from all
+clients.
+
+Target
+domain
+General /
+Foundational
+Distributed
+Systems
+Recommender
+Systems
+General /
+Foundational
+General /
+Complex
+Dependencies
+Large
+Models
+(LLMs)
+Recommender
+Systems
+Federated
+Learning
+
+13
+
+R. Kumar et al.
+
+splitting functions to create the data partitions. Addressing the strong assumption of data independence, the Safe
+framework introduced shard graphs to formally manage
+dependencies between shards, ensuring correctness even
+when data overlaps [74].
+A major focus of recent research has been adapting
+these structural principles to modern, large-scale architectures. For recommender systems, which often rely on
+linear or bi-linear models, specialized and highly efficient
+exact unlearning methods have been developed. Amnesia [34] tailored the sharding approach for industrial keyvalue models, while others developed closed-form updates
+for bi-linear recommendation models that can exactly and
+instantly unlearn user interactions [76]. For the immensely
+challenging domain of Large Language Models (LLMs), a
+promising direction is to combine the sharding concept with
+Parameter-Efficient Fine-Tuning (PEFT). Instead of retraining a full sub-model, one only needs to retrain a very small
+set of adapter weights, drastically reducing the cost of the
+unlearning step [75]. Separate from sharding, a distinct line
+of research seeks exact unlearning through precise, one-shot
+mathematical updates. These methods are often highly specialized. For instance, MUSO [81] provides an exact update
+formula for over-parameterized linear models by leveraging
+specific properties of their geometry. Similarly, in Federated
+Learning, Exact-Fun [77] uses cryptographic primitives,
+rather than data partitioning, to allow a central server to perfectly reverse a client’s contribution from the global model.
+While powerful, these methods are typically less general
+
+than the widely applicable, albeit more complex, shardingbased approaches.
+
+5.2 Approximate Unlearning Techniques
+In many practical scenarios, the strict guarantees and architectural constraints of exact unlearning are either too costly
+or incompatible with existing model architectures. Approximate unlearning methods address this by relaxing the perfect identity constraint, instead aiming to produce a model
+that is merely “close” to a retrained model. This relaxation
+unlocks significant gains in efficiency and broader applicability, though it introduces the critical challenge of verifying
+removal efficacy. A detailed comparison of the main paradigms is presented in Table 6.
+5.2.1 Gradient-Based Optimization
+This is arguably the most intuitive and widely used class of
+approximate methods, often implemented via fine-tuning.
+These techniques directly modify the parameters of the fully
+trained model, θ, using iterative, gradient-based updates.
+A common strategy, often termed “selective unlearning”
+or gradient ascent, is to perform several steps of gradient
+ascent on the loss function with respect to the unlearned
+data Df , effectively “un-learning” its contribution [23,
+82]. A related formulation, “descent-to-delete,” frames the
+process as moving the model parameters towards the optimum of the loss on the retain set [62]. While empirically
+
+Table 6 Comparison of approximate unlearning paradigms
+Category
+Method / paper Core mechanism
+Gradient-Based Selective
+Iteratively updates model parameters by ascending
+Optimization
+Unlearning /
+the loss on unlearned data or descending on remainGradient Ascent ing data.
+[23, 82]
+Descent-toA specific formulation of gradient-based unlearning
+Delete [62]
+that moves parameters towards the minimum of the
+loss on the retain set.
+Theoretical
+Provides formal bounds on the error of gradientAnalysis [25,
+based fine-tuning steps, analyzing the influence of
+63]
+SGD.
+Closed-Form
+Certified
+Calculates a one-shot parameter update using the
+Perturbation
+Removal [24]
+Hessian’s inverse to approximate retraining.
+DeltaGrad [64] Proposes a computationally efficient approximation
+of the Newton step for rapid retraining on linear and
+logistic models.
+Critical Analysis Investigates the fragility and limitations of influence
+[71, 72]
+functions in non-convex deep learning settings.
+Structural /
+Hybrid
+
+Distributional
+Unlearning [22]
+Random Forest
+Unlearning [83]
+
+13
+
+Combines clustered “leave-one-out” training with
+efficient, one-step approximate updates on the
+affected sub-models.
+Develops a specialized, highly efficient approximate
+method for tree-based ensembles by updating leaf
+node statistics.
+
+Guarantee type
+Heuristic
+
+Key assumption / dependency
+Effectiveness depends on
+hyperparameters (learning
+rate, steps).
+
+Heuristic
+
+Assumes the optimization
+path is informative for reversing learning.
+Assumes smoothness and/
+or convexity of the loss
+landscape.
+Loss function is strongly convex and twice-differentiable.
+Model is simple enough
+for efficient Hessian-vector
+products.
+Highlights the gap between
+theory and practice for these
+methods.
+Access to data for initial
+clustering; Hessian is stable
+across data subsets.
+Specialized for Random Forests and similar tree models.
+
+Approximate
+(Error Bound)
+Certified (for
+convex models)
+Approximate
+(Error Bound)
+N/A (Critique)
+Approximate
+(Distributional)
+Heuristic
+(Empirical)
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+effective, the success of these methods is highly dependent
+on hyperparameters like learning rate and the number of
+update steps. The theoretical behavior of these fine-tuning
+methods has been analyzed more formally in recent years,
+with works like [25] providing the first error bounds and
+[63] investigating the specific influence of SGDs stochasticity on the process.
+5.2.2 Closed-Form Perturbation
+Rather than iterative updates, this powerful framework
+leverages perturbation theory and influence functions [69,
+70] to estimate the impact of Df on the model parameters.
+These methods calculate a one-shot, closed-form parameter update that approximates the effect of retraining. The
+seminal work on certified removal by [24] introduced
+this method for convex models, providing the first (ϵ, δ)
+-certificate that guarantees the unlearned parameters are
+within a distance ϵ of the retrained parameters with high
+probability. This approach has proven practical in sensitive domains like finance for assessing credit risk models
+[2]. While foundational, the theoretical guarantees of this
+framework rely on a strong convexity assumption, which
+makes its direct application to deep, non-convex models a
+significant and ongoing challenge. While foundational, the
+theoretical guarantees of this framework rely on a strong
+convexity assumption, which makes its direct application
+to deep, non-convex models a significant and ongoing challenge, as will be discussed in Section 7.
+5.2.3 The Data-Free Unlearning Scenario
+Rather than a distinct mechanistic category, data-free
+unlearning represents a critical unlearning scenario that
+addresses the practical and privacy-enhancing constraint
+that an unlearning algorithm may not access the data it
+must remove (Df ). The seminal approach in this scenario
+is Zero-Shot Machine Unlearning (ZS-MU) [78], which
+formulates the problem as one of error correction. It estimates the parameter shift caused by Df without accessing
+it, typically by training a model on a public proxy dataset to
+learn the mapping from data removal to parameter changes.
+This data-free approach offers substantially stronger privacy protection. Other creative data-free approaches have
+also been explored, such as using an “incompetent teacher”
+model that is intentionally bad at learning the unlearn class
+to guide the student model on what information to discard
+[84]. The primary dependency of these methods is the availability of a suitable proxy dataset or a well-crafted auxiliary
+model.
+
+5.2.4 Related Proactive and Data-Centric Methods
+A distinct category of methods addresses data privacy not
+by reactively removing information, but by proactively
+making data difficult to learn in the first place. While not
+a direct unlearning paradigm—as their primary goal is
+prevention rather than removal—they are a critical part of
+the broader ecosystem for trustworthy AI and are included
+here for completeness. The field of unlearnable data or
+“unlearnable examples” [31, 85] focuses on adding imperceptible, specially crafted noise to training data. This noise
+acts as a “poison” that does not degrade model performance
+on clean data but prevents the model from deeply memorizing the private information in the poisoned sample, making
+its subsequent removal trivial. Another proactive paradigm
+is causal unlearning [41], which frames unlearning as a
+causal intervention. This is particularly useful for repairing
+models after data poisoning, where the goal is to remove the
+spurious causal links introduced by the malicious data.
+Fig. 4 provides a conceptual mapping of various machine
+unlearning methodologies within a trade-off space defined
+by two critical axes: computational cost and the strength
+of the unlearning guarantee. The horizontal axis quantifies the computational overhead required to perform the
+unlearning operation, ranging from low to high. The vertical axis represents the rigor of the removal guarantee,
+spanning from heuristic approximations at the lower end
+to mathematically provable removal at the upper end. This
+framework highlights a fundamental challenge in the field.
+For instance, complete model retraining and SISA [20],
+located in the top-right quadrant, offer provable guarantees
+but are often computationally prohibitive. In contrast, the
+bottom-left quadrant features more practical and efficient
+heuristic methods, such as those employing gradient-based
+techniques [23], zero-shot approaches [78], or influence
+functions [24], which do not provide formal guarantees of
+complete data removal. The ideal, yet often elusive, objective for unlearning research is to develop methods that reside
+in the top-left quadrant, achieving provable unlearning with
+minimal computational cost. Recent advancements, such as
+PEFT-based unlearning strategies [75], represent a promising step toward this “holy grail” of efficient and verifiable
+data removal.
+
+5.3 Hybrid Methods
+Hybrid methods seek to combine the rigorous guarantees
+of structural decomposition with the efficiency of approximate update steps. These approaches typically use a partitioning strategy to isolate the influence of data but employ
+an approximation to perform the final removal, thus avoiding a full retraining of any component. A prime example is
+
+13
+
+R. Kumar et al.
+Fig. 4 The unlearning trade-off
+space. Methodologies can be
+mapped based on the strength of
+their removal guarantee versus
+their computational cost. The
+ideal, but often elusive, goal is
+the top-left quadrant, combining
+provable guarantees with low
+overhead
+
+the algorithm proposed by [22], which first partitions data
+into clusters, similar to sharding in SISA. However, when
+a point is unlearned, the sub-models that saw the point are
+updated using an efficient, one-step Newton approximation
+rather than being retrained. This hybrid design is powerful
+because it allows for strong distributional unlearning guarantees without incurring the full cost of exact removal. This
+paradigm is also common in federated learning, where the
+structural problem of removing a client is often solved with
+an approximate method. For instance [86], proposes using
+knowledge distillation to update the global model, while
+other methods use class-discriminative pruning to approximate a client’s removal [87]. Another distinct class of hybrid
+methods includes specialized algorithms for specific model
+architectures, such as the efficient unlearning techniques
+developed for Random Forests [83].
+
+5.4 Evaluation Metrics for Unlearning
+Verifying the success of an unlearning algorithm requires
+a multifaceted strategy that assesses the core trade-offs of
+efficiency, fidelity, and efficacy [16, 17]. While efficiency is
+straightforward to measure via Unlearning Time and memory overhead, and fidelity is assessed with standard performance metrics (e.g., accuracy) on retained data, evaluating
+the efficacy of the removal is a profound challenge. As the
+ground-truth retrained model is often unavailable, the field
+relies on a suite of proxy metrics and security-based audits.
+A common proxy is Output Comparison, where the
+predictions of the unlearned model and a retrained model
+(when available on a small scale) are compared on a heldout test set. For methods providing distributional guarantees, this is formalized by measuring the KL-divergence
+or Total Variation distance between the models’ output
+
+13
+
+distributions [22]. For instance, a low KL-divergence would
+imply that the unlearned model’s predictions are statistically
+just as surprising (or unsurprising) as the retrained model’s,
+suggesting a successful removal of the unlearned data’s
+influence. Other methods evaluate the model’s confidence,
+positing that an unlearned model should exhibit higher epistemic uncertainty on unlearned data points compared to
+retained ones [88].
+The de facto standard for security-based evaluation, however, is the Membership Inference Attack (MIA) [30]. In
+a typical case study, an attacker trains a shadow model to
+distinguish between the main model’s behavior (e.g., loss,
+prediction confidence) on inputs it was trained on versus
+inputs it has never seen. To evaluate unlearning, the attacker’s goal is to determine if a sample from the unlearn set,
+Df , was part of the original training set. Before unlearning,
+the MIA should achieve high accuracy, correctly identifying the sample as “member.” After a successful unlearning
+operation, the model’s behavior on the unlearned sample
+should be statistically indistinguishable from its behavior
+on a true non-member, causing the MIAs accuracy to drop
+to that of a random guess (≈ 50%). The systematic study
+of these attacks is crucial, as many unlearning methods fail
+against strong adversaries [53], and the effectiveness of
+traditional MIAs on very large models is an open research
+question [89]. Reflecting this challenge, recent work calls
+for a move beyond classic MIAs towards more systematic
+verification frameworks that include per-sample evaluations
+and adversarial probes, which are specifically designed to
+test the failure modes of unlearning in LLMs and reinforce
+the consensus that robust verification is not yet a solved
+problem [90].
+Recognizing the need for consistency, the community is
+moving towards standardized benchmarking. Efforts like
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+MUSE [91] propose a multi-faceted evaluation suite for
+LLM unlearning, covering aspects like efficacy, fidelity, and
+even the tendency for models to “re-learn” unlearned information. Similarly, task-specific benchmarks like TOFU
+[92] for LLMs and UnlearnCanvas [93] for diffusion models provide standardized datasets and tasks for reproducible
+comparisons. These efforts, combined with the development
+of more robust evaluation methodologies [94], are a critical
+future direction for ensuring that claims of unlearning can
+be rigorously and reproducibly verified.
+
+6 Frontiers in Unlearning: Federated
+Learning and Large Language Models
+5.4While the foundational principles of unlearning apply
+broadly, their practical application to modern, large-scale,
+and distributed machine learning architectures presents a
+distinct and formidable set of challenges. The monolithic,
+centralized model assumption that underpins many early
+unlearning algorithms does not hold in paradigms like
+Federated Learning (FL) or for Massive Large Language
+Models (LLMs). This section delves into these two critical
+research frontiers, examining the unique problems they pose
+and the specialized techniques being developed to address
+them, with a comparative summary provided in Table 7.
+
+6.1 Federated Unlearning
+Federated Learning (FL) is a distributed learning paradigm
+where numerous clients collaboratively train a shared global
+model under the coordination of a central server, without
+ever sharing their local, private data. This privacy-preserving setup introduces a unique unlearning requirement: if a
+client decides to withdraw its participation, its entire data
+contribution must be verifiably erased from the collaboratively trained global model. The naive solution—retraining the entire federation from scratch without the departed
+client—is computationally infeasible and negates the efficiency of the FL process, as detailed in recent surveys on
+the topic [27]. This has given rise to the subfield of Federated Unlearning. The core challenge is to remove a client’s
+influence from the central model efficiently while respecting
+the privacy of the remaining clients [98].
+6.1.1 Approximate Federated Unlearning
+Early and common approaches are approximate in nature,
+focusing on efficiency over perfect removal. A prominent
+technique is to use knowledge distillation, where the aggregated model from the remaining (non-departed) clients acts
+as a “teacher” model. A new, clean “student” global model
+is then trained to mimic the output distribution of this
+teacher, thereby learning the collective knowledge without
+the influence of the unlearned client [86]. While practical,
+
+Table 7 Unlearning techniques in federated learning and for large language models (LLMs)
+Domain
+Method / paper Core challenge addressed
+Approach used
+Federated
+FedUnlearning Client leaves the federation; their
+Approximate; uses a calibration
+Learning
+[87]
+entire data contribution must be
+layer to update the global model
+removed from the global model.
+based on remaining client updates.
+Knowledge Dis- Removing a client without requiring
+Approximate; distills knowledge
+tillation [86]
+full retraining of the central model.
+from remaining clients into a new
+global model.
+Exact-Fun [77] Achieving perfect unlearning in FL
+Exact; uses a cryptographic
+without sacrificing efficiency.
+approach with additive secret
+sharing to perfectly reconstruct the
+global model.
+FedRecovery
+Providing formal privacy guarantees
+Approximate; integrates differential
+[60]
+for the unlearning process itself in a
+privacy into the unlearning steps.
+federated setting.
+Large
+Efficient
+Extreme cost of retraining; need to
+Approximate; uses reinforcement
+Language
+Unlearning for remove specific harmful or private
+learning to fine-tune the model
+Models
+LLMs [95]
+text.
+against generating unwanted
+content.
+KGA FrameUnlearning specific concepts or knowl- Approximate; aligns the unlearned
+work [96]
+edge without access to the original
+model with a “teacher” model that
+training data.
+lacks the unlearned knowledge.
+LLM Unlearn- The vast, distributed nature of knowl- N/A (Survey)
+ing Surveys [28, edge in LLMs makes surgical removal
+29]
+difficult.
+“We Are Not
+Failure of current methods to robustly N/A (Critique)
+There Yet” [97] remove information against strong
+adversarial checks.
+
+Primary limitation
+Approximate nature;
+potential for privacy leakage
+during calibration.
+Performance depends on the
+quality of the student-teacher
+distillation process.
+Higher communication and
+cryptographic overhead
+compared to approximate
+methods.
+Added noise from DP can
+slightly degrade the final
+model’s utility.
+Risk of “catastrophic unlearning” of unrelated knowledge.
+Performance is bounded by
+the quality of the teacher
+model.
+Highlights that no single
+method is a silver bullet; scalability is the key challenge.
+Shows that many existing
+LLM unlearning methods are
+easily circumvented.
+
+13
+
+R. Kumar et al.
+
+the efficacy of this method is bounded by the quality of
+the distillation process. Other methods focus on directly
+modifying the global model. For example, some approaches
+propose a calibrated update, where a corrective term based
+on the remaining clients’ updates is applied to the global
+model to counteract the departed client’s influence [87].
+More advanced techniques use class-discriminative pruning
+to remove features most influenced by the unlearned client
+or employ nonlinear functional theory to more accurately
+estimate the model state without that client [87, 99].
+6.1.2 Exact Federated Unlearning
+While efficient, approximate methods do not provide formal guarantees. A distinct line of research focuses on exact,
+provable removal. One approach, exemplified by Federaser [100], requires the server to store all historical model
+updates from every client. To unlearn a client, the server
+removes all of that client’s historical updates and re-aggregates the model from the remaining history, often with a
+partial retraining of the final layers. While this is exact, it
+imposes a significant storage burden on the server. A more
+sophisticated cryptographic approach, Exact-Fun [77],
+uses primitives like additive secret sharing. Here, clients
+provide cryptographic shares of their updates, and the server
+aggregates the shares without seeing the raw updates. To
+unlearn, the server simply excludes the departed client’s
+shares and reconstructs the model perfectly from the rest,
+offering exactness with strong privacy but incurring higher
+communication and computational overhead.
+6.1.3 Privacy-Preserving Unlearning
+A further consideration is the privacy of the unlearning
+process itself. The act of unlearning client A could leak
+information about client A’s data. To mitigate this, frameworks like FedRecovery [60] integrate differential privacy
+directly into the unlearning mechanism. By injecting calibrated noise during the corrective update steps, they provide
+formal guarantees that the unlearning operation itself does
+not reveal private information, at the cost of a slight, controlled degradation of model utility.
+
+6.2 Unlearning for Large Language Models (LLMs)
+Large Language Models represent the ultimate challenge
+and, arguably, the most urgent application for machine
+unlearning. Trained on web-scale datasets that are often
+poorly documented and may contain copyrighted or private
+information [101], these models are not only astronomically expensive to retrain but are also known to memorize
+and regurgitate sensitive content [102, 103]. The need to
+
+13
+
+surgically remove such content post-training is therefore a
+critical component of responsible AI development, a topic
+explored in a growing body of dedicated surveys [28, 29,
+104, 105].
+Unlearning in LLMs is exceptionally difficult due to a
+confluence of factors. First is the sheer scale of the models, making Hessian-based calculations intractable. Second
+is distributed knowledge; information in LLMs is not
+localized but is represented in a complex, distributed manner across millions of parameters, making precise removal
+akin to neurosurgery [106, 107]. Finally, there is a significant risk of catastrophic unlearning, where an imprecise
+operation damages unrelated knowledge [95, 108].
+Current research is dominated by three main approximate
+paradigms:
+6.2.1 Gradient-Based Steering
+This is the most common approach, which treats unlearning
+as a fine-tuning problem. The most direct method is gradient ascent, where the model performs several optimization steps to maximize the loss on the data to be forgotten,
+effectively pushing the model parameters away from the
+undesirable knowledge [95]. A more refined strategy frames
+unlearning as a preference alignment task. Using techniques
+like Direct Preference Optimization (DPO), the model is
+trained on preference pairs where responses containing the
+unlearned information are explicitly marked as “rejected,”
+teaching the model to avoid generating such content. This
+approach, termed Negative Preference Optimization,
+offers more targeted control than simple gradient ascent
+but can suffer from instability if not carefully implemented
+[108, 109].
+6.2.2 Knowledge Alignment
+This paradigm uses an auxiliary “teacher” model that
+already lacks the knowledge to be unlearned. The unlearning process then involves fine-tuning the original model (the
+“student”) to align its output distribution with that of the
+teacher. The alignment can be enforced at the output layer
+(via KL-divergence) or on internal representations. The
+core mechanism of the KGA framework, for instance, is to
+minimize this “knowledge gap” between the two models,
+effectively distilling the desired behavior from the teacher
+[96]. The primary limitation is the need to procure or create a competent teacher model, which can itself be a costly
+process.
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+6.2.3 Surgical Model Editing
+Rather than retraining, this approach aims for precise, surgical modification of the model’s weights. Research has shown
+that factual knowledge in transformers is often localized
+within specific feed-forward layers [106]. Surgical methods leverage this insight to identify the “privacy neurons”
+or parameter blocks responsible for storing the unwanted
+information and then directly ablate or modify their weights
+[110, 111]. While computationally efficient, these methods
+face the challenge that knowledge is rarely perfectly localized, and such edits may not fully erase all distributed traces
+of the information.
+Despite this active research, the field is still in its infancy.
+A general consensus, highlighted by multiple critiques, is
+that “we are not there yet” [97]. Many existing methods
+are brittle, failing against sophisticated adversarial checks
+[55, 112]. Indeed, recent multi-faceted benchmarks suggest
+that most current methods still leak private content, degrade
+model utility, or fail under sequential unlearning requests
+[91]. Developing scalable and truly verifiable unlearning for
+foundation models remains one of the most significant open
+problems in machine learning [113, 114].
+
+7 Challenges in Machine Unlearning
+Despite significant progress, the practical, widespread
+deployment of machine unlearning is hindered by several
+formidable challenges. These challenges span the entire
+spectrum from algorithmic efficiency and scalability to the
+fundamental tension between unlearning and model utility,
+and the unresolved problem of verifiable erasure. This section delineates the most critical open problems facing the
+field, grounding them in the mathematical and algorithmic
+principles discussed previously.
+
+7.1 Computational Efficiency
+A core promise of machine unlearning is to be significantly more efficient than retraining a model from scratch.
+Maintaining this efficiency advantage, especially as model
+complexity grows, remains a major challenge. For exact
+unlearning methods that rely on the sharding principle introduced by SISA [20], the primary challenge is the overhead
+of the retraining step. While faster than a full retrain, this
+cost can still be substantial, in addition to the initial setup
+and potential inference latency costs inherent to the ensemble-based architecture.
+For approximate methods, particularly those based
+on closed-form perturbation, the primary computational
+
+bottleneck is the Hessian matrix. The canonical Newtonstep update for a unlearn set Df is given by:
+θu ≈ θ −
+
+1 ∑
+Hθ−1 ∇θ L(zi , θ)(3)
+|Dr |
+zi ∈Df
+
+For a model with d parameters, the Hessian Hθ is a d × d
+matrix. For any non-trivial deep learning model where d is
+in the millions or billions, explicitly computing, storing,
+and inverting Hθ is intractable. Consequently, research has
+focused on approximations, such as using the Empirical
+Fisher Information Matrix or iterative methods like conjugate gradients to compute the Hessian-vector product Hθ−1 v
+without forming Hθ−1 explicitly [115]. However, these
+approximations introduce their own trade-offs between
+accuracy and speed and may not be effective for highly nonconvex loss landscapes.
+
+7.2 Scalability to Large Models
+The scalability of unlearning algorithms to modern, largescale architectures like LLMs is arguably the most pressing challenge today [28, 29]. The sheer size of these models
+amplifies the efficiency challenges to an extreme degree.
+The complex, non-convex loss landscapes of deep neural networks violate the strong convexity assumption,
+∇2 L(θ) ⪰ µI , that underpins the theoretical guarantees of
+certified unlearning methods [24]. Without this property,
+the one-step approximation in Eq. 3 is not guaranteed to
+converge to the retrained solution. However, recent developments are beginning to bridge this gap, with new frameworks proposing the first certified unlearning guarantees for
+specific classes of neural networks, updating the landscape
+of what is provably possible in non-convex settings [116].
+Furthermore, knowledge in LLMs is known to be highly
+distributed and non-localized across parameters, making the surgical removal of specific information a delicate
+operation [106]. An imprecise unlearning update, such as
+those performed via gradient ascent, can cause catastrophic
+unlearning of unrelated but functionally similar knowledge, degrading model capabilities in unpredictable ways
+[97, 108]. While specialized methods are emerging [95, 96,
+117], developing scalable unlearning techniques that are
+both effective and safe for foundation models is a grand
+challenge.
+
+7.3 Trade-Offs Between Unlearning and
+Performance
+There exists a fundamental and unavoidable tension
+between unlearning efficacy and model fidelity. An overly
+
+13
+
+R. Kumar et al.
+Fig. 5 A timeline of key milestones in machine unlearning
+research, showing the progression from initial conceptualization and foundational algorithms
+to the recent focus on modern,
+large-scale architectures and the
+emerging trend of proactive,
+privacy-integrated defenses
+
+aggressive unlearning process may not only remove the
+influence of Df but also inadvertently damage the valuable
+knowledge learned from Dr . This trade-off is particularly
+acute in approximate unlearning. The theoretical bounds
+on gradient-based methods, for instance, show an explicit
+trade-off where a larger unlearning step (i.e., learning rate)
+reduces one error term while increasing another, highlighting the sensitivity to hyperparameter tuning [25].
+This challenge is exacerbated by the “coreset effect,”
+where a small number of highly influential data points
+can have a disproportionately large impact on the decision
+boundary and overall model performance [118]. Recent
+work on identifying “worst-case unlearn sets” demonstrates
+that unlearning certain data combinations is significantly
+harder and more damaging to model utility than unlearning others [119]. The problem of identifying what makes a
+unlearn request “hard” before attempting to execute it is a
+complex and largely unsolved issue [120]. Developing principled algorithms that can navigate this trade-off space—for
+example, by maximizing erasure subject to a constraint on
+fidelity loss is a key open research direction, echoing challenges found in multi-objective reinforcement learning and
+adaptation [121].
+
+7.4 Verification of Unlearning
+Perhaps the most profound challenge in machine unlearning
+is the problem of verification: how can one be certain that
+the unlearning process was successful? The absence of the
+ground-truth retrained model, θretrain , makes direct comparison of the parameter distance between the unlearned
+model and the ideal retrained model, ∥θu − θretrain ∥
+impossible in practice.
+While a suite of evaluation metrics exists, none are foolproof. The current gold standard, Membership Inference
+Attacks (MIAs), provides a security-based audit but has its
+own limitations. The effectiveness of an MIA depends heavily on the power of the attack model and the assumptions it
+makes. Indeed, an unlearning algorithm may successfully
+defend against a weak MIA while remaining vulnerable to a
+stronger, more adaptive one, leading to a false sense of security [53]. The very applicability of traditional MIAs to the
+
+13
+
+statistical patterns of LLs is also an active area of research
+[89].
+This creates a “cat-and-mouse” dynamic, where the
+development of unlearning algorithms must constantly
+anticipate more sophisticated verification attacks, such
+as targeted relearning attacks [54] or knowledge recovery
+probes [55]. Establishing a universally accepted, computationally feasible, and theoretically sound verification protocol—what some have termed an “auditable algorithmic
+definition for machine unlearning” [40]—is a critical unmet
+need. Without one, the promises of unlearning algorithms
+remain difficult to substantiate, hindering their adoption in
+high-stakes, trust-critical applications.
+
+8 Current State of Research
+The field of machine unlearning has transitioned from a
+theoretical curiosity into a dynamic and essential area of
+machine learning research. A significant body of work now
+exists, but this rapid growth has also brought the field’s limitations and open challenges into sharp relief. This section
+synthesizes the current state of research by highlighting key
+milestones, summarizing the primary limitations of existing
+methods, and identifying the most critical research gaps that
+remain to be addressed.
+
+8.1 Key Contributions and Milestones
+The trajectory of machine unlearning research, as illustrated
+in Fig. 5, can be traced through several landmark contributions that have defined its core paradigms. The field was first
+conceptualized as a necessary component for data management in ML systems [15], which was followed by the first
+rigorous, practical framework for exact unlearning, SISA,
+demonstrating that perfect, provable removal was possible
+through algorithmic design [20]. A major breakthrough
+for approximate methods was the introduction of certified removal [24], which established that unlearning need
+not be purely heuristic by providing the first formal (ϵ, δ)
+-guarantees on parameter-space proximity for convex models. The focus of these guarantees was soon elevated from
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+parameter similarity to the more robust notion of distributional indistinguishability [22], which ensures the entire
+stochastic behavior of the unlearned model matches that
+of a retrained one. Recognizing the practical and privacyrelated drawbacks of requiring access to the unlearned data,
+the zero-shot paradigm was introduced, creating a new
+and highly practical subfield focused on data-free removal
+[78]. Most recently, research has firmly expanded to modern architectures, with a growing body of work tackling the
+unique unlearning challenges in Federated Learning [27, 60,
+87] and, most critically, Large Language Models [28, 29],
+which represent the current frontier of research.
+
+8.2 Limitations of Existing Approaches
+Despite these milestones, every major class of unlearning
+methodology carries significant limitations. The perfect
+guarantees of architectural methods like SISA come at the
+cost of high rigidity and significant computational overhead,
+as detailed in Section 5.1. This often makes them inapplicable as a post-hoc solution for conventionally trained models [20]. In contrast, while approximate unlearning is more
+flexible, its methods often lack robust guarantees for deep
+learning. As detailed in Section 7, the reliance of influencebased techniques on a strong convexity assumption remains
+a major barrier to their provable application in deep learning [24, 71]. Meanwhile, the guarantees for more common
+gradient-based methods are still emerging and demonstrate
+a high sensitivity to hyperparameter choices [25]. Finally,
+the elegant data-free approach of zero-shot unlearning introduces a strong dependency on a public proxy dataset whose
+distribution must match the private training data, a property
+that is difficult to verify in practice [78]. Across all categories, a universal limitation remains the lack of a definitive,
+computationally feasible method for verifying unlearning
+success, as reliance on audits like Membership Inference
+Attacks may provide a false sense of security against stronger adversaries [53, 55].
+
+8.3 Open Problems and Research Gaps
+The limitations of current methods point directly to the
+most pressing open problems and research gaps. The foremost challenge is developing efficient, effective, and safe
+unlearning algorithms for foundation models. This requires
+moving beyond convexity assumptions to understand how
+to perform precise surgery on highly distributed knowledge
+representations without causing catastrophic side effects
+[97]. This is part of a broader theory-practice gap; there
+is a critical need to bridge the formal guarantees derived
+in simplified settings with the practical realities of applying unlearning to complex, non-convex models. Another
+
+key gap is in the principled quantification and management of trade-offs between unlearning efficacy, fidelity,
+and cost [18]. Frameworks are needed to navigate this space
+and understand the underlying factors that make certain data
+harder to unlearn [119, 120].
+Furthermore, the development of a standardized, scalable, and trustworthy protocol for robust verification is a
+grand challenge. This likely requires moving beyond a pure
+MIA-based approach to a combination of formal methods,
+statistical tests, and security audits that can provide a more
+holistic certificate of removal [40, 52]. Finally, a promising
+research direction lies in shifting from reactive to proactive
+unlearning. Instead of only developing methods to remove
+data post-hoc, the paradigm of creating unlearnable data
+[31] seeks to design data from the outset to be inherently
+easy to remove or difficult to memorize. Addressing these
+gaps will be essential for transforming machine unlearning
+from a collection of specialized algorithms into a mature
+and indispensable component of the standard machine
+learning toolkit.
+
+9 Future Directions
+As machine unlearning matures, its trajectory will be
+defined by its ability to overcome its current challenges
+and integrate with broader scientific and societal ecosystems. The future of the field lies not only in refining existing algorithms but also in exploring new paradigms, forging
+interdisciplinary connections, and establishing the standards
+necessary for widespread, trustworthy adoption.
+
+9.1 Emerging Trends
+Several emerging trends are poised to shape the next generation of unlearning research. A significant development is
+the shift from reactive removal to proactive, unlearnableby-design systems. This includes the creation of “unlearnable data,” where imperceptible perturbations are added to
+training inputs to prevent deep memorization or to create
+vulnerabilities that allow for trivial, low-cost removal [31,
+85]. This philosophy flips the problem on its head: instead
+of asking how to unlearn, we ask how to learn in a way
+that makes unlearning easy. Another key trend is the move
+towards compositional unlearning. As models become
+more complex, the need extends beyond removing simple
+data points to erasing abstract concepts, features, or entangled facts [122, 123]. For LLMs, this could mean unlearning a specific factual error by editing knowledge neurons
+[124] or using task arithmetic [125] to subtract a particular
+behavior, a task that requires a much deeper understanding
+of how knowledge is represented. Finally, the future lies
+
+13
+
+R. Kumar et al.
+
+in integrating unlearning as a first-class citizen within the
+Machine Learning Operations (MLOps) lifecycle. This
+points towards automated unlearning (AutoU) frameworks
+that can trigger, execute, and verify removal requests as part
+of a continuous deployment pipeline, selecting the optimal
+strategy based on model architecture and performance constraints, a task analogous to complex resource optimization
+challenges in cloud workflow scheduling [126] and hybrid
+energy systems [127].
+
+9.2 Potential Interdisciplinary Connections
+The growth of machine unlearning will be significantly
+enriched by drawing formalisms from adjacent scientific
+fields. There is immense potential for developing neuroinspired unlearning algorithms by taking cues from cognitive neuroscience. Concepts such as synaptic pruning and
+catastrophic interference in the human brain could provide
+biologically plausible mechanisms for selectively removing
+information from artificial neural networks without destabilizing the entire system [23]. The verification challenge
+aligns closely with the goals of cryptography and formal
+methods. Future work could use cryptographic tools, such
+as zero-knowledge proofs [128], to allow a model owner to
+formally prove that an unlearning operation was performed
+correctly without revealing the model’s parameters.
+A critical dialogue with legal and ethical scholarship
+is also essential to translate ambiguous principles like the
+RTBF into precise, machine-testable specifications [129].
+Questions regarding what level of residual MIA accuracy
+constitutes a legal failure to unlearn, or the legal standing
+of models trained on copyrighted data [130], cannot be
+answered by computer scientists alone. This collaboration
+is necessary to ensure technical solutions are aligned with
+societal expectations and to navigate the complex landscape
+of “algorithmic disgorgement” as an enforcement tool à la
+[39].
+
+9.3 Policy and Standardization Needs
+For machine unlearning to transition from a research topic
+to a trusted industrial practice, a concerted effort in policy
+and standardization is required. The field currently lacks
+a unified benchmark for comparing algorithms, creating a
+need for standardized benchmarks and leaderboards.
+The community would benefit from developing comprehensive datasets and tasks, such as UnlearnCanvas for diffusion models [93] or TOFU for LLMs [92], into a broader
+“Unlearning-GLUE” style suite. This would accelerate
+progress by enabling fair and reproducible comparisons of
+efficiency, fidelity, and efficacy. Furthermore, there is a need
+for clear certification and auditing frameworks. To build
+
+13
+
+trust, standards are required for what constitutes a “certified”
+unlearning process [52], specifying the types of evidence an
+organization must provide to demonstrate compliance. This
+moves beyond trusting the algorithm and towards a system
+of verifiable claims, a necessity highlighted by research
+into the insufficiency of black-box audits [131]. Finally, the
+development and maintenance of high-quality, open-source
+toolkits that implement key unlearning algorithms are crucial for lowering the barrier to entry, promoting best practices, and serving as reference implementations for these
+emerging standards.
+
+10 Conclusion
+The rapid ascent of machine unlearning from a niche theoretical problem to a critical field in trustworthy AI reflects a
+fundamental shift in our relationship with machine learning
+models. As these models become more powerful and more
+deeply integrated into society, the need to control, edit,
+and correct them is no longer a luxury but a necessity. This
+paper has provided a comprehensive survey of the machine
+unlearning landscape, charting its course from foundational
+principles to the frontiers of modern research.
+This review has systematically charted the landscape
+of machine unlearning, establishing its core motivations
+in data privacy, model maintenance, and regulatory compliance. We have delineated the fundamental dichotomy
+between exact unlearning, which offers perfect, provable
+erasure at the cost of architectural rigidity, and approximate unlearning, which provides a flexible and efficient
+alternative but often relies on heuristic methods or assumptions that are violated in deep learning.
+Our survey has traversed the key methodological milestones, from the structural guarantees of SISA [20] and the
+formal certificates of influence-based methods [24], to the
+distributional guarantees of hybrid approaches [22] and the
+enhanced privacy of the zero-shot paradigm [78]. We have
+examined the unique and formidable challenges posed by
+applying these techniques to complex, large-scale domains
+like federated learning and Large Language Models, which
+represent the current and future battleground for the field.
+Our analysis has shown that despite significant progress,
+major challenges remain in scalability, the management of
+performance trade-offs, and, most critically, the verifiable
+auditing of unlearning efficacy.
+For practitioners and engineers in the industry, this
+review serves as a guide to a rapidly maturing toolkit. The
+key takeaway is that designing systems to be “unlearnableby-design” is vastly more effective than treating unlearning
+as a post-hoc patch. As organizations deploy new ML systems, particularly those handling sensitive data, they should
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+
+proactively consider architectures and training strategies
+that facilitate efficient data removal. While a universal, onesize-fits-all solution does not yet exist, the methodologies
+discussed herein offer a range of options with clear tradeoffs, enabling more informed decisions about model lifecycle management.
+For researchers, this review highlights a field rich with
+open problems and opportunities for high-impact work.
+The path forward involves moving beyond incremental
+improvements to tackle grand challenges. These include
+developing scalable and provable unlearning methods for
+foundation models, closing the gap between theory and
+non-convex practice, creating robust verification protocols
+that can withstand adversarial scrutiny, and exploring novel,
+interdisciplinary connections with fields like cryptography
+and neuroscience. The ultimate goal is to elevate unlearning
+from a collection of disparate algorithms to a unified, rigorous, and indispensable science.
+Machine unlearning is more than just a technical solution
+to the “Right to be Forgotten”; it is a foundational component for building adaptable, secure, and trustworthy artificial intelligence. It represents a move away from static,
+immutable models towards dynamic systems that can be
+corrected, controlled, and aligned with human values over
+time. The challenges ahead are significant, but the progress
+made thus far is a testament to the ingenuity of the research
+community. As we continue to push the boundaries of what
+machine learning can achieve, the ability to selectively and
+efficiently unlearn will be just as important as the ability
+to learn. The continued pursuit of this goal is essential for
+ensuring that the next generation of AI is not only powerful
+but also responsible.
+Acknowledgements The authors would like to thank the reviewers for
+their constructive comments and valuable feedback, which helped to
+improve the quality of this manuscript.
+Author Contribution Ranjit Kumar: Conceptualization, Methodology,
+Writing – original draft. Ravi Prakash: Experimental validation, Writing – review & editing. Narendra Kumar: Data curation, Formal analysis, Visualization. Suchismita Chinara: Supervision, Critical revision,
+Project administration. Mazin Abed Mohammed: Literature review,
+Technical feedback, Final approval.
+Funding The authors received no financial support for the research,
+authorship, and/or publication of this article.
+Data Availability No datasets were generated or analysed during the
+current study.
+Materials Availability Not applicable.
+Code Availability No code was developed or made available for this
+study.
+
+Declarations
+Ethics Approval and Consent to Participate: Not applicable.
+Consent for Publication All authors have reviewed and approved the
+manuscript for submission and consent to its publication.
+Editorial Policies for Springer journals and proceedings: ​h​t​t​p​​s​:​/​​/​w​w​w​​.​
+s​​p​r​i​​n​g​e​r​​.​c​o​​m​/​g​​p​/​e​​d​i​t​​o​r​i​a​​l​-​​p​o​l​i​c​i​e​s. Nature Portfolio journals: ​h​t​t​p​​s​:​/​​/​w​
+w​w​​.​n​​a​t​u​​r​e​.​c​​o​m​/​​n​a​t​​u​r​e​​-​r​e​​s​e​a​r​​c​h​​/​e​d​i​t​o​r​i​a​l​-​p​o​l​i​c​i​e​s. Scientific Reports:​
+h​t​t​p​​s​:​/​​/​w​w​w​​.​n​​a​t​u​​r​e​.​c​​o​m​/​​s​r​e​​p​/​j​​o​u​r​​n​a​l​-​​p​o​​l​i​c​​i​e​s​/​​e​d​i​​t​o​r​​i​a​l​-​p​o​l​i​c​i​e​s. BMC
+journals: ​h​t​t​p​​s​:​/​​/​w​w​w​​.​b​​i​o​m​​e​d​c​e​​n​t​r​​a​l​.​​c​o​m​​/​g​e​​t​p​u​b​​l​i​​s​h​e​​d​/​e​d​​i​t​o​​r​i​a​​l​-​p​o​l​i​c​
+i​e​s.
+Competing Interests The authors declare no competing interests.
+
+References
+1.
+
+Chen MX, Lee BN, Bansal G, Cao Y, Zhang S, Lu J, Tsay J, Wang
+Y, Dai AM, Chen Z, Schärli B (2019) Gmail smart compose: realtime assisted writing. In Proceedings of the 25th ACM SIGKDD
+International Conference on Knowledge Discovery & Data Mining, pp 2287–2295. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​4​5​​/​3​2​​9​2​5​0​0​.​3​3​3​0​7​2​3.
+ACM
+2. Ghaffari M (2024) Approximate unlearning in finance. SSRN. ​h​t​t​
+p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​2​​1​3​9​​/​s​s​​r​n​.​4​9​4​5​5​3​5
+3. Liu Y, Gadepalli K, Norouzi M, Dahl GE, Kohlberger T, Venugopalan S, Boyko AS, Timofeev A, Nelson PQ, Corrado GS, Hipp
+JD, Peng L, Stumpe MC (2017) Detecting cancer metastases on
+gigapixel pathology images. arXiv preprint arXiv:1703.02442
+4. Rumelhart DE, Hinton GE, Williams RJ (1986) Learning representations by back-propagating errors. Nature 323(6088):533–
+536. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​3​8​​/​3​2​​3​5​3​3​a​0
+5. Dean J, Corrado GS, Monga R, Chen K, Devin M, Mao M, Ranzato M, Senior A, Tucker P, Yang K, Le QV (2012) Large scale
+distributed deep networks. Adv Neural Inf Process Syst 25
+6. The European Union (2016) regulation (EU) 2016/679 of the
+European Parliament and of the council. Official text of the
+GDPR. ​h​t​t​p​​s​:​/​​/​e​u​r​​-​l​​e​x​.​​e​u​r​o​​p​a​.​​e​u​/​​e​l​i​​/​r​e​​g​/​2​0​​1​6​​/​6​7​9​/​o​j
+7. Shastri S, Wasserman M, Chidambaram V (2019) The seven sins
+of personal-data processing systems under GDPR. In 11th USENIX Workshop on Hot Topics in Cloud Computing (HotCloud
+19). ​h​t​t​p​​s​:​/​​/​w​w​w​​.​u​​s​e​n​​i​x​.​o​​r​g​/​​c​o​n​​f​e​r​​e​n​c​​e​/​h​o​​t​c​​l​o​u​​d​1​9​/​​p​r​e​​s​e​n​​t​a​t​i​o​n​/​
+s​h​a​s​t​r​i
+8. Mantelero A (2013) The eu proposal for a general data protection
+regulation and the roots of the ‘right to be forgotten’. Comput
+Law Secur Rev 29(3):229–235. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​1​6​​/​j​.​​c​l​s​r​.​2​0​1​
+3​.​0​3​.​0​0​5
+9. Goel S, Jain A, Kumar A (2023) Unlearning and the right to be
+forgotten in machine learning: a survey. In International Conference on Reliability, Infocom Technologies and Optimization
+(ICRITO). IEEE, pp. 1–6. ​h​t​t​p​​s​:​/​​/​i​e​e​​e​x​​p​l​o​​r​e​.​i​​e​e​e​​.​o​r​​g​/​d​​o​c​u​​m​e​n​t​​/​1​​
+0​2​9​4​7​1​1
+10. (2018) California legislature: Bill text - AB-375 California consumer privacy act of 2018. ​h​t​t​p​​s​:​/​​/​l​e​g​​i​n​​f​o​.​​l​e​g​i​​s​l​a​​t​u​r​​e​.​c​​a​.​g​​o​v​/​f​​a​c​​
+e​s​/​​b​i​l​l​​T​e​x​​t​C​l​​i​e​n​​t​.​x​​h​t​m​l​​?​b​​i​l​l​_​i​d​=​2​0​1​7​2​0​1​8​0​A​B​3​7​5. Accessed:
+2024-10-26
+11. (2018) Office of the privacy commissioner of Canada: announcement: privacy commissioner seeks federal court determination
+on key issue for Canadians’ online reputation. ​h​t​t​p​​s​:​/​​/​w​w​w​​.​p​​r​i​v​​
+.​g​c​.​​c​a​/​​e​n​/​​o​p​c​​-​n​e​​w​s​/​n​​e​w​​s​-​a​​n​d​-​a​​n​n​o​​u​n​c​​e​m​e​n​t​s​/​2​0​1​8​/​a​n​_​1​8​1​0​1​0​/ .
+Accessed: 2024-10-26
+
+13
+
+R. Kumar et al.
+12. Bertram T, Bursztein E, Caro S, Chao H (2019) Five years of
+the right to be forgotten. In Proceedings of the 2019 ACM SIGSAC Conference on Computer and Communications Security, pp
+1673–1688. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​4​5​​/​3​3​​1​9​5​3​5​.​3​3​5​4​2​2​5. ACM
+13. Carlini N, Liu C, Erlingsson Ú, Kos J, Song D (2019) The secret
+sharer: evaluating and testing unintended memorization in neural
+networks. In 28th USENIX Security Symposium (USENIX Security 19), USENIX Association, Santa Clara, CA, 267–284. ​h​t​t​p​​s​:​/​​
+/​w​w​w​​.​u​​s​e​n​​i​x​.​o​​r​g​/​​c​o​n​​f​e​r​​e​n​c​​e​/​u​s​​e​n​​i​x​s​​e​c​u​r​​i​t​y​​1​9​/​​p​r​e​s​e​n​t​a​t​i​o​n​/​c​a​r​l​i​
+n​i
+14. LeCun Y, Bengio Y, Hinton G (2015) Deep learning. Nature
+521(7553):436–444. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​3​8​​/​n​a​​t​u​r​e​1​4​5​3​9
+15. Cao Y, Yang J (2015) Towards making systems forget with
+machine unlearning. arXiv preprint arXiv:1510.02135 ​h​t​t​p​​s​:​/​​/​d​o​i​​
+.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​1​5​1​0​.​0​2​1​3​5
+16. Nguyen TG, Huynh T-T, Ren Z, Nguyen P-L, Liew AW-C, Yin
+H, Nguyen QVH (2022) A survey of machine unlearning. arXiv
+preprint arXiv:2209.02299 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​2​0​9​.​0​
+2​2​9​9
+17. Shaik T, Tao X, Xie H, Li L, Zhu X, Li Q (2023) Exploring the
+landscape of machine unlearning: a comprehensive survey and
+taxonomy. arXiv preprint arXiv:2305.06360 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​
+8​5​5​​0​/​a​​r​X​i​v​.​2​3​0​5​.​0​6​3​6​0
+18. Menik S, Ramaswamy L (2023) Towards modular machine learning solution development: benefits and trade-offs. arXiv preprint
+arXiv:2301.09753
+19. Ginart A, Guan M, Valiant G, Zou J (2019) Making ai forget you:
+data deletion in machine learning. Adv Neural Inf Process Syst
+32. ​h​t​t​p​​s​:​/​​/​p​r​o​​c​e​​e​d​i​​n​g​s​.​​n​e​u​​r​i​p​​s​.​c​​c​/​p​​a​p​e​r​​/​2​​0​1​9​​/​f​i​l​​e​/​c​​b​7​9​​f​8​f​​a​5​8​​b​9​
+1​d​​3​a​​f​6​c​​9​c​9​9​​1​f​6​​3​9​6​​2​d​3​-​P​a​p​e​r​.​p​d​f
+20. Bourtoule L, Chandrasekaran V, Choquette-Choo CA, Jia H,
+Travers A, Zhang B, Lie D, Papernot N (2021) Machine unlearning. In 2021 IEEE Symposium on Security and Privacy (SP), pp
+141–159. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​S​P​​4​0​0​0​1​.​2​0​2​1​.​0​0​0​1​8. IEEE
+21. Yan Q, Zhang J, Wang R, Li G, Hu W (2022) Arcane: an efficient
+architecture for exact machine unlearning. In IEEE 28th International Conference on Parallel and Distributed Systems (ICPADS).
+IEEE, pp. 312–321. ​h​t​t​p​​s​:​/​​/​i​e​e​​e​x​​p​l​o​​r​e​.​i​​e​e​e​​.​o​r​​g​/​d​​o​c​u​​m​e​n​t​​/​1​​0​0​5​1​8​
+7​1
+22. Sekhari A, Acharya J, Suggala AS, Somepalli S, Berg EZ, Candan KS (2021) Inan, H.A.: remember what you want to forget:
+algorithms for machine unlearning. Adv Neural Inf Process Syst
+(neurips) 34:16319–16330. ​h​t​t​p​​s​:​/​​/​p​r​o​​c​e​​e​d​i​​n​g​s​.​​n​e​u​​r​i​p​​s​.​c​​c​/​p​​a​p​e​r​​/​
+2​​0​2​1​​/​h​a​s​​h​/​8​​3​0​a​​e​1​6​​f​c​2​​8​3​d​7​​8​2​​7​8​7​​c​8​0​5​​a​8​b​​9​4​8​​7​3​7​-​A​b​s​t​r​a​c​t​.​h​t​m​l
+23. Golatkar A, Achille A, Soatto S (2020) Eternal sunshine of the
+spotless net: selective forgetting in deep networks. arXiv preprint
+arXiv:2003.02703 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​0​0​3​.​0​2​7​0​3
+24. Guo C, Tople S, Raskar R (2020) Certified data removal from
+machine learning models. In Proceedings of the 37th International Conference on Machine Learning (ICML), PMLR, pp.
+3836–3846. ​h​t​t​p​​s​:​/​​/​p​r​o​​c​e​​e​d​i​​n​g​s​.​​m​l​r​​.​p​r​​e​s​s​​/​v​1​​1​9​/​g​​u​o​​2​0​a​.​h​t​m​l
+25. Ding M, Chen K, Liu T (2024) Understanding fine-tuning in
+approximate unlearning: a theoretical perspective. arXiv preprint
+arXiv:2410.03833 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​4​1​0​.​0​3​8​3​3
+26. Wang R, Li G, Hu W (2022) Machine unlearning survey. In Proceedings of SPIE, vol 12500. pp 125006. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​1​7​​/​
+1​2​​.​2​6​6​0​3​3​0
+27. Liu Z, Wang Z, Zhang Z, Tang Z, Lu Y (2024) A survey on federated unlearning: challenges, methods, and future directions. ACM
+Comput Surv 57(2), 4214237 10.1145/3636224
+28. Qu Y, Chen J, Yang D, Wang L, Chen T, Yuan W, Zeng X-L,
+Wong K-F, Yin H (2025) The frontier of data erasure: a survey
+on machine unlearning for large language models. IEEE Comput
+58(1):45–57. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​M​C​​.​2​0​2​4​.​3​4​0​5​3​9​7
+29. Yuan X, Pang T, Du C, Chen K, Zhang W, Lin M (2024) A closer
+look at machine unlearning for large language models. arXiv
+
+13
+
+30.
+31.
+32.
+33.
+34.
+35.
+36.
+37.
+38.
+39.
+40.
+
+41.
+
+42.
+
+43.
+
+44.
+45.
+46.
+
+preprint arXiv:2402.13161 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​4​0​2​.​
+1​3​1​6​1
+Zhang J, Wang R, Li G, Hu W (2024) A survey of security and
+privacy issues of machine unlearning. Trans On Emerging Telecommun Technol 35(2):5012. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​0​2​​/​e​t​​t​.​5​0​1​2
+Li J, Chen Y, Xing Y, Gu Y, Lan X (2025) A survey on unlearnable
+data. arXiv preprint arXiv:2503.23536 (​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​
+a​​r​X​i​v​.​2​5​0​3​.​2​3​5​3​6
+Shumailov I et al. (2024) Ununlearning: unlearning is not sufficient for content regulation in advanced generative AI. arXiv
+preprint arXiv:2407.00106
+Shalev-Shwartz S, Ben-David S (2014) Understanding machine
+learning: from theory to algorithms. Cambridge University Press,
+Cambridge, UK. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​1​7​​/​C​B​​O​9​7​8​1​1​0​7​2​9​8​0​1​9
+Schelter S (2020) Amnesia: towards machine learning models
+that can forget user data very fast. it. Inf Technol 62(5–6):279–
+285. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​5​1​5​​/​i​t​​i​t​-​2​0​2​0​-​0​0​1​0
+Cauwenberghs G, Poggio T (2000) Incremental and decremental
+support vector machine learning. Adv Neural Inf Process Syst 13
+Kashef R (2021) A boosted SVM classifier trained by incremental
+learning and decremental unlearning approach. Expert Syst With
+Appl 167:114154. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​1​6​​/​j​.​​e​s​w​a​.​2​0​2​0​.​1​1​4​1​5​4
+Dietterich TG (2000) Ensemble methods in machine learning.
+In: First International workshop on multiple Classifier Systems.
+Springer, pp 1–15. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​0​7​​/​3​-​​5​4​0​-​4​5​0​1​4​-​9​_​1
+Zhang Y et al. (2024) An introduction to bilevel optimization:
+foundations and applications in signal processing and machine
+learning. IEEE Signal Process Mag 41:38–59
+Goland JA (2023) Algorithmic disgorgement: destruction of artificial intelligence models as the FTC’s newest enforcement tool
+for bad data. Richmond J Law Technol 29(1)
+Thudi A, Jia H, Shumailov I, Papernot N (2022) On the necessity
+of auditable algorithmic definitions for machine unlearning. In
+31st USENIX Security Symposium (USENIX Security 22), USENIX Association, Boston, MA, 4007–4022. ​h​t​t​p​​s​:​/​​/​w​w​w​​.​u​​s​e​n​​i​x​.​o​​
+r​g​/​​c​o​n​​f​e​r​​e​n​c​​e​/​u​s​​e​n​​i​x​s​​e​c​u​r​​i​t​y​​2​2​/​​p​r​e​s​e​n​t​a​t​i​o​n​/​t​h​u​d​i
+Cao Y, Yu AF, Aday A, Stahl E, Merwine J, Yang J (2018) Efficient repair of polluted machine learning systems via causal
+unlearning. In Proceedings of the 2018 on Asia Conference on
+Computer and Communications Security (ASIACCS), pp 735–
+747. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​4​5​​/​3​1​​9​6​4​9​4​.​3​1​9​6​5​4​8
+Rubinstein BIP, Nelson B, Huang L, Joseph AD, Lau S-H, Rao
+S, Taft N, Tygar JD (2009) Antidote: understanding and defending against poisoning of anomaly detectors. In Proceedings of the
+9th ACM SIGCOMM Conference on Internet Measurement, pp
+1–14. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​4​5​​/​1​6​​4​4​8​9​3​.​1​6​4​4​8​9​5. ACM
+Nelson B, Barreno M, Chi FJ, Joseph AD, Rubinstein BIP, Saini
+U, Sutton C, Xia K (2008) Exploiting machine learning to subvert your spam filter. In First USENIX Workshop on Large-Scale
+Exploits and Emergent Threats (LEET 08), USENIX Association,
+San Francisco, CA. ​h​t​t​p​​s​:​/​​/​w​w​w​​.​u​​s​e​n​​i​x​.​o​​r​g​/​​c​o​n​​f​e​r​​e​n​c​​e​/​l​e​​e​t​​-​0​8​​/​e​
+x​p​​l​o​i​​t​i​n​​g​-​m​​a​c​h​​i​n​e​l​​e​a​​r​n​i​​n​g​-​s​​u​b​v​​e​r​t​​-​y​o​u​r​-​s​p​a​m​-​f​i​l​t​e​r
+Biggio B, Nelson B, Laskov P (2012) Poisoning attacks against
+support vector machines. arXiv preprint arXiv:1206.6389
+Tarun A, Tople S, Kairouz P (2023) Fast yet effective backdoor
+attacks with a simple data-free map. Adv Neural Inf Process Syst
+(neurips) 36. ​h​t​t​p​​s​:​/​​/​o​p​e​​n​r​​e​v​i​​e​w​.​n​​e​t​/​​f​o​r​​u​m​?​i​d​=​9​d​1​n​8​4​j​T​3​A
+Oesterling A, Ma J, Calmon F, Lakkaraju H (2024) Fair machine
+unlearning: data removal while mitigating disparities. In: Dasgupta S, Mandt S, Li Y (eds) Proceedings of The 27th International Conference on Artificial Intelligence and Statistics.
+Proceedings of Machine Learning Research, vol 238. PMLR,
+Valencia, Spain, 3736–3744. ​h​t​t​p​​s​:​/​​/​p​r​o​​c​e​​e​d​i​​n​g​s​.​​m​l​r​​.​p​r​​e​s​s​​/​v​2​​3​8​
+/​o​​e​s​​t​e​r​l​i​n​g​2​4​a​.​h​t​m​l
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+47. Chen J, Liu T, Liu S (2023) Fast and accurate machine unlearning
+for convex models. arXiv preprint arXiv:2305.18349 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​
+o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​3​0​5​.​1​8​3​4​9
+48. Du M, Chen Z, Liu C, Oak R, Song D (2019) Lifelong anomaly
+detection through unlearning. In Proceedings of the 2019 ACM
+SIGSAC Conference on Computer and Communications Security, pp 1283–1297. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​4​5​​/​3​3​​1​9​5​3​5​.​3​3​5​4​2​4​6
+49. Jose ST, Simeone O. (2021) A unified PAC-Bayesian framework
+for machine unlearning via information risk minimization. In
+2021 IEEE 31st International Workshop on Machine Learning for
+Signal Processing (MLSP), pp 1–6. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​M​L​​S​
+P​5​​2​3​0​​2​.​2​0​​2​1​​.​9​5​9​6​2​4​5. IEEE
+50. Ullah E, Mai T, Rao A, Rossi RA, Arora R (2021) Machine
+unlearning via algorithmic stability. In Proceedings of the
+34th Conference on Learning Theory. Proceedings of Machine
+Learning Research, vol 134. PMLR, Boulder, Colorado, USA,
+4126–4142
+51. Chen M, Zhang Z, Wang T, Backes M, Humbert M, Zhang Y
+(2021) When machine unlearning jeopardizes privacy. In Proceedings of the 2021 ACM SIGSAC Conference on Computer
+and Communications Security, pp 896–911. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​
+4​5​​/​3​4​​6​0​1​2​0​.​3​4​8​4​5​5​8
+52. Eisenhofer T, Riepel D, Chandrasekaran V, Ghosh E, Ohrimenko
+O, Papernot N (2022) Verifiable and provably secure machine
+unlearning. arXiv preprint arXiv:2210.09126
+53. Chien Y-C, Cho C-K, Chen P-Y, Lee C-J (2024) Understanding
+the failure modes of machine unlearning. In International Conference on Learning Representations (ICLR). ​h​t​t​p​​s​:​/​​/​o​p​e​​n​r​​e​v​i​​e​w​.​n​​e​t​
+/​​f​o​r​​u​m​?​i​d​=​R​x​p​5​J​c​T​9​a​O
+54. Hu S, Fu Y, Wu ZS, Smith V (2024) Jogging the memory of
+unlearned model through targeted relearning attack. arXiv preprint arXiv:2406.13356
+55. Zhang Z, Wang Y, Zhang C, Yan H, Wu K, Liu W, Tan C
+(2024) Does your LLM truly unlearn? an embarrassingly simple approach to recover unlearned knowledge. arXiv preprint
+arXiv:2410.16454
+56. Dwork C, McSherry F, Nissim K, Smith A (2006) Calibrating
+noise to sensitivity in private data analysis. In: Halevi S, Rabin
+T (eds) Theory of cryptography. Springer, Berlin, Heidelberg, pp
+265–284. ​h​t​t​p​​s​:​/​​/​l​i​n​​k​.​​s​p​r​​i​n​g​e​​r​.​c​​o​m​/​​c​h​a​​p​t​e​​r​/​1​0​​.​1​​0​0​7​/​1​1​6​8​1​8​7​8​_​1​
+4
+57. Dwork C, Roth A (2014) The algorithmic foundations of differential privacy. Found And Trends In Theor Comput Sci 9(3–4):211–
+407. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​5​6​1​​/​0​4​​0​0​0​0​0​0​4​2
+58. Abadi M, Chu A, Goodfellow I, McMahan HB, Mironov I, Talwar K, Zhang L (2016) Deep learning with differential privacy. In
+Proceedings of the 2016 ACM SIGSAC Conference on Computer
+and Communications Security, pp 308–318. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​
+4​5​​/​2​9​​7​6​7​4​9​.​2​9​7​8​3​1​8. ACM
+59. Jebreel NM, Domingo-Ferrer J, Sánchez D (2025) Efficient unlearning with privacy guarantees. arXiv preprint
+arXiv:2507.05466 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​5​0​7​.​0​5​4​6​6
+60. Zhang L, Zhu T, Zhang H, Xiong P, Zhou W (2023) Fedrecovery:
+differentially private machine unlearning for federated learning
+frameworks. IEEE Trans On Inf Forensics Secur 18:4732–4746.​
+h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​T​I​​F​S​.​2​0​2​3​.​3​2​9​6​3​4​3
+61. Thudi A, Sepahvand NM, Isik B, Bhattacharyya A, Papernot
+N, Triantafillou E, Roy DM, Dziugaite GK (2025) Leveraging
+per-instance privacy for machine unlearning. arXiv preprint
+arXiv:2505.15099 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​5​0​5​.​1​5​0​9​9
+62. Neel S, Roth A, Sharifi-Malvajerdi S (2021) Descent-to-delete:
+gradient-based methods for machine unlearning. In: Proceedings
+of the 32nd International Conference on Algorithmic Learning
+Theory. Proc Of Mach Learn Res 132:931–962. PMLR, Virtual
+Conference
+
+63. Thudi A, Deza G, Chandrasekaran V, Papernot N (2021) Unrolling SGD: understanding factors influencing machine unlearning.
+arXiv preprint arXiv:2109.13398
+64. Wu Y, Dobriban E, Davidson SB (2021) DeltaGrad: rapid retraining of machine learning models. In Proceedings of the 38th
+International Conference on Machine Learning (ICML). Proceedings of Machine Learning Research, vol 139. pp 11355–11366.
+PMLR, Virtual Mode
+65. Shukla R, Hazela B, Shukla S, Prakash R, Mishra KK (2017)
+Variant of differential evolution algorithm. In: Bhatia SK, Mishra
+KK, Tiwari S, Singh VK (eds) Advances in computer and computational sciences. Springer, Singapore, pp 601–608
+66. Sharma B, Ravi P, Tiwari S, Mishra K (2017) A variant of environmental adaptation method with real parameter encoding and
+its application in economic load dispatch problem. Appl Intell
+47:409–429. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​0​7​​/​s​1​​0​4​8​9​-​0​1​7​-​0​9​0​0​-​9
+67. Ravi P (2023) Ranvijay: multi-operator based improved environmental adaptation method for application in real-world optimization problems. Int J Inf Technol 1–15. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​0​7​​/​s​4​​1​
+8​7​0​-​0​2​3​-​0​1​5​0​5​-​2
+68. Sharma VK, Sharma S, Rawat M, Prakash R, Kumar P: In: Rishiwal, V., Tomar, A., Malarvizhi Kumar, P. (eds.) (2023) Adaptive
+particle swarm optimization for energy minimization in cloud: a
+success history based approach. Springer, Singapore, pp 115–130.​
+h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​0​7​​/​9​7​​8​-​9​8​1​-​9​9​-​6​0​3​4​-​7​_​7
+69. Cook RD, Weisberg S (1980) Characterizations of an empirical
+influence function for detecting influential cases in regression.
+Technometrics 22(4):495–508. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​2​​3​0​7​​/​1​2​​6​8​2​4​9
+70. Koh PW, Liang P (2017) Understanding black-box predictions
+via influence functions. In: Precup D, Teh YW (eds) Proceedings
+of the 34th International Conference on Machine Learning. Proceedings of Machine Learning Research, vol 70. PMLR, Sydney,
+Australia, 1885–1894
+71. Basu S, Pope P, Feizi S (2021) Influence functions in deep learning are fragile. In The Ninth International Conference on Learning Representations (ICLR)
+72. Bae J, Ng N, Lo A, Ghassemi M, Grosse RB (2022) If influence
+functions are the answer, then what is the question? Adv Neural
+Inf Process Syst 35 22619–22631
+73. Mehta K, Al-Rfou R, Ram A (2022) Deep-split: a general framework for learning with non-linear splitting. In International Conference on Machine Learning (ICML), PMLR, pp. 15555–15570.​
+h​t​t​p​​s​:​/​​/​p​r​o​​c​e​​e​d​i​​n​g​s​.​​m​l​r​​.​p​r​​e​s​s​​/​v​1​​6​2​/​m​​e​h​​t​a​2​2​a​.​h​t​m​l
+74. Dukler Y, Bowman B, Achille A, Golatkar A, Swaminathan A,
+Soatto S (2023) Safe: machine unlearning with shard graphs. In
+Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 17108–17118
+75. Ullah E, Mor-Yosef I, Beladev G, Mendelson A (2024) Towards
+scalable exact machine unlearning using parameter-efficient finetuning. arXiv preprint arXiv:2405.08481 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​
+0​/​a​​r​X​i​v​.​2​4​0​5​.​0​8​4​8​1
+76. Xu M, Sun J, Yang X, Yao K, Wang C (2023) Netflix and forget:
+efficient and exact machine unlearning from bi-linear recommendations. arXiv preprint arXiv:2302.06676
+77. Halimi L, Chen Y, Zhang S, Liu X, Yang Q (2024) Exact-fun: an
+exact and efficient federated unlearning approach. In IEEE International Conference on Acoustics, Speech and Signal Processing
+(ICASSP). IEEE, pp. 12061–12065. ​h​t​t​p​​s​:​/​​/​i​e​e​​e​x​​p​l​o​​r​e​.​i​​e​e​e​​.​o​r​​g​/​d​​
+o​c​u​​m​e​n​t​​/​1​​0​4​4​6​0​5​9
+78. Chundawat VS, Tople S, Kairouz P, Raskar R (2022) Zero-shot
+machine unlearning. arXiv preprint arXiv:2211.07220 ​h​t​t​p​​s​:​/​​/​d​o​i​​
+.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​2​1​1​.​0​7​2​2​0
+79. Sattigeri P, Ghosh S, Padhi I, Dognin P, Varshney KR (2022)
+Fair infinitesimal jackknife: mitigating the influence of biased
+training data points without refitting. In: Koyejo S, Mohamed S,
+Agarwal A, Belgrave D, Cho K, Oh A (eds) Advances in Neural
+
+13
+
+R. Kumar et al.
+
+80.
+81.
+
+82.
+
+83.
+
+84.
+85.
+86.
+
+87.
+88.
+89.
+90.
+
+91.
+
+92.
+93.
+94.
+95.
+96.
+
+Information Processing Systems, vol 35. Curran Associates, Inc,
+Red Hook, NY, USA, 35894–35906. ​h​t​t​p​​s​:​/​​/​p​r​o​​c​e​​e​d​i​​n​g​s​.​​n​e​u​​r​i​p​​s​.​
+c​​c​/​p​​a​p​e​r​​_​f​​i​l​e​​s​/​p​a​​p​e​r​​/​2​0​​2​2​/​​f​i​l​​e​/​e​9​​4​4​​8​1​b​​9​9​4​7​​3​c​8​​3​b​2​​e​7​9​​d​9​1​​c​6​4​e​​b​
+3​​7​d​1​-​P​a​p​e​r​-​C​o​n​f​e​r​e​n​c​e​.​p​d​f
+Kadhe SR, Halimi A, Rawat A, Baracaldo N (2023) FairSISA:
+ensemble post-processing to improve fairness of unlearning in
+LLMs. ​h​t​t​p​​s​:​/​​/​a​r​x​​i​v​​.​o​r​​g​/​a​b​​s​/​2​​3​1​2​​.​0​7​4​2​0
+Wang H, Li A, Liu Y, Zhang Y, Shen Y (2024) Muso: achieving
+exact machine unlearning in over-parameterized regimes. arXiv
+preprint arXiv:2410.08254 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​4​1​0​.​
+0​8​2​5​4
+Li J, Wei Q, Zhang C, Qi G, Du M, Chen Y, Bi S, Liu F (2024)
+Single image unlearning: efficient machine unlearning in multimodal large language models. In: Globerson A, Mackey L, Belgrave D, Fan A, Paquet U, Tomczak J, Zhang C (eds) Advances in
+Neural Information Processing Systems, vol 37. Curran Associates, Inc, Red Hook, NY, USA, 35414–35453). ​h​t​t​p​​s​:​/​​/​p​r​o​​c​e​​e​d​i​​n​
+g​s​.​​n​e​u​​r​i​p​​s​.​c​​c​/​p​​a​p​e​r​​_​f​​i​l​e​​s​/​p​a​​p​e​r​​/​2​0​​2​4​/​​f​i​l​​e​/​3​e​​5​3​​d​8​2​​a​1​1​1​​3​e​3​​d​2​4​​0​0​
+5​​9​a​9​​1​9​5​6​​6​8​​e​d​c​-​P​a​p​e​r​-​C​o​n​f​e​r​e​n​c​e​.​p​d​f
+Brophy J, Lowd D (2021) Machine unlearning for random forests. In Proceedings of the 38th International Conference on
+Machine Learning. Proceedings of Machine Learning Research,
+vol 139. PMLR, Virtual Event, pp. 1092–1104
+Chundawat VS, Tarun AK, Mandal M, Kankanhalli M (2022)
+Can bad teaching induce forgetting? unlearning in deep networks
+using an incompetent teacher. arXiv preprint arXiv:2205.08096
+Muresanu A-I, Thudi A, Zhang MR, Papernot N (2024)
+Unlearnable algorithms for in-context learning. arXiv preprint
+arXiv:2402.00751
+Wu C, Zhu S, Mitra P (2022) Federated unlearning with knowledge distillation. In IEEE International Conference on Big Data
+(Big Data). IEEE, pp. 1332–1341. ​h​t​t​p​​s​:​/​​/​i​e​e​​e​x​​p​l​o​​r​e​.​i​​e​e​e​​.​o​r​​g​/​d​​o​c​
+u​​m​e​n​t​​/​1​​0​0​2​0​4​7​8
+Wang R, Li G, Zhang J, Hu W (2023) Federated unlearning for ondevice personalization. IEEE Trans Mob Comput 22(12):7213–
+7227. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​T​M​​C​.​2​0​2​2​.​3​2​1​8​5​5​7
+Becker A, Liebig T (2022) Evaluating machine unlearning via
+epistemic uncertainty. arXiv preprint arXiv:2208.10836
+Duan M et al. (2024) Do membership inference attacks work on
+large language models? In Proceedings of the 1st Conference on
+Language Modeling (COLM)
+Liu S, Yao Y, Jia J, Casper S, Baracaldo N, Hase P, Yao Y, Liu
+CY, Xu X, Li H, Varshney KR, Bansal M, Koyejo S, Liu Y (2025)
+Rethinking machine unlearning for large language models. Nat
+Mach Intell 7(2):181–194. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​3​8​​/​s​4​​2​2​5​6​-​0​2​5​-​0​
+0​9​8​5​-​0
+Shi W, Lee J, Huang Y, Malladi S, Zhao J, Holtzman A, Liu D,
+Zettlemoyer L, Smith NA, Zhang C (2024) MUSE: machine
+unlearning six-way evaluation for language models. ​h​t​t​p​​s​:​/​​/​a​r​x​​i​
+v​​.​o​r​​g​/​a​b​​s​/​2​​4​0​7​​.​0​6​4​6​0
+Maini P, Feng Z, Schwarzschild A, Lipton ZC, Kolter JZ (2024)
+TOFU: a task of fictitious unlearning for LLMs. In Proceedings
+of the 1st Conference on Language Modeling (COLM)
+Zhang Y et al. (2024) UnlearnCanvas: stylized image dataset for
+enhanced machine unlearning evaluation in diffusion models.
+Adv Neural Inf Process Syst 37, Datasets and Benchmarks Track
+Lynch A, Guo P, Ewart A, Casper S, Hadfield-Menell D (2024)
+Eight methods to evaluate robust unlearning in LLMs. arXiv preprint arXiv:2402.16835
+Chen J, Yang D (2023) Unlearn what you want to forget: efficient
+unlearning for llms. arXiv preprint arXiv:2310.20150 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​
+o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​3​1​0​.​2​0​1​5​0
+Wang L, Chen T, Yuan W, Zeng X-L, Wong K-F, Yin H (2023)
+Kga: a general machine unlearning framework based on knowledge gap alignment. arXiv preprint arXiv:2305.06535 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​
+o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​3​0​5​.​0​6​5​3​5
+
+13
+
+97. Yao Y, Domingo-Ferrer J, Lam P, Chen T, Lyu L (2024) Unlearning in large language models: we are not there yet. IEEE Secur
+Priv 22(3):45–53. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​M​S​​E​C​.​2​0​2​4​.​3​3​7​0​9​5​3
+98. Halimi A, Kadhe S, Rawat A, Baracaldo N (2022) Federated
+unlearning: how to efficiently erase a client in FL? arXiv preprint
+arXiv:2207.05521
+99. Che T et al. (2023) Fast federated machine unlearning with nonlinear functional theory. In Proceedings of the 40th International
+Conference on Machine Learning. Proceedings of Machine
+Learning Research, vol 202. PMLR, Honolulu, Hawaii, USA,
+4241–4268
+100. Liu G, Ma X, Yang Y, Wang C, Liu J (2021) Federaser: enabling
+efficient client-level data removal from federated learning models. In 2021 IEEE/ACM 29th International Symposium on Quality of Service (IWQOS), pp 1–10. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​I​W​​Q​O​
+S​​5​2​0​​9​2​.​2​​0​2​​1​.​9​5​2​1​3​4​5. IEEE
+101. Carlini N et al. (2023) Poisoning web-scale training datasets is
+practical. arXiv preprint arXiv:2302.10149
+102. Carlini N, Tramèr F, Wallace E, Jagielski M, Herbert-Voss A, Lee
+K, Roberts A, Brown T, Song D, Erlingsson Ú, Oprea A, Raffel
+C (2021) Extracting training data from large language models.
+In 30th USENIX Security Symposium (USENIX Security 21),
+USENIX Association, Vancouver, B.C., Canada, 2633–2650. ​h​t​
+t​p​​s​:​/​​/​w​w​w​​.​u​​s​e​n​​i​x​.​o​​r​g​/​​c​o​n​​f​e​r​​e​n​c​​e​/​u​s​​e​n​​i​x​s​​e​c​u​r​​i​t​y​​2​1​/​​p​r​e​​s​e​n​​t​a​t​i​​o​n​​/​
+c​a​r​l​i​n​i​e​x​t​r​a​c​t​i​n​g
+103. Nasr M, Carlini N, Hayase J, Jagielski M, Choquette-Choo CA,
+Tramèr F, Balle B, Ippolito D, Wallace E (2023) Scalable extraction of training data from (production) language models. arXiv
+preprint arXiv:2311.17035
+104. Zhang D, Chan BHY (2024) Right to be forgotten in the era of
+large language models: implications, challenges, and solutions.
+AI And Ethics. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​0​7​​/​s​4​​3​6​8​1​-​0​2​4​-​0​0​5​7​3​-​9
+105. Xu H, Zhu T, Zhang L, Zhou W, Yu PS (2023) Machine unlearning: a survey. ​h​t​t​p​​s​:​/​​/​a​r​x​​i​v​​.​o​r​​g​/​a​b​​s​/​2​​3​0​6​​.​0​3​5​5​8
+106. Meng K, Bau D, Andonian A, Belinkov Y (2022) Locating and
+editing factual associations in GPT. Adv Neural Inf Process Syst
+35 17359–17372
+107. Geva M, Schuster R, Berant J, Levy O (2021) Transformer feedforward layers are key-value memories. In Proceedings of the
+2021 Conference on Empirical Methods in Natural Language
+Processing, pp 5484–5495
+108. Zhang R, Lin L, Bai Y, Mei S (2024) Negative preference optimization: from catastrophic collapse to effective unlearning. In Proceedings of the 1st Conference on Language Modeling (COLM)
+109. Rafailov R, Sharma A, Mitchell E, Ermon S, Manning CD, Finn
+C (2023) Direct preference optimization: your language model
+is secretly a reward model. Adv Neural Inf Process Syst 36
+37042–37059
+110. Wu X, Yao Y, Liu F, Wang W, Wang L, Chen T, Lyu L (2023)
+DEPN: detecting and editing privacy neurons in pretrained language models. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, pp 2875–2886
+111. Jang J, Yoon S, Lee G-J, Kim M-J, Kim K-E (2023) Knowledge
+unlearning for mitigating privacy risks in language models. In
+Proceedings of the 61st Annual Meeting of the Association for
+Computational Linguistics, pp 14389–14408
+112. Łucki J et al. (2024) An adversarial perspective on machine
+unlearning for AI safety. arXiv preprint arXiv:2409.18025
+113. Si C, Chen Y, Yang C, Zhang Y, Wang J (2023) Knowledge
+unlearning for large language models: a survey. arXiv preprint
+arXiv:2311.15766
+114. Baddam S, Vazirani S (2025) Machine unlearning in large language models: a comprehensive survey with empirical insights
+from the qwen 1.5 1.8b model. arXiv preprint arXiv:2502.00411​
+h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​5​0​2​.​0​0​4​1​1
+
+Machine Unlearning for Trustworthy AI: A Systematic Review of Techniques, Challenges, and Applications
+115. Waris MB, Karras P, Ntoutsi E, Sejdiu D, Lehmann J (2023)
+Towards efficient machine unlearning for deep learning models.
+arXiv preprint arXiv:2309.04944 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​
+2​3​0​9​.​0​4​9​4​4
+116. Koloskova A, Allouah Y, Jha A, Guerraoui R, Koyejo S (2025)
+Certified unlearning for neural networks. ​h​t​t​p​​s​:​/​​/​a​r​x​​i​v​​.​o​r​​g​/​a​b​​s​/​2​​5​
+0​6​​.​0​6​9​8​5
+117. Jia J, Liu S, Kailkhura B (2024) WAGLE: strategic weight attribution for effective and modular unlearning in large language
+models. Adv Neural Inf Process Syst 37
+118. Pal S, Wang C, Dfenderfer J, Kailkhura B, Liu S (2025) Llm
+unlearning reveals a stronger-than-expected coreset effect in current benchmarks. arXiv preprint arXiv:2504.10185 ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​
+g​/​​1​0​.​4​​8​5​5​​0​/​a​​r​X​i​v​.​2​5​0​4​.​1​0​1​8​5
+119. Fan C, Liu J, Hero AO, Liu S (2024) Challenging forgets: unveiling the worstcase forget sets in machine unlearning. In Proceedings of the 18th European Conference on Computer Vision
+(ECCV), Springer, pp. 278–297
+120. Zhao K, Kurmanji M, Bărbulescu G-O, Triantafillou E, Triantafillou P (2024) What makes unlearning hard and what to do about it.
+Adv Neural Inf Process Syst 37
+121. Prakash R, Umrao BK (2025) Ranvijay: Reinforceadapt: multiobjective approach for environmental adaptation method. Connection Sci 37(1):2523960. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​0​8​0​​/​0​9​​5​4​0​​0​9​1​​.​2​0​
+2​​5​.​​2​5​2​3​9​6​0
+122. Warnecke A, Pirch L, Wressnegger C, Rieck K (2021) Machine
+unlearning of features and labels. arXiv preprint arXiv:2108.11577
+123. Gandikota R, Materzynska J, Fiotto-Kaufman J, Bau D (2023)
+Erasing concepts from diffusion models. In Proceedings of
+the IEEE/CVF International Conference on Computer Vision
+(ICCV), pp 2426–2436. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​I​C​​C​V​5​1​0​7​0​.​2​0​2​
+3​.​0​0​2​2​7
+124. Dai D, Dong L, Zheng Y, Tian Z, Si B, Huang M, Wei F (2022)
+Knowledge neurons in pretrained transformers. In Proceedings of
+the 60th Annual Meeting of the Association for Computational
+Linguistics (Volume 1: Long Papers), Association for Computational Linguistics, Dublin, Ireland, 8493–8502
+125. Ilharco G, Wortsman M, Wightman R, Gordon C, Carlini N,
+Taori R, Dave A, Shankar V, Namkoong H, Miller J, Hajishirzi H,
+
+Farhadi A, Schmidt L (2023) Editing models with task arithmetic.
+In The Eleventh International Conference on Learning Representations (ICLR)
+126. Ravi P , Ranvijay (2024) Multi-operator based improved environmental adaptation method for scheduling workflows in cloud.
+Int J Surg Pathol On Recent And Innov Trends In Comput And
+Commun 12:713–721
+127. Ghumman S, Ravi P, Bhushan B, Anand RG, Alam I, N A (2025)
+Maximizing cost and energy efficiency in a hybrid wind-solar
+energy system. In 2025 International Conference on Automation
+and Computation (AUTOCOM), Dehradun, India, pp 982–986. ​h​
+t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​0​9​​/​A​U​​T​O​C​​O​M​6​​4​1​2​7​​.​2​​0​2​5​.​1​0​9​5​6​8​9​7
+128. Bitansky N, Canetti R, Chiesa A, Tromer E (2012) From extractable collision resistance to succinct non-interactive arguments of
+knowledge, and back again. In Proceedings of the 3rd Innovations in Theoretical Computer Science Conference (ITCS), pp
+326–349. ​h​t​t​p​​s​:​/​​/​d​o​i​​.​o​​r​g​/​​1​0​.​1​​1​4​5​​/​2​0​​9​0​2​3​6​.​2​0​9​0​2​6​2
+129. Li TC (2022) Algorithmic destruction. SMU Law Rev 75:479–534
+130. Grynbaum MM, Mac R (2023) The times sues OpenAI and
+Microsoft over A.I. Use of copyrighted work. The New York
+Times. ​h​t​t​p​​s​:​/​​/​w​w​w​​.​n​​y​t​i​​m​e​s​c​​o​m​/​​2​0​2​​3​/​1​​2​/​2​​7​/​b​u​​s​i​​n​e​s​​s​/​m​e​​d​i​a​​/​n​e​​
+w​-​y​​o​r​k​​-​t​i​m​​e​s​​-​o​p​​e​n​-​a​​i​-​m​​i​c​r​​o​s​o​f​t​-​l​a​w​s​u​i​t​.​h​t​m​l
+131. Casper S et al. (2024) Black-box access is insufficient for rigorous AI audits. In Proceedings of the 2024 ACM Conference on
+Fairness, Accountability, and Transparency (FAccT), pp 2254–
+2272. ​h​t​t​p​s​:​​​/​​/​d​o​​i​.​o​​r​​g​​/​​1​0​​.​1​1​​​4​5​/​​3​6​3​0​​1​0​6​.​3​6​5​9​0​3​9
+Publisher’s Note Springer Nature remains neutral with regard to jurisdictional claims in published maps and institutional affiliations.
+Springer Nature or its licensor (e.g. a society or other partner) holds
+exclusive rights to this article under a publishing agreement with the
+author(s) or other rightsholder(s); author self-archiving of the accepted
+manuscript version of this article is solely governed by the terms of
+such publishing agreement and applicable law.
+
+13
+
+

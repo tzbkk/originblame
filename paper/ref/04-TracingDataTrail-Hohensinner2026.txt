@@ -1,0 +1,2306 @@
+arXiv:2601.14311v1 [cs.CR] 19 Jan 2026
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and
+Traceability in LLMs
+RICHARD HOHENSINNER∗ , Pro2Future GmbH, Austria
+BELGIN MUTLU∗ , Pro2Future GmbH, Austria
+INTI GABRIEL MENDOZA ESTRADA† , openmaind FlexCo, Austria
+MATEJ VUKOVIC∗ , Pro2Future GmbH, Austria
+SIMONE KOPEINIK‡ , Know Center Research GmbH, Austria
+ROMAN KERN§ , Graz University of Technology, Austria
+Large language models (LLMs) are deployed at scale, yet their training data life cycle remains opaque. This survey synthesizes research
+from the past ten years on three tightly coupled axes: (1) data provenance, (2) transparency, and (3) traceability, and three supporting
+pillars: (4) bias & uncertainty, (5) data privacy, and (6) tools and techniques that operationalize them. A central contribution is a
+proposed taxonomy defining the field’s domains and listing corresponding artifacts. Through analysis of 95 publications, this work
+identifies key methodologies concerning data generation, watermarking, bias measurement, data curation, data privacy, and the
+inherent trade-off between transparency and opacity.
+CCS Concepts: • Information systems → Data provenance; • Computing methodologies → Artificial intelligence.
+ACM Reference Format:
+Richard Hohensinner, Belgin Mutlu, Inti Gabriel Mendoza Estrada, Matej Vukovic, Simone Kopeinik, and Roman Kern. 2025. Tracing
+the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs. J. ACM 37, 4, Article 111 (December 2025),
+35 pages. https://doi.org/XXXXXXX.XXXXXXX
+
+1
+
+Introduction
+
+Modern Large Language Models (LLMs) are built with large amounts of data. This data stems from various sources,
+including crawled textual content of the Web, like the FineWeb dataset [79], containing up to 15 trillion tokens (44
+Terabytes) of refined text. However, LLMs are currently incapable to trace back the generated output to the original
+data sources. Even worse, major LLM creators keep the data origins and training processes of their flagship GPT models
+secret and create opaque black-box models as a result, motivated by economic considerations and proprietary concerns.
+These principles force AI researchers to operate under uncertainty regarding data origins and their ensuing implications.
+In this work, we investigate the concepts of data provenance, transparency, and traceability linked to the domain
+of LLMs. Furthermore, we examine the linkages of three supporting pillars to the data origins of LLMs: bias, privacy,
+Authors’ Contact Information: Richard Hohensinner, richard.hohensinner@pro2future.at, Pro2Future GmbH, Graz, Styria, Austria; Belgin Mutlu,
+belgin.mutlu@pro2future.at, Pro2Future GmbH, Graz, Styria, Austria; Inti Gabriel Mendoza Estrada, inti.mendoza@openmaind.ai, openmaind FlexCo,
+Graz, Styria, Austria; Matej Vukovic, matej.vukovic@pro2future.at, Pro2Future GmbH, Graz, Styria, Austria; Simone Kopeinik, skopeinik@know-center.at,
+Know Center Research GmbH, Graz, Styria, Austria; Roman Kern, rkern@tugraz.at, Graz University of Technology, Graz, Styria, Austria.
+Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not
+made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components
+of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on
+servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+© 2018 Copyright held by the owner/author(s). Publication rights licensed to ACM.
+Manuscript submitted to ACM
+Manuscript submitted to ACM
+
+1
+
+2
+
+Hohensinner et al.
+Pre-Training
+
+Alignment /
+RLHF
+
+Fine-Tuning
+Transparency
+
+Model
+Parameters
+
+Model
+Parameters
+
+Model
+Parameters
+
+Model
+Parameters
+
+Skeleton
+Model
+
+Base
+Model
+
+Instruction
+Model
+
+Resulting
+Model
+
+Pre-Training
+Data
+
+Fine-Tuning
+Training Data
+
+Alignment
+Training Data
+
+Traceability
+
+Data Provenance Hookpoints
+
+Fig. 1. Illustration of data provenance (Chapter 3), traceability (Chapter 4), and transparency (Chapter 5) linked to the data flow
+in LLMs. The supporting pillars i.e., bias, uncertainty (Chapter 6), and privacy (Chapter 7) are directly linked to the training data
+sources, and provenance tools and techniques (Chapter 8) enhance the data cycle at various intersections.
+
+and provenance tools & techniques. Figure 1 provides an overview of these domains based on the life cycle of an LLM.
+Current rapid developments in LLMs lead to huge increases in model parameter size. Looking at developments of
+recent years, OpenAI’s GPT-1 [80] started with 117 million parameters in 2018, followed by GPT-2 [81] with 1,5 billion
+parameters in 2019, and GPT-3 [10] in 2020 with 175 billion parameters. In 2025, flagship models like DeepSeek-R1 [33]
+are already at 671 billion parameters, and Moonshot AI’s Kimi K2 [103] further exceeds this with 1 trillion parameters
+in total. This skyrocketing growth of model parameters not only demands an increased amount of computing power for
+deployment but also requires a corresponding growth of training data to be exploited effectively. Furthermore, with
+the rising need for data, data quality has to be maintained accordingly to avoid the use of corrupted data to decrease
+the risk of hallucinations caused by low-quality data sources [27, 62]. This raises questions on how this hunger for
+data can be satisfied sustainably and how the provenance of training data can aid in mitigating LLM-related issues,
+such as hallucinations. To effectively utilize this provenance knowledge, LLMs need to possess a certain degree of
+transparency. This transparency allows investigations and sense-making of internal states and decision-making of
+these systems. Additionally, transparency measures for LLMs enable tracing data and knowledge flows through LLMs.
+Traceability, on the other hand, provides the ability to link underlying source data to generated outputs. However,
+tracing information through LLMs is complicated by the intrinsic decoupling of language as words, which exist only as
+complex mathematical representations within these systems.
+The aforementioned increasing demand for high-quality data far exceeds the scope of manually human-verifiable
+sources, and new ways of quality assessment have to be found. Filtering huge amounts of datasets from the web, but
+keeping a high threshold of quality, is a difficult task, tedious to do manually, yet treacherous to automate securely. A
+strand of research suggests using LLMs and their data generation capabilities themselves to automate data annotation,
+curation, and filtering [15, 28, 83]. However, further processing data that originates from a system whose own data
+sources are not fully disclosed may introduce a new range of potentially harmful problem sources.
+Data provenance regarding LLMs involves tracking the origins of data sources. This includes all data that is ingested
+into LLMs, i.e., through training, fine-tuning, or alignment processes, as well as settings and restriction sources. Tracing
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+3
+
+Licensing & Attribution [5] [42] [52] [58] [64] [77] [84] [110]
+Data Provenance
+
+Provenance Extraction & Retrieval [32] [100] [106] [115]
+Data Generation & Annotation [9] [15] [23] [28] [66] [83] [96] [99]
+Logging Practices [22]
+
+Traceability &
+Accountability
+
+Open-Weight Traceability [69] [98]
+Closed-Weight Traceability [59] [121]
+Open-Weight Models [13] [16] [21] [25] [31] [46] [71] [85] [90] [97] [114] [120] [126] [127] [130]
+
+Data Origins
+of LLMs
+
+Transparency
+
+Closed-Weight Models [35] [56] [67] [104] [111] [122]
+
+Interpretability
+Explainability
+
+Model Passive Characteristics [6] [11] [12] [18] [31] [37] [48] [50] [53] [61] [63] [78]
+[87] [88] [93] [113] [117] [119] [125] [128] [129] [131]
+Model Agnostic [4] [7] [60] [105] [107]
+Model Specific [91] [118] [124]
+Bias [14] [24] [38] [44] [45] [89] [101]
+
+Supporting
+Pillars
+
+Privacy [47, 49]
+Provenance Tools & Techniques [20] [43] [58] [64] [82] [86] [92] [116] [123] [133]
+
+Fig. 2. Taxonomy of our systematic literature review, outlining the three main axes - Data Provenance, Transparency, and Traceability
+- together with their supporting pillars. Bias & Uncertainty, Data Privacy, and Provenance Tools & Techniques provide additional
+context for characterizing data origins of LLMs.
+
+data through a language model is considered difficult because the data involved is no longer directly accessible within
+the model after training. Language models do not store data in their conventional state - they store the respective
+knowledge and links from data in their parameters, also referenced as weights, in a mathematical representation, which
+impedes tracing information conventionally [70].
+The overarching goal of traceability research in this domain is to establish an end-to-end traceable data flow pipeline,
+from the user query and the system’s response to the knowledge origins in the initial training data. Recent work aims to
+analyze the biology of LLMs by investigating their inner circuits in an interpretive study [54] to further understand the
+model’s decision-making process. A deeper understanding of these circuits could lead to more profound insights into
+the connections between the initial training data and the inner mechanisms of a language model. Thus, investigations
+in our work aim to tackle the traceability of training data and their origins for LLMs.
+Further, the issue of using LLM-generated content as a training basis for new models is a timely, pressing topic.
+More and more models are currently being trained on data generated by generative AI. We want to emphasize that this
+procedure contains many risks, such as biases propagating across language models, proprietary data that was ingested
+unintentionally by a donor (or teacher) model being forwarded to a receiver model, and the uncertainty of unknown
+data sources growing to a second layer.
+Throughout the training process, the intrinsic knowledge of the training data is transferred into the model’s
+parameters. However, the model parameters do not link back to the training data by default. This creates a transparency
+gap, if only the resulting language model, but not its training sources, is accessible to users and experts. Furthermore,
+opening questions of where particular knowledge from the source data is stored within the model parameters, and
+whether it is possible to detect particular parameter regions that can be traced back to originating data sources. These
+questions can only be investigated under the conditions that model parameters and their respective sources are fully
+disclosed.
+Manuscript submitted to ACM
+
+4
+
+Hohensinner et al.
+LLMs with transparent architecture and accessible weights are referred to as open-weight models. In contrast,
+
+language models that do not provide access to their internal states are differentiated as closed-weight models. With this
+gap spreading from fully open to entirely opaque, naturally, there are LLMs with transparency measures in between,
+disclosing only parts of their internal states. Additionally, the grade of access also decides the ability to run these
+language models on local infrastructure. The ability to host a language model on-premises opens opportunities for
+in-depth research on model parameters in regard to interpretability and explainability. With interpretability being a
+passive property of a model that defines to what extent the internals of LLMs can be directly understood by humans,
+and explainability determining active processes which produce human-understandable reasons and decision-making of
+LLMs. We found that data provenance, traceability, and transparency go hand in hand in the domain of LLMs, as it is
+impossible to trace data flows through non-transparent, opaque systems, and similarly impossible to match data origins
+to final results without the means of traceability.
+Furthermore, LLMs are prone to taking on bias from data sources [101], because the sheer amount of data involved
+in the training of current language models, as well as the lack of knowledge and context, make it difficult to mitigate. In
+systems that interact with humans, bias can never be fully eliminated, only mitigated to a certain degree. This mitigation
+usually relates to the application context, and the general-purpose nature of LLMs renders this task particularly hard
+to counteract. Research on data provenance for LLMs could help reduce unwanted bias in models by attributing
+detected bias to specific parts of the training data. Succeeding training runs could then be trained with bias-annotated
+datasets in future iterations to improve over time. Provenance information also enables differentiating between bias
+inherited from data sources and the intrinsic bias of the language model architecture or training procedure. Additionally,
+provenance-driven data investigations for LLMs can help to tackle cases of misinformation or other harmful content,
+by following the data trail back to the flawed data sources.
+LLMs are currently considered to be in a gray zone of privacy legislation. However, LLM creators are increasingly
+under pressure due to data privacy and protection laws such as the European AI-Act or the General Data Protection
+Regulation (GDPR). Alongside this, one particular data protection right, the "Right to be forgotten", becomes increasingly
+important for the domain of LLMs, especially due to their final states and lack of post-hoc editing. Although research
+already investigates methods to edit individual model parameters, e.g., deleting certain information [39], there is no
+general solution yet to erase one’s erroneously digested data from a trained language model. We found that current
+research, although of utmost importance, seldom mentions the topic of data privacy concerning LLM data usage.
+Finally, current research already provides, to some extent, aid to tackle the opaque data flow into LLMs. We investigate
+works for their applicability to the domains of data provenance, traceability, and transparency, and report provenance
+tools and techniques that may help the cause and inspire future research.
+1.1
+
+Related Surveys
+
+One can observe an increased interest in topics related to data provenance and related concepts, highlighted by a surge
+of articles and surveys in the past year. A chronologically sorted overview of related surveys is given in Table 1. Older
+works [36, 95] focused on data collection and generation, while newer works [1, 40, 74, 94] are shifting towards the
+relationship between the data and data processing. The most recent trend here is a focus on LLMs [30, 75, 132].
+Simmhan et al. [95] present an overview of techniques for data provenance, stating that provenance (in 2005) is still
+in an exploratory field with several open questions. Herschel et al. [36] investigate where provenance information stems
+from, in what states it exists, and what this information can be used for. Additional surveys explore data provenance
+in domains such as the Internet of Things (IoT) [40], e-Science [94], healthcare [1], and security & privacy [74]. In
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+5
+
+Table 1. Overview of related surveys, highlighting the shift in interest from data collection to data processing and finally LLMs.
+Survey
+
+Year
+
+Focus
+
+LLM
+
+Data Prov.
+
+Trace.
+
+Trans.
+
+Interp.
+
+Expl.
+
+Bias
+
+Priv.
+
+Pr. Tools
+
+Pr. Techn.
+
+[95]
+[36]
+[40]
+[94]
+[1]
+[74]
+[30]
+[132]
+[75]
+Ours
+
+2005
+2017
+2019
+2020
+2023
+2023
+2025
+2025
+2025
+2025
+
+Data Prov. Techniques
+Data Provenance
+Data Prov. in IoT
+Data Prov. in e-Science
+Data Prov. in Healthcare
+Data Prov. in Sec. & Priv.
+Col. & Mgmt. of Data Prov.
+LLM & Data Mgmt.
+LLM Sourcing
+Data Prov., Trace. & Trans.
+
+×
+×
+×
+×
+×
+×
+✓
+✓
+✓
+✓
+
+✓
+✓
+✓
+✓
+✓
+✓
+✓
+✓
+✓
+✓
+
+×
+✓
+✓
+×
+✓
+✓
+✓
+✓
+✓
+✓
+
+×
+×
+×
+×
+×
+×
+✓
+✓
+✓
+✓
+
+×
+×
+×
+×
+×
+×
+✓
+×
+✓
+✓
+
+×
+×
+×
+×
+×
+×
+✓
+×
+×
+✓
+
+×
+×
+×
+×
+×
+×
+✓
+✓
+✓
+✓
+
+×
+✓
+✓
+×
+✓
+✓
+×
+✓
+✓
+✓
+
+×
+×
+×
+×
+×
+×
+×
+✓
+×
+✓
+
+×
+×
+×
+✓
+×
+×
+×
+✓
+✓
+✓
+
+Scopus Search
+Timeframe: 2016 - 2025
+
+Data
+
+Language Model
+
+data provenance
+
+Attributes
+
+llm
+
+data lineage
+
+AND
+
+data management
+
+transparency
+
+language model
+
+OR
+
+AND
+
+large language model
+
+watermarking
+
+data governance
+data pedigree
+
+traceability
+
+source attribution
+
+OR
+
+tracking
+
+data set
+
+auditability
+
+dataset
+
+OR
+
+granularity
+
+meta data
+
+reproduceability
+
+metadata
+
+interpretability
+trustworthiness
+
+129
+
+responsibility
+
+Search Results
+
+Manual
+Review
+
+Yes
+
+95 Articles
+
+No
+
+34 Articles
+
+Relevant?
+
+Fig. 3. Illustration of the Scopus search, query construction, and manual reviewing process. The timeframe 2016 - 2025 spans over our
+three filters: Data, Language Model, and Attributes, leading to 129 search results.
+
+2025, Gregory et al.[30] investigate how LLMs can be used for the collection and management of data provenance
+information, Zhou et al. [132] analyze the interconnections of LLMs and the overarching domain of data management,
+and Pang et al. [75] present an overview of the different perspectives from which LLMs source their information.
+Our survey follows this trajectory and increases the scope by investigating the capabilities of different types of
+LLMs, the means of transparency with a separate view on interpretability & explainability, and in addition covering
+provenance tools & techniques for LLMs.
+1.2
+
+Contribution
+
+This survey provides an analysis of the data origins of LLMs, setting a particular focus on data provenance, traceability,
+and transparency. This includes traceability approaches such as watermarking and transparency investigations regarding
+Manuscript submitted to ACM
+
+6
+
+Hohensinner et al.
+
+(a) Distribution of articles to the main pillars: data provenance, transparency and traceability, and supporting pillars:
+bias & uncertainty, privacy and provenance tools & techniques.
+
+(b) Distribution of articles and domains by year. The low
+count for 2025 is due to the March cutoff date; interest is
+expected to continue growing in line with recent trends.
+
+Fig. 4. Overview of the considered articles and their domains.
+
+the model type, as well as interpretability and explainability of LLMs. Additionally, supporting pillars such as bias, data
+privacy, and provenance tools & techniques are analyzed. Although relevant to the domain of data governance, topics
+related to data security and data quality are excluded from this survey as we deem they deserve their own standalone
+survey. Our main contributions are related to a retrospective analysis, the current state of the art, and a future outlook:
+(1) Providing a thorough literature review on LLM research, concentrating on data usage from the past 10 years,
+with each article containing at least one of the three criteria: 1) data usage for LLMs, 2) data generation for and
+by the usage of LLMs, 3) data provenance in the field of machine learning and AI.
+(2) Creating an overview of the current landscape of approaches and their limitations, and establishing a new
+research domain by exploring the LLM’s environments for data provenance capabilities.
+(3) Identifying current research gaps and proposing future research directions for data provenance, traceability, and
+transparency for LLMs and data-driven explainable AI.
+(4) Establishing guidelines as highlighted by selected work, and frameworks (Chapter 8) in the context of this survey.
+1.3
+
+Survey Methodology
+
+To achieve reproducibility in the considered articles, we opted for a systematic review based on a query and a scientific
+database for retrieval, where we utilized Scopus1 . Figure 3 outlines the search process and query keywords. The
+considered time span was set to cover the last ten years of research related to LLMs, spreading from January 2016
+to March 2025 (date of search). Next, we applied three additional filters during the advanced Scopus search, all of
+which needed to be met to make it into the pool of articles. The first filter ensured a focus on data (provenance) and
+1 https://www.scopus.com/
+
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+7
+
+related data-centered topics, such as data lineage, governance, and management, which are terms frequently used in
+connection with data provenance. The second filter ensured the usage of Large Language Models (LLMs), written in
+variations, so as not to miss any work using just one writing style. And, the third filter incorporated quality attributes
+like transparency, traceability, auditability, or reproducibility, which stemmed from our preliminary literature review
+on the topic of data origins of LLMs. This search yielded a total of 129 results that matched our criteria. We then
+manually processed these 129 search results. The search results also included thirteen complete conference proceedings.
+We filtered these proceedings for duplicates and extracted ten additional documents for review. Whereas the initial
+conference proceedings documents were excluded. Finally, we further filtered the articles via several criteria, where at
+least one of three conditions needed to be met for relevancy: (1) Involvement of data usage in connection with LLMs,
+(2) data generation for and from the usage of LLMs, and (3) data provenance in the field of machine learning (ML)
+and artificial intelligence (AI). We applied these criteria, resulting in the removal of 34 papers, which were considered
+irrelevant. Thus, the final set of articles comprises 95 articles, which we further grouped into sub-domains. Starting
+from the central topic of data provenance, we found that traceability and transparency are closely linked to the data
+origins of LLMs. Additional investigation revealed that bias, uncertainty, privacy, tools, and techniques are supporting
+pillars of the field. The distribution of articles to these domains is visualized in Figure 4. Furthermore, our detailed
+grouping of the domains, illustrated in Figure 2, resulted in the following structure of this survey: Chapter 3: Data
+Provenance & Attribution, Chapter 4: Traceability & Accountability, Chapter 5: Transparency & Opacity, Chapter 6:
+Bias & Uncertainty, Chapter 7: Data Privacy, and Chapter 8: Provenance Tools & Techniques.
+2
+
+Preliminaries
+
+Data provenance for LLMs is closely linked to traceability and transparency. Means that support the traceability of
+information are key to maintaining data provenance throughout complex LLM pipelines and to mitigating obfuscation
+through parameterization. The concept of transparency, on the other hand, lays the foundation for LLM data provenance,
+as it enables the observation of LLM pipelines and their data flows. Furthermore, transparency incorporates the disciplines
+of explainable and interpretable AI. Also of utmost importance is the scientific discourse on biases that are inherent in
+data sources and are propagated into LLMs through those during training. Provenance tools and techniques tackle the
+opaque landscape of data that flows through LLMs with the goal of establishing understandable model decision-making
+processes. Whereas data privacy concerns protecting one’s identity, personal information, and proprietary data sources.
+Investigating data provenance for LLMs can help identify and address existing problems, providing a quintessence for
+more transparent and traceable data handling.
+2.1
+
+Scope of LLMs and data sources
+
+We consider LLMs at all stages, including foundational (or basic) models, fine-tuned (or instruction) models, and models
+that underwent alignment with Reinforcement Learning with Human Feedback (RLHF). The training data of LLMs is
+hard to classify in general. The same dataset that was used to pre-train one model could also be used in another model’s
+fine-tuning step. Additionally, data sources may change over time through manual editing or complex data manipulation,
+and prior iterations may become inaccessible over time. Thus, we differentiate the data flow into language models
+as training data (pre-training, fine-tuning, alignment) for parameterization and inference input (user queries). The
+former has a direct impact on the language model’s weights, whereas inference input does not change an LLM’s internal
+memory. Furthermore, we draw a distinct boundary between the inside and outside of the LLM system. Outside of the
+system: (Training) Data sources, user prompts & queries, and outputs as tokens and logprobs (logarithmic probabilities).
+Manuscript submitted to ACM
+
+8
+
+Hohensinner et al.
+
+Inside the system: Model weights, also known as parameters, layers, and the architecture. Additional grey zones exist,
+such as pre-processing methods of prompts before they are transferred into the LLM, or post-hoc filters applied to
+generated outputs, and post-processing of responses for the User Interface. We consider these methods as grey zones,
+because they may or may not be implemented in LLM systems and their environment.
+2.2
+
+Data Provenance
+“Data provenance, a record that describes the origins and processing of data, offers new promises in the
+increasingly important role of artificial intelligence (AI)-based systems in guiding human decision making.”
+[112]
+
+Data provenance is mainly focused on the origin and source of a data object, dating back to its original creation. Usually,
+this provenance information is documented and stored within additional metadata. In more complex environments,
+so-called provenance graphs [108] are used to document the processing of data and information flow. Data Lineage, often
+mistakenly used as a synonym for data provenance, is focused on the transformation of data over time. A Wikipedia
+entry can be used as an example, as it forms a piece of information that is continuously updated by multiple authors
+over time. Also, a configuration file stored on a server, accessed by multiple system administrators, can be used as an
+example. Furthermore, datasets that change in iterations, either through extension or reduction, are also subject to
+data lineage. Similar to the provenance information, data lineage is stored as metadata alongside the data objects, and
+changes can be visualized by diagrams over time. We formalize the key difference in both terms as follows:
+• Data Provenance: Keeps track of the origin of data sources and their creation.
+• Data Lineage: Keeps track of the transformation of data sources over their entire life cycle.
+Regarding LLMs, the concept of data provenance can be used to shine light into the obfuscated entanglement that is
+created by billions of parameters coexisting in modern language models. This could be achieved by tracing the origin of
+a generated token, via the model’s weights, all the way back to its initial training data source evidence.
+For this, two approaches exist: (1) Keeping track of original provenance information throughout the parametrization
+and generation process and (2) Searching for the provenance sources post-hoc, using the model’s output and the entirety
+of involved data sources [55].
+The concept of data provenance in the field of LLMs seems straightforward, yet, opens many questions. Throughout
+the rapid growth of LLMs in the field of AI in recent years, primary focus was put on metrics like performance, speed
+for faster inference, range of tasks through parameter size, adherence to social norms by avoidance of generating bias
+and harmful content, and evaluation metrics for domain benchmarks, e.g., coding or solving mathematical problems.
+Although quintessential for the widespread success of LLMs, the underlying dependency on high-quality data and its
+corresponding provenance appears to be neglected.
+2.2.1 Granularity and Linkages. We section data source levels for this work as: (1) Open web (Big Data), (2) datasets,
+(3) documents & files, (4) document chunks, (5) sentences, (6) tokens (& embeddings). And, implicit source linkages
+as: (1) Crawling & curation (from web to datasets), (2) document chunking, i.e., sliding windows (documents to text
+chunks, and (3) embeddings (sentences to tokens). In addition, we note that multimodal data, that is more complex than
+pure text, requires additional data processing steps. Images and video data require visual embeddings for Large Visual
+Language Models (LVLMs), and audio sources can be preprocessed with text-to-speech or speech-to-text, respectively.
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+2.3
+
+9
+
+Traceability
+“Data traceability is the actual exercise to track access, values, and changes to the data as they flow through
+their lineage. Data traceability can be used for data validation and verification as well as data auditing. [...]
+Data traceability might also be required in an auditing project to demonstrate transparency, compliance,
+and adherence to regulations” [3]
+
+Traceability is concerned with understanding the connections between data artifacts and transformations throughout
+the LLM pipeline and understanding the inner workings of the LLM chain, such as attention heads, layers, and parameter
+circuits. Through this, traceability forms a crucial foundation for data provenance - and, thus, is heavily linked to it.
+New approaches, such as watermarking [121], fingerprinting [76], and author attribution [41], employ principles of
+data traceability. Additionally, older best practices, i.e., logging[22], also enter the domain of ML and AI.
+Efforts to study traceability in LLMs are impeded by the inherently black-box nature of many models and the limited
+access to their architectures and parameters. However, open-weight models enable insights into the model’s parameters,
+creating opportunities to trace circuits of parameters [34] through the LLM’s generation process, and establishing
+openings for transparent and trustworthy inference.
+2.4
+
+Transparency
+“Transparency is a multifaceted concept that is commonly used to refer to the act of being open. Its use
+and interpretation depend on the context.” [73]
+“I define software transparency as a condition that all functions of software are disclosed to users.” [65]
+
+We observe transparency in LLM systems as follows: Model parameters are disclosed and all additional features
+are observable by users, such as pre- & post-filtering, auxiliary tool calls, weight and token distributions, as well as
+logits. Furthermore, documentation options for LLM environments include dataset cards (dataset metadata), model &
+system cards (model scope & training characteristics). Models themselves are clustered in two groups: (1) transparent,
+open-weight models with disclosed architecture and parameters, and (2) black-boxesque, opaque, closed-weight models
+that restrict any access to their internals.
+2.5
+
+Interpretability and Explainability
+
+The terms interpretability and explainability are often conflated in AI literature. Recent surveys suggest a growing trend
+to distinguish them more precisely across communities [29], with complementary support from broader XAI reviews
+[2]. Graziani et al. [29] document that a distinction between interpretability and explainability is increasingly common
+among researchers and across disciplines, and Ali et al. [2] provide additional evidence and a taxonomy that reinforces
+this emerging separation.
+Definition 2.1 (Interpretability). A passive property of a model: the extent to which its internal structure, parameters,
+and mechanisms can be directly understood by humans (e.g., small decision trees, sparse linear models, monotonic
+GAMs). Interpretability is typically achieved by design and allows reasoning about model behavior without auxiliary
+tools.
+When feasible, researchers generally prefer models or system components whose behavior can be understood by
+inspection. While LLMs with soaring parameter counts are not inherently interpretable, interpretable system design can
+Manuscript submitted to ACM
+
+10
+
+Hohensinner et al.
+Table 2. Data Provenance & Attribution
+Method
+Licensing & Attribution
+Dataset Licensing
+Self Attribution
+Source Attribution
+Code Attribution
+Code Vulnerability
+Provenance Extraction & Retrieval
+Biomedical Retrieval
+Data Processing & Analysis
+Metadata Extraction
+Information Extraction
+Data Generation & Annotation
+Data Annotation
+Balanced Data Training
+Data Transformation
+Data Generation
+Data Fusion and Active Learning
+
+Evidence Direction
+
+Artifact Entity
+
+Article
+
+Direct
+Indirect
+Bidirectional
+Direct
+Indirect
+Direct
+Direct
+Indirect
+
+Provenance metadata objects
+Claim attr. metadata,
+MultiAttr & PolitiCite
+Eval. attr. artifacts (AIS)
+Function decompilation & call graphs
+Lexical, structural & semantic features
+ModelCards
+Patch data, commit information
+
+[58]
+[42]
+[77]
+[84]
+[64]
+[52]
+[5]
+[110]
+
+Direct
+Direct
+Indirect
+Direct
+
+Query and passage pairs
+Raw & refined data, config. files
+Model metadata (schemas)
+InstructIE dataset
+
+[115]
+[100]
+[106]
+[32]
+
+Direct
+Bidirectional
+Indirect
+Direct
+Direct
+Bidirectional
+Direct
+Direct
+
+Semantic Data Dictionary
+Generated annotations
+Pretraining model checkpoints
+Scripts, logs, commands, C2Metadata
+Query, documents, labels
+Q&A, Attribution spans
+Multimodal data source metadata
+Annotated lexicons and rules
+
+[83]
+[15]
+[99]
+[96]
+[23]
+[28]
+[9]
+[66]
+
+still be pursued: constrained modules, rule- or program-guided reasoning, monotonic submodels, or sparse decision
+layers. Interpretability is an inherent quality of the model and often targets AI experts or auditors.
+Definition 2.2 (Explainability). An active process (often post hoc) that produces human-understandable reasons
+for a model’s predictions or behavior, especially when the model itself is not transparent (e.g., feature attributions,
+counterfactuals, example- or concept-based explanations, procedural traces).
+For complex or opaque models, we present explanations of particular outputs or global behavior. The focus is on
+human understanding (including average users): why and how a result was produced; what steps or decisions were
+taken; and which factors influenced the outcome. This is an active process, ideally via interfaces that present post-hoc
+explanations (e.g., attributions, counterfactuals, exemplars, chain-of-thought summaries/rationales appropriate for the
+audience), with attention to fidelity, stability, and usefulness.
+We deem this distinction important because, beyond clarifying intent, using consistent terminology across social
+and technical sciences reduces cross-disciplinary ambiguity, improves auditability, and aligns with governance and
+reporting practices.
+3
+
+Data Provenance & Attribution
+
+The quality of any AI-based system, including LLMs, heavily relies on the quality of its data sources (see, for example
+[68]). From the initial training data throughout fine-tuning and additional refinement steps, balanced, high-quality
+data is quintessential for well-performing language models. Using poorly balanced training data may result in highly
+biased output, an increased chance of hallucinations, or other unwanted behavior. The training data, however, is often
+concealed. On the one hand, model creators do not fully disclose their training processes and data for fear of knowledge
+drain and business goals. On the other hand, current LLMs are not designed with a focus on linking source data to
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+11
+
+generated outputs. Language models could be designed with a dedicated architecture focusing on the linkage between
+the initial source data and the final model outputs. Data provenance applied to the domain of language models could be
+useful to shed light on these complex and opaque AI systems. We group the works corresponding to this chapter into
+three categories and list their evidence direction and artifact entity in Table 2. An essential aspect of responsible LLM
+development concerns the valid (1) licensing of (training) data sources, and the accurate attribution of these sources
+to generated outputs. To identify, trace, and restore the origins of data sources for LLMs, (2) Provenance extraction
+and retrieval techniques can be applied, while also supporting the analysis of model behaviour. (3) Data generation, a
+core competence of LLMs, enables the creation of synthetic data samples, and data annotation is applied to enrich raw
+data with semantic information. We classify the provenance evidence into two directions: Direct evidence stemming
+from raw data sources to be ingested into LLM systems [5, 9, 23, 32, 52, 58, 66, 83, 84, 96, 100, 115], Indirect evidence
+which arises with the help of LLMs [42, 64, 99, 106, 110, 127], and Bidirectional evidence featuring both provenance
+stemming from data and LLMs [28, 77]. Furthermore, the artifact entities describe the modalities of how the provenance
+information is stored.
+
+3.1
+
+Licensing and Attribution
+
+Foundational LLMs are trained on a plethora of data, which are grouped in datasets, over multiple iterations. At later
+stages of an LLM, additional datasets are involved when fine-tuning or during alignment. Extra datasets in the form of
+test sets can also be involved when evaluating the previously trained LLM, but compared to the training datasets, these
+test sets do not have a direct impact on the parameters of an LLM. Up until recently, these datasets were exclusively
+composed by humans and published with corresponding licenses. However, with the recent rise of generative AI, more
+and more synthetic datasets are created with the use of LLMs. These synthetically generated datasets pose the risk of
+forwarding bias inherited and unintentionally containing proprietary content from the initial training data of host LLMs.
+Data attribution concerning LLMs refers to the identification, tracing, and documentation of which particular data
+sources were used to train, fine-tune, or align a language model and how outputs trace back to these sources. Tracing
+back outputs means grounding answers that stem from models to source documents, which contain information and
+knowledge that was used in constructing the answer. We found two approaches for attribution - Provenance-preserving
+and Provenance-inferring data attribution. Provenance-preserving data attribution refers to an exact match of source
+information and generated answer, such as commonly used in Retrieval Augmented Generation (RAG) systems. In
+RAG-based systems, answers are created by a prompt, which is used to retrieve relevant information from, e.g., a
+vector store, based on similarity matching. After the retrieval, the context is forwarded to an LLM. This context acts as
+information grounding, which can naturally be attributed to generated answers, simply by the fact that it was forwarded
+as an informational context to the question. For classic LLMs used for generative AI, a more complex procedure is
+necessary. To link a generated text, or token, to every possible source from the training data, a throughout tracing
+mechanism, or a mapping for each parameter group (circuit) to their respective training samples is required.
+On the other hand, provenance-inferring data attribution refers to looking for justifying sources post-hoc, e.g., via
+a web search, to then ground information of an already generated answer on these sources. Although this forms an
+appealing approach, these methods do not genuinely trace sources to results but simulate them by providing justifying
+sources. Furthermore, provenance-inferring data attribution is limited by the availability of information for citing
+claims, which might not be possible for proprietary data sources, yet exists as knowledge in the language model.
+Manuscript submitted to ACM
+
+12
+
+Hohensinner et al.
+
+3.1.1 Dataset Licensing. In their work, Longpre et al. [58] systematically audited more than 1.800 text-based datasets
+and call for more transparent ways of handling datasets for the usage of LLMs. They investigate dataset licensing and
+attribution, highlighting the grey zone of unspecified licenses on public datasets, and their missing categorization
+to commercial or non-commercial usage. Furthermore, Longpre et al. consider the datasets’ origins and usage as
+provenance metadata objects directly from sources. They emphasize a focus on legal and ethical usage of data and
+present dataset distributions regarding contained topics and involved languages, which can be investigated through
+their created data provenance explorer DPExplorer2 .
+3.1.2 Self Attribution. Huang et al. [42] propose START, a self-taught attribution framework that enables LLMs to
+enhance their attribution capabilities to mitigate hallucinations autonomously. This is achieved without the help of
+human-labeled data or external supervision. They evaluated their START on three open-source datasets: ASQA, ELI5,
+and StrategyQA. For their data synthesis, they propose a five-step protocol that involves the initial answer generation
+without citations, claim decomposition and combination, as well as the document generation, which is sourced by the
+refined claims. Finally, they use the attribution labels for each document as references for the initial response as the
+last step. For self-improving, they employ a warm-up, rejection sampling, fine-tuning, and fine-grained preference
+optimization phase.
+Patel et al. [77] address LLM self-attribution for long-form QA over multiple documents and sources. To overcome
+the scarcity of annotated multi-source attributable data, they enhance existing QA datasets with attributions (MultiAttr)
+and present a multi-source attribution dataset with multi-paragraph answers (PolitiCite). With their dataset, Patel
+et al. try to mitigate propagated LLM errors by using expert-written answers and human-retrieved evidence instead
+of relying on LLM-generated answers. To create MultiAttr, they propose two strategies using few-shot prompting:
+Expanding short to long answers and generating additional positive and negative sources for preexisting QA pairs.
+3.1.3 Source Attribution. Source attribution examines how model-generated outputs can be reliably traced back to
+identifying evidence and how outputs remain faithful to their underlying sources. Frameworks such as the Attributable
+to Identified Sources (AIS) [84] formalize this process by evaluating whether generated claims are fully supported by
+their cited documents. Rashkin et al. [84] introduce the AIS, an evaluation framework for assessing whether outputs
+of natural language generation (NLG) models are supported by source documents. They describe how AIS can be
+applied to different NLG tasks, such as conversational QA, summarization, and table-to-text generation. Additionally,
+they highlight that extractive systems, due to their design of quoting verbatim information from documents, achieve
+higher AIS scores and are less likely to output hallucinations. Furthermore, Raskin et al. present a two-stage annotation
+pipeline for the evaluation of model outputs.
+3.1.4 Code Attribution and Vulnerability. Source code generation is one of the core domains of AI-generated data
+occurring in the majority of LLM benchmarks. In terms of attribution, this opens another question about the involvement
+of source code in the LLM data pipeline. How much and which code sources are used to train modern language models?
+And along with this question, new issues emerge regarding licensing, authorship attribution, code vulnerabilities, and
+malware attribution. Li and Hong et al. [52] propose a feature set to differentiate between human- and LLM-authored
+source code by observing style, technical level, and readability of code. MacDonald et al. [64] introduce two sources of
+expressive static features for static malware authorship attribution. Using LLM embeddings to capture features at the
+2 https://www.dataprovenance.org/data-provenance-explorer
+
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+13
+
+function-level based on decompiled source code, and a Graph Neural Network (GNN) approach that takes into account
+both function-level analysis as well as global structural level analysis, which performs best.
+Bandara et al. [5] and Wang et al. [110] propose insights into vulnerability aspects of source code management. They
+propose DevSec-GPT to tackle software container vulnerabilities by leveraging blockchain and generative AI, as a
+custom-trained Llama2 language model. They establish effort towards provenance and attribution by their end-to-end
+pipeline that is handled via model cards, which are stored in the blockchain for immutability. Wang et al. propose an
+automated data collection framework consisting of three modules to 1) untangle vulnerabilities with LLMs and static
+analysis tools, 2) extract multi-granularity dependencies, and 3) filter outdated artifacts via a trace-based approach.
+Furthermore, Wang et al. introduce their repository-level vulnerability dataset ReposVul, created through patch data,
+dependency trees, and trace-based commit histories, providing valuable provenance information within its process.
+3.2
+
+Provenance Extraction & Retrieval
+
+Provenance extraction and retrieval focus on identifying, tracing, and restoring the origins of data used in LLMs. This
+process enables researchers and practitioners to analyze in more detail how data influences model behaviour, while
+ensuring accountability and reproducibility. By retrieving provenance information, these methods enhance transparency
+and allow deeper insights into the data flow across the models’ life cycle.
+3.2.1 Biomedical Retrieval. Xu et al. introduce BMRetriever, a series of dense text retrievers in various sizes using LLMs
+as backbones [115]. They use Pythia [8] for their 410M and 1B parameter, Gemma [102] for their 2B, and BioMistral
+[51] for their largest 7B parameter retriever. Two phases of pre-training are presented by Xu et al.: An unsupervised
+contrastive pre-training on biomedical query-passage pairs and instruction fine-tuning with diverse labeled data,
+which include synthetically generated examples from LLMs (GPT-3.5). Through verifying 200 random samples of the
+generated synthetic examples in a human evaluation with medical students, they found no traces of misinformation or
+hallucinations. However, this highlights the risk of using synthetically generated data in an unsupervised learning
+setting.
+3.2.2 Data Processing & Analysis. Sun et al. [100] present a data preprocessing framework for pretraining foundation
+models. Because the datasets used for pretraining are often manually curated and cumbersome to create, their proposed framework is aimed at unifying data preprocessing. A preprocessing module, with operators at different data
+granularity levels, and an analyzing module to probe refined data, make up the core of their framework. Sun et al.
+automatically evaluate their framework with ChatGPT and additionally train two GPT-2 models with and without their
+data preprocessing pipeline, and report remarkable performance increases in comparison to the baseline.
+3.2.3 Metadata Extraction. Zambrano [127] proposes zero-shot prompting strategies for data extraction in a legal
+domain using Llama3-70B and Mixtral-8x7B, showcasing the strong capabilities of LLM-based information extraction.
+The experimental setup consists of extracting the first trial court outcome and the subsequent court ruling from 400
+manually annotated cases of the French Courts of Appeal. Tsay et al. [106] introduce a library (AIMMX) to extract AI
+model metadata from software repositories into flexible metadata schemas alongside an evaluation dataset containing
+7998 public models.
+3.2.4 Information Extraction. Gui et al. [32] present a human-annotated bilingual instruction-based information extraction dataset (InstructIE) and a framework (KG2Instruction) using Knowledge Graphs to generate similar datasets. The
+Manuscript submitted to ACM
+
+14
+
+Hohensinner et al.
+
+framework’s most notable feature is using preexisting relation triples and generating missing triples using preexisting
+IE models.
+3.3
+
+Data Generation & Annotation
+
+Data generation is a core competence of LLMs, especially modern state-of-the-art Generative Pre-trained Transformers
+(GPTs), and their generated outputs range from single to more than 100.000 tokens. In theory, the output of LLMs is
+not limited to a certain threshold, but the generation limits typically stem from fair practical reasons. These massive
+generative capabilities enable the creation of entire synthetic datasets in a short amount of time, compared to humancurated data. However, this method of data generation introduces new risks into the domain of data science, which are
+linked directly to data provenance. Language models may propagate bias into the generated data, which originates from
+their own training data, forwarding existing problems. Without human supervision, model hallucinations in generated
+data are difficult to detect and pose a threat to further unsupervised data usage. Additionally, this raises the question of
+who the author of LLM-generated data is: The prompt-issuer, the model creators, or the mix of influential training data?
+To enable answering the latter, provenance information must be preserved throughout the generation process, e.g., via
+data annotations in generated text or datasets.
+3.3.1 Data Annotation. A crucial step for constructing new datasets is data annotation [15]. It involves labeling and
+enriching raw data with semantic information to make it interpretable for machine learning, analytical, and language
+models. High-quality annotations are quintessential to ensure validity, reproducibility, and fairness in further processing
+tasks. Traditional data annotation relies on manual human labeling, which is not only time-consuming and costly but
+also prone to inconsistency.
+Recent advances introduce automated and semi-automated annotation methods, including frameworks based on
+ontologies that formalize data semantics for interpretability [83, 96], LLMs that act as autonomous or assisting annotators
+[15], and the creation of balanced, traceable multilingual text corpora that support transparent model training [100].
+Rashid et al. [83] introduce the Semantic Data Dictionary (SDD), a specification aimed at machine-interpretable data
+annotations that adds semantics to traditional data dictionaries. SDD increases traceability and interoperability by linking
+tabular data to ontology concepts and provides data provenance by including wasDerivedFrom and wasGeneratedBy
+relationships within annotations.
+Choi et al. [15] propose to use GPTs as autonomous data annotators to generate multilingual, synthetic labels (silber
+annotations) from limited available human (gold annotations). From a provenance perspective, this method creates a
+traceable annotation pipeline that links human-gold labels with LLM-generated silver.
+3.3.2 Balanced Data Training. Sun et al. [99] present FuxiTranyu, a multilingual language model trained on balanced
+data. The training corpus consists of balanced multilingual data from 43 different natural languages and 16 programming
+languages following a provenance-aware pre-training approach. Sun et al. employ heuristic & learned quality filters,
+deduplication processes, and meticulously report the data collection process.
+3.3.3 Data Transformation. Song et al. [96] aim to improve traceability and reproducibility for data transformations with
+their C2Metadata system that captures transformation and provenance information in Structured Data Transformation
+Language (SDTL) as part of metadata.
+3.3.4 Data Generation. Frej et al. [23] present MLWIKIR, a Python framework to automatically generate large-scale
+Information Retrieval (IR) datasets in multiple languages based on Wikipedia. Their future work points to using these
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+15
+
+Table 3. Traceability & Accountability
+Method
+
+Open-Weight Models
+
+Closed-Weight Models
+
+Article
+
+ML-based Logging Practices
+Data Transformation Recovery
+Contextual Semantic Parsing
+Model Prediction Attribution
+
+Code LLama
+BART
+LLama2-7B, LLama3-8B, Mistral-7B,
+Gemma-7B, BART-large, DEBERTA-large
+Flan-T5-large
+-
+
+GPT4
+-
+
+[22]
+[59]
+[69]
+[98]
+
+GPT-3 text-embedding-002 API
+
+[121]
+
+Periodic Watermarking
+
+generated datasets for Deep Learning (DL) training and observing model effects for different languages. Golany et
+al. [28] investigate LLM-based data generation in the setting of source-grounded information-seeking dialogs. Their
+approach follows a semi-automated approach, where an LLM is used to generate dialog queries and responses, which
+are then verified by humans for attribution spans. Additionally, they present MISeD, a dataset of information-seeking
+dialogs from the domain of meeting transcripts, and compare fine-tuning with this semi-automated dataset to manual
+data.
+3.3.5 Data Fusion & Active Learning. In active learning, an ML model proposes the next data points that should be
+labeled to learn most effectively. The model issues requests for training examples on which it is most uncertain to a
+third entity, most often a human, for labelling these data points. Blasch et al. [9] investigate active learning with joint
+data for model training as fusion-based AI, and fusion tools for multimodal data fusion and transfer learning. PyTAIL is
+a Python framework for interactive and incremental model training enhanced with human feedback for continuously
+evolving text presented by Mishra et al. [66]. It exceeds classic active learning approaches by also suggesting new rules
+and lexicons for human validation. With their work, Mishra et al. emphasize human-guided data labeling and feature
+curation.
+4
+
+Traceability & Accountability
+
+This chapter explores techniques that enhance traceability across both data and model dimensions of LLMs, with each
+paper forming a complementary pillar of traceability. Table 3 provides information about the topics and involvement of
+LLMs. Traceability is omnipresent in the domain of computer science, and the underlying concept of stacked function
+calling possesses the capabilities of observing execution flows. This enables tracing bugs or unexpected behaviors at
+runtime to backtrack the initial system error. Furthermore, programmers document execution steps in their code with
+logging statements that contain information on current stages and error messages. In the world of ML, traceability is
+tackled similarly to general software engineering. Logging statements are used to track program flows and verbalize
+error and failure codes, which can be used to trace root causes. In addition, the domain of LLMs is also capable of
+adapting logging practices.
+4.1
+
+Logging
+
+Although similar in spirit, logging practices in ML differ from general software engineering. Foalem et al. [22] investigate
+the differences in these two domains and highlight the most important deviations in logging practices. They analyze 110
+open-source ML-based applications from GitHub3 and compare them to logging practices of various software projects
+in different programming languages, as well as Android applications. Their findings reveal that ML-based logging is
+3 https://github.com/
+
+Manuscript submitted to ACM
+
+16
+
+Hohensinner et al.
+
+less pervasive than software projects written in JAVA, C#, C, or C++, but more pervasive than Android applications.
+Additional findings reveal that WARNING and INFO logging statements occur the most in ML-related scenarios, and
+although ML-specific logging libraries exist, standard logging libraries are still prevalent in ML projects. Through a
+qualitative and quantitative analysis, Foalem et al. show that the model training phase contains the largest amount
+of logging statements, whereas the deployment phase contains the least. Furthermore, data, model, and configuration
+management are the most important information artifacts that are logged by ML developers.
+Following the practices of ML-based approaches, logging can be used similarly in LLM-based AI projects. Operational
+traceability can be achieved by logging model states during inference to increase transparency and reproducibility,
+and datasets and epochs with intermittent results can be logged during the language model training process to create
+auditable provenance information. This ties directly into the domains of metadata capturing and inference tracking to
+achieve advancements in data provenance measures.
+4.2
+
+Data Transformation Recovery
+
+Data transformations occur when data entries in datasets change over time. Tables in a data repository often undergo
+iterative changes when data scientists or machine learning developers fine-tune their pipelines. These changes are seldom
+documented, leaving a final dataset without documentation or a change log. Lou et al. [59] investigate the reconstruction
+of missing data transformation changes for tables in ML pipelines by employing LLMs for their DATALORE framework.
+In their DATALORE framework, Lou et al. use LLMs to infer missing data transformations between table-based datasets
+to increase traceability and reproducibility. This procedure is split into three parts: First, the related table discovery
+finds connections from base tables to all the tables that contain similar and related information by applying equi-join,
+semantic join, and transformation-based join techniques. Second, the related tables are joined to a unified table, which is
+then passed to the LLM alongside the augmented table. To improve inference with the language model, this is performed
+on just a subset of columns to then generate a potential transformation. If the LLM-generated transformation can change
+the table entries to the augmented table, the transformation is considered valid. Third, the table selection refinement
+step examines all transformations to find a subset of transformations that are necessary to create the augmented table.
+This is achieved by employing a greedy algorithm to find a solution with the least amount of transformations from the
+base tables to the augmented tables.
+This method highlights how LLMs themselves can act as reasoning agents to reconstruct data transformation
+derivation paths, which form an essential part of provenance tracking. Furthermore, this incorporates traceability by
+ensuring that provenance information of training data is transparent and reproducible.
+4.3
+
+Contextual Semantic Parsing
+
+Moradshahi et al. [69] address the challenge of maintaining semantic and annotation consistency across multilingual
+dialogue datasets. In their work, they propose a Contextual Semantic Parsing (CSP) model which is based on BART, and
+evaluate it on the RiSAWOZ, CrossWOZ, CrossWOZ-EN, and MultiWOZZH datasets. The model encodes only the latest
+agent and user utterances in combination with dialogue states, to avoid compounding errors for translations, without
+losing accuracy. Additionally, they propose an automatic dataset translation technique using machine translation,
+instead of expensive human annotations. Using this approach, they present two versions of the RiSAWOZ dataset in
+English and German with an accuracy within 11% of the original human-annotated versions, showcasing the capabilities
+of their translation technique without relying on human annotations.
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+Open-weight Model
+
+Closed-weight Model
+
+Transparent & Accessible
+Full Visibility:
+
+Architecture, parameters,
+and training procedures are
+publicly available
+
+Auditable Path:
+
+Inference steps and internal
+states can be tracked and
+interpreted
+
+17
+
+Opaque & Proprietary
+
+Clear Provenance:
+Training datasets are
+documented and publicly
+available
+
+Limited Visibility:
+
+Architecture, parameters, and
+training procedures are trade
+secrets and not disclosed
+
+Opaque Process:
+
+Internal model states and
+inference logic are hidden
+from users
+
+Unknown Provenance:
+Data sets and their sources
+are undisclosed
+
+Prompt
+
+Response
+
+Prompt:
+
+Response
+
+"Explain Data
+Provenance"
+
+"Data Provenance is..."
+
+"Explain Data
+Provenance"
+
+"Data Provenance is..."
+
+Fig. 5. Differentiation between the key characteristics of open- and closed-weight LLMs, highlighting the difference in visibility,
+traceability, and data provenance.
+
+Regarding traceability, this work directly contributes to transparent transformation procedures by ensuring that
+the meaning, structure, and state annotations in multilingual datasets can be traced and aligned faithfully across
+translations.
+4.4
+
+Model Prediction Attribution
+
+In their work, Su et al. [98] introduce a WrapperBox framework aiming at faithful attribution of model decisions
+to training data by exploiting the inherent transparent nature of three classic models kNN, DT and k-means. The
+overarching goal of the WrapperBox framework is to wrap LLM representations in classic neural models to trace model
+predictions back to specific training samples. They investigated seven open-weight language models: BART-Large,
+DEBERTA-large, FLAN-T5-large, LLama2-7B, LLama3-8B, Mistral-7B and Gemma-7B with four evaluation criteria:
+Accuracy, Precision, Recall, and F1-Score.
+WrapperBoxes are an essential step toward faithfully traceable data attribution and algorithmic recourse by tracing
+model decisions back to training samples. Thus, improving efforts regarding model-data attribution.
+4.5
+
+Periodic Watermarking
+
+Ye et al. [121] introduce TimeMarker, a periodic watermarking framework that is designed to enhance temporal
+traceability and enable copyright protection for LLMs deployed in cloud environments that are used within the
+context of Embedding as a Service (EaaS). Their framework enables the identification of model extraction timings
+across particular time intervals (sub-periods) by embedding distinct watermarks in the model’s output. This allows
+the detection of when a model extraction or misuse occurs. TimeMarker employs adaptive watermark strengths by
+using techniques like information entropy and frequency-domain transformation to adjust watermark intensity. They
+tested their approach across multiple datasets, such as Ag News, Enron, Mind, SST2, Trec, and verified detection of
+model extraction attacks over various sub-periods, and showcased their good performance in comparison to static
+watermarking approaches.
+From the perspective of traceability, TimeMarker provides temporal accountability and traceability that allows verification of usage timelines, detection of unauthorized extraction attempts, and maintenance of ownership transparency.
+Manuscript submitted to ACM
+
+18
+
+Hohensinner et al.
+Table 4. Transparency work using open-weight models
+Topic & Method
+
+Open-Weight Models
+
+Domain
+
+Article
+
+Short text similarity
+Prompt Learning
+Interpr. logic KBQA
+Social media analysis
+KBVQ evaluation
+
+Pretrained sentence transformer models
+BERT, T5, MT5, LLaMa-7B, Qwen-7B, Falcon-40B
+ChatGLM2, Baichuan2
+LLaMA-3, Sentence-BERT (+ GPT-3.5 turbo)
+LLaVA-v1.5, InstructBLIP, MiniGPT-v2/-4, BLIP-2,
+VisualGLM, OpenFlamingo (+ GPT-4)
+Own dense vector model (word2vec)
+LLaVA, Llama 3.1
+LLamA-3-70B, Mixtral 8x7B
+LLamA2-7B (+ GPT-4)
+LlamA2, Mistral-7B-inst.
+InstructBLIP, mPLUG-Owl, MiniGPT-4, LLaVA-1.5
+CLIP
+Vicuna LLMs, CLIP (+ GPT-4)
+BERT, GPT-2
+BERT
+
+Computer Science
+Computer Science
+Computer Science
+Computer Science
+Computer Science
+
+[25]
+[31]
+[114]
+[85]
+[13]
+
+Biomedical Inf.
+Biomedical Inf.
+Law & Legal
+AI (NLP)
+AI (LLM)
+AI (Multimodal)
+Computer Vision
+Computer Vision
+Finance
+Cybersecurity
+
+[90]
+[71]
+[127]
+[97]
+[46]
+[21]
+[120]
+[126]
+[130]
+[16]
+
+Misspelling generation
+Computer-aided diagnosis
+Prompt engineering
+SAE-Model
+LLM internal states
+Meta classification
+CLIP image localization
+Pixel understanding
+Market Forecasting
+Meta learning
+
+5
+
+Transparency & Opacity
+
+Transparency is emerging as a pillar in assessing the reliability and accountability of LLMs. In regard to data provenance,
+transparency is a quintessential quality that enables the understanding of data flows and their origins. A fundamental
+distinction divides current LLMs into two groups: Open-weight and closed-weight models. Figure 5 summarizes the
+architecture and key characteristics of open-weight and closed-weight language models. Open-weight models are
+characterized by the disclosure of their architecture, parameters, and, in some cases, their training data, which allows
+for external scrutiny, transparent inference, and the possibility of investigating model inference on private hardware
+for fully traceable data flow. Table 4 summarizes the works incorporating open-weight models. In stark contrast to
+these fully open models, closed-weight models can be described as black boxes, with related work outlined in Table 6.
+Their intrinsic opacity restricts access to internal components entirely and provides little to no visibility into their data
+provenance, training procedures, and decision-making mechanisms. This hinders systematic evaluation and independent
+auditing while raising concerns about explainability, interpretability, and fairness. Current research on the transparency
+of LLMs examines how varying degrees of openness affect the interpretability and explainability of these systems.
+Consequently, the remainder of this chapter is split into four sections: (1) research using open-weight models, (2)
+works built upon closed-weight models, (3) human-centered interpretability opportunities of language models, and (4)
+a perspective on explainability capabilities.
+5.1
+
+Open-weight models
+
+Open-weight models offer insights into their internal states and decision-making processes. This transparent design
+opens possibilities for responsible and interpretable LLM-based AI research. Gagliardi et al. [25], Gu et al. [31], Xu et al.
+[114], Ravi et al. [85], and Cheng et al. [13] extend current research boundaries in the domain of Computer Science.
+Gagliardi et al. [25] present a multilingual ensemble method that combines the benefits of open transformer embeddings and WordNet-based methods. The aim to evaluate the semantic similarity of short texts and keywords is
+explored across different approaches to identify similarities with different pre-trained language models. In [31], the
+AGCVT-Prompt technique is introduced, which auto-generates Chain-of-Thought (CoT) rationales and verbalizers
+for prompt learning using models like BERT and T5. This approach significantly improves the transparency and
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+19
+
+interpretability of the decision-making process by employing dual verbalizers for the topic and sentiment prompt
+templates. Furthermore, Xu et al. [114] aim to improve the transparency of reasoning paths for Knowledge Base Question
+Answering (KBQA). They combine fine-tuning LLMs (ChatGLM2 and Baichuan2) with the logic programming language
+Prolog for a generation-retrieval multi-hop KBQA method. By enhancing the reasoning paths with the generation
+of logical forms (from Prolog), the reasoning becomes more interpretable. In [85], Ravi et al. present the PRAGyan
+framework, which integrates knowledge graphs (KGs) with LLMs to enhance the causal analysis in social media data
+(tweets). Their approach employs retrieval-augmented generation (RAG) to retrieve contextually relevant information
+from a KG. Thereby, they utilize LLMs such as LLaMA-3 to infer causal relations in tweets by utilizing a KG, yielding
+more transparent and interpretable outputs. Cheng et al. [13] present FacGPT, a scalable and deterministic GPT-2-based
+evaluator model for automatic KVQA evaluation that achieves better correlation with GPT-4 and human evaluators,
+increasing efficiency by 300%. Additionally, they introduce the K-VQA dataset that aims to improve the evaluation of
+answer correctness by including human annotations.
+The biomedical domain is often confronted with ambiguous text, stemming from illegible handwriting or misspellings.
+If undetected, these mistakes are automatically forwarded into medical datasets, leading to multiple instances of the
+same medical term (e.g., medications). Sarker et al. [90] present a misspelling generation approach for health domain
+keywords using cosine similarity over vector representations and lexical similarity, which defaults as an unsupervised
+approach but can be enhanced with supervision. In their work, they employ their own dense vector model (word2vec)
+to enhance retrieval quality on often misspelled medical terms. Missing interpretability hinders the transparency of
+LLM-based computer-aided diagnosis (CAD). In [71], Mukhlis et al. present a novel CAD framework that enhances
+CAD, with LLM-powered visual and textual interpretability. Their method enhances the transparency between the
+medical staff, the CAD system, and end-users by creating a trustworthy environment. In their work, they propose an
+eight-step CAD procedure that utilizes visual and textual interpretability from the LLaVA and Llama 3.1 LLMs they
+employ.
+Zambrano [127] evaluates two open-weight LLMs: Llama-3-70B and Mixtral-8x7B for legal outcome extraction in a
+zero-shot prompt setting. The study uses a dataset of 400 manually annotated legal decisions from the French Courts
+of Appeal. Furthermore, Zambrano shows that accessible open-weight models can achieve close to state-of-the-art
+accuracy without fine-tuning. Its results highlight that open-weight LLMs paired with prompt engineering can serve as
+transparent, high-performing alternatives to closed-weight proprietary LLMs for data extraction in the legal domain.
+Furthermore, AI research itself is investigated in regards to SAE-models [97], LLM internal states [46], and multimodal systems [21]. Song et al. [97] present a Slot-Aware Enhanced Model (SAE) to improve zero-shot dialogue state
+tracking (DST) in small pre-trained models (LLaMA2-7B), tackling the closed-source nature and inaccessibility for local
+deployment of advanced LLMs. Furthermore, generating slot-aware questions using GPT-4, and using this synthetic
+data to train a small-scale model. The trustworthiness and reliability of LLMs are significantly limited by their risk
+of hallucinations. In [46], Ji et al. investigate the internal states of LLMs in the context of hallucinations. Similar to
+humans, who possess the ability to recognize missing knowledge when presented with a question, internal mechanisms
+of LLMs can provide the same information. Their analysis reveals two key insights: (1) internal states reveal whether
+an LLM has seen/not seen a query during training, and (2) internal states show the likelihood to hallucinate when
+presented with a query. Ji et al. investigate neurons, activation layers, and tokens and achieve an accuracy of 84,32% on
+hallucination detection at runtime. They employ LLaMA2-7B and Mistral-7B as their LLM subjects for internal state
+detection. Fieback et al. [21] present MetaToken, a binary classifier for hallucination detection on the token-level in
+image descriptions with meta classification. The classifier can be applied to any open-source LVLM without requiring
+Manuscript submitted to ACM
+
+20
+
+Hohensinner et al.
+Table 5. Transparency work using closed-weight models
+
+Topic & Method
+
+Closed-Weight Models
+
+Domain
+
+Article
+
+Transparency of LLMs
+Educational AI
+GenAI for grading
+Online log analysis
+LLM-based decomposition
+LLM on medical reports
+
+ChatGPT, Bard/Gemini
+GPT-4
+GPT-4o, GPT-4-turbo
+Vicuna-13B, GPT-3.5-turbo
+GPT-3 Codex
+GPT-3/-3.5/-4
+
+Phil. & Epist. of AI
+Education
+Education
+Computer Science
+Computer Science
+Medicine
+
+[35]
+[67]
+[104]
+[56]
+[122]
+[111]
+
+ground truth information. The presented meta-classification approach decides whether a prediction is true or false based
+on uncertainty features of LLMs. Additionally, they evaluate their proposed method on four state-of-the-art LVLMs:
+InstructBLIP, mPLUG-Owl, MiniGPT-4 and LLaVA-1.5, outperforming confidence-based and prompting baselines.
+Computer Vision has become a critical component of modern AI systems, enabling models to process, interpret and
+generate visual information [120, 126]. Yao et al. [120] present an image localization method for single images based
+on CLIP-guided prompts. The weights of the integrated score map enhance the model’s transparency and improve
+interpretability. CLIP and clear guidance mechanisms provided by prompts clarify feature identification and extraction.
+Thus, improving the general interpretability and transparency as well as reliability. Yuan et al. [126] present Osprey, a
+mask-text instruction tuning approach that extends MLLMs with a CLIP backbone. To achieve this, regions are masked
+into language instructions aiming at pixel-wise visual understanding. Yuan et al. employ GPT-4 to generate high-quality
+mask-text pairs for their Osprey-724k dataset. Furthermore, reporting State-of-the-art region understanding and reduced
+hallucinations.
+Also, the financial domain is supplemented by transparent AI research, aiming toward interpretable market forecasting
+[130], In [130], Zhang et al. introduce a BERT-based long and short-term memory retrieval (LASER) architecture to
+forecast market volatility as well as tackle interpretability concerns with their GPT-2-guided BEAM algorithm. The
+BEAM architecture generates human-readable narratives that verbalize the evidence and path leading to the model
+prediction. Together, these two approaches form the LASER-BEAM pipeline.
+Finally, toward cybersecurity, Corona-Frage et al. [16] propose a QA framework for vulnerable source code review that
+integrates BERT with a Prototype-Based Model-Agnostic Meta-Learning (Proto-MAML) approach. BERT is leveraged
+with Few-Shot Learning (FSL) to detect and explain code vulnerabilities with minimal data, yet achieving F1 and EM
+scores of close to 100%. By combining BERT’s embeddings with meta-learning adaptability, their approach produces
+transparent and interpretable outputs, which enhances traceability in AI-assisted code analysis.
+5.2
+
+Closed-weight models
+
+Closed-weight language models are perceived as black-boxes. This goes along with unwarranted attitudes of trust and
+trustworthiness [35]. Heersmink et al. [35] investigate this topic from a philosophical and epistomological standpoint.
+They propose that this stems from a lack of data transparency and algorithmic transparency by analyzing the current
+phenomenon of anthropomorphizing of LLM systems in the form of chatbots such as ChatGPT and Bard.
+AI and LLMs are setting foot in teaching, Misiejuk et al. [67] and Thomas et al. [104] explore their impact on the
+domain of education. They [67] examine the potential of LLMs like GPT-4 for coding student discourse, highlighting the
+importance of transparency for generative AI in the educational domain and presenting moderate reliability and barriers
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+21
+
+Table 6. Human-centered interpretability and model passive characteristics
+
+Characteristic & Method
+
+Article
+
+Explanation rendering approaches
+Concept- and representation-level methods and domain-specific considerations
+Architecture, hybrids, and editing
+Causal and evaluation-driven interpretability
+A philosophical aside: do only the activated weights “matter”?
+
+[50] [31] [131] [61] [119] [48] [93]
+[78] [113] [129] [125] [53] [63]
+[6] [128] [37] [117]
+[87] [11] [88]
+[18] [12]
+
+such as high cost and token limits. Similar to the topic of educational AI, Thomas et al. [104] present the effectiveness
+of multiple-choice Questions relative to open-response questions. They compare the performance of 234 tutors and
+investigate two LLMs, GPT-4o and GPT-4o-turbo, for automatic grading of open-response questions, highlighting that
+prompting for rationale can help in obtaining more interpretable outputs.
+The domain of computer science itself is also prominent in LLM research - Liu et al. [57] and [122] investigate log
+analysis and table-based reasoning. Liu et al. [57] present LogPrompt, an interpretable log analysis approach for online
+scenarios using LLMs (GPT-3.5 & Vicuna) and a suite of enhanced prompting strategies, showing large performance
+gains (380%) in comparison to using single prompts. A human evaluation of the interpretability of LogPrompt yields
+high scores for the usefulness and readability of the generated content and justifications. Additionally, LogPrompt
+also supports the employment of smaller-scale open-source LLMs. Ye et al. [122] present an approach to employ LLMs
+(GPT-3 Codex) for decomposing evidence and questions for table-based reasoning. Additionally, they highlight that
+their method even surpasses human performance on the TabFact dataset and provides interpretability of results via
+tracing of generated sub-evidence and sub-questions.
+Finally, Wei et al. [111] present an evaluation framework for LLM performance on medical questions, based on
+reports. Within their meta-analysis, ChatGPT achieved an accuracy result of 56% in addressing medical queries.
+5.3
+
+Interpretability
+
+Interpretability provides insight into how model inputs relate to outputs, making it a key component of transparency.
+We use interpretability in a user-centric sense: the degree to which intended users can understand why a model
+produced a given output in their task context, with minimal cognitive load. In modern deep/LLM systems, this is
+typically operationalized by (i) designing modules that promote understandable intermediate structure, and (ii) post-hoc
+procedures that render behavior legible for different audiences.
+5.3.1 Explanation rendering approaches. One line of work seeks to surface intermediate reasoning so users can follow the
+path to an answer. Trace-/Chain-of-Thought style prompting decomposes complex problems into subproblems, exposing
+stepwise rationale to enhance interpretability of the process rather than only the final answer [31, 50]. Plan-first pipelines
+similarly externalize plans before execution to make long-form reasoning auditable (e.g., planner–reasoner–verbalizer
+for LFTQA) [131]. While such rationales aid human understanding, they require fidelity checks to ensure they track the
+model’s actual computation.
+Token-/feature-level views remain central. Layerwise Relevance Propagation variants adapted to sequential student
+modeling [61] and specialized biomedical attributions/visualizations (e.g., BertViz-based analyses of circRNA models)
+[119] illustrate how local importance signals and circuit overviews help users form mechanistic intuitions. For LVLMs,
+tools like Logic Lens visualize layerwise behaviors to detect when and where reasoning emerges, addressing transparency
+Manuscript submitted to ACM
+
+22
+
+Hohensinner et al.
+
+and reproducibility concerns [48]. More broadly, interpretability benefits from UI scaffolding: explicitly structured
+reports, checklists, and reviewer prompts that make the process of generating and validating summaries transparent to
+humans [93].
+5.3.2 Concept- and representation-level methods and domain-specific considerations. A complementary line constrains
+or probes models via human-interpretable concepts. Concept Bottleneck Models (CBMs) promise inherent interpretability,
+with predictions being mediated by named concepts, but face annotation burden and concept availability; recent work
+mitigates this with pretrained VLMs and LLMs to propose or validate concepts [78]. Topic-modeling work shows that
+richer, human-facing outputs (beyond token lists) improve perceived reliability and interpretability for readers [113].
+For domain knowledge, Markov Logic Networks paired with LLM-assisted knowledge acquisition/formalization target
+transparent, checkable intermediate structure [129].
+Across application areas, “interpretability" is pursued via domain-tailored structure plus human-facing outputs:
+txt2onto 2.0 leverages LLM embeddings to make unstructured biomedical metadata legible via ontologies [125];
+interpretability is treated as a first-class metric alongside performance in entity–relation extraction under noise-robust
+training [53]; and in HR analytics, fine-tuned LLMs are evaluated not only on accuracy but also on the clarity of their
+rationales relative to classic ML baselines [63].
+5.3.3 Architecture, hybrids, and editing. Hybrid systems balance raw flexibility and clarity. Examples include ANFIS+LLM hybrids for social-media analysis [6], interpretable transfer frameworks (e.g., KAI / ZSSD) for zero-shot
+learning [128], and white-box surrogates or sparsified layers to expose decision rules in safety-critical settings [37].
+Targeted model editing offers an interventionist perspective via modifying hidden states or components to align
+behavior with human expectations and then auditing the localized effect. This approach is explicitly framed as being
+interpretability-oriented [117].
+5.3.4 Causal and evaluation-driven interpretability. Causal perspectives aim to separate signal from spurious correlation.
+Galeras introduces a causal-inference benchmarking frame across software-engineering tasks to interrogate LLM
+behavior [87]. Statistical tests like the Interpretability Randomization Test (IRT) and One-Shot Feature Test (OSFT) probe
+whether purportedly important features actually matter, by systematically substituting or randomizing inputs/features
+and observing degradation [11]. In regulated domains, preference for simpler statistical models is often motivated by
+auditability and justification rather than accuracy alone; recent surveys argue for prioritizing interpretable modeling
+(and privacy-aware pipelines) where stakes are high, while exploring LLMs for logical reasoning as complementary
+aids [88].
+5.3.5 A philosophical aside: do only the activated weights “matter”? A tempting assumption is a kind of compartmentalization: for a given prediction, the currently activated units/weights are the ones that “really" matter, suggesting an
+inherent, passive interpretability of deep nets. Mechanistic work on superposition and polysemanticity shows why this
+is unreliable: networks often pack many unrelated features into overlapping directions, so the same unit can implement
+multiple, context-dependent features; causal contribution is not cleanly localized to what happens to be firing strongly
+[18]. Methods like causal scrubbing test mechanistic hypotheses by resampling or swapping activations along putative
+circuits and checking whether behavior is preserved, offering a more principled way to validate “which parts mattered”
+beyond raw activation magnitude [12].
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+23
+
+Table 7. Explainabilty
+Overal Goal
+
+5.4
+
+Scope
+
+Stage
+
+Application
+
+Article
+
+Generating explanations using LLMs
+
+Local
+
+Post-hoc
+Post-hoc
+Ante-hoc
+
+Model Agnostic
+Model Specific
+Model Specific
+
+[4] [7] [60]
+[124] [91]
+[118]
+
+Augmenting existing explanations
+
+Local and Global
+
+Post-hoc
+
+Model Agnostic
+
+[107]
+
+Explaining LLMs
+
+Global
+
+Post-hoc
+
+Model Agnostic
+
+[105]
+
+Explainability
+
+Explainability focuses on generating reasons for a model’s decision-making process, thereby enhancing transparency.
+Following the definition in Section 2.2, explainability is an active process focused on producing human-understandable
+rationales for a model’s decision-making process. In this process, developed artifacts have different characteristics
+based on their scope, inference stage, goal, and relation to the underlying model. Literature on eXplainable AI (xAI) [29]
+[2] typically defines local and global approaches as the scope of explanations provided by the explainability technique.
+Local explanations are focused on explaining the behavior of a specific instance or input to the model, whereas global
+explanations provide rationales for the whole model’s behavior and remain true to overall observations. Additionally,
+literature outlines post-hoc and ante-hoc xAI method categories as characteristic of a stage of model development in
+which these methods are implemented. Post-hoc methods refer to the methods employed after the model has been
+trained, while ante-hoc methods are deployed during the training and development stages. Finally, model-specific and
+model-agnostic are characteristics of a method related to its connection to the underlying model it is trying to explain.
+While model-specific methods are tied to mechanisms of specific models, model-agnostic methods (often also post-hoc)
+are independent of the kind of model used.
+Several overarching goals were identified and analyzed in the following section through an in-depth analysis of the
+identified literature related to explainability. Outlined in Table 7, alongside the previously described characters, these
+overarching goals are (1) generating explanations using LLMs, (2) augmenting existing explanations, and (3) explaining
+LLMs.
+5.4.1 Generating explanations using LLMs. Literature with the first overarching goal, generating explanations using
+LLMs, utilizes LLMs to generate local explanations for a specific downstream task. Arabzadeh et al. [4] develop a
+framework for evaluating the applicability and utility of LLM-powered applications. In their work, they construct a
+framework consisting of several agents, such as Critic Agent, Quantifier, and Verifier, which, based on the nature of the
+task, develop criteria and evaluate the utility of the applications. They suggest that analyzing the behavior of such
+agents contributes to the explainability of the overall utility evaluation task. Following a similar concept, Bhaskar
+and Stodden [7] propose ReproScore metrics evaluated through an LLM. Although the overall task is predictive, the
+analysis of the evaluation steps helps understand the overall decision-making process. Finally, in [60], Lu et al. aim to
+improve the explainability through a few-shot biomechanical knowledge fusion framework. The presented approach
+incorporates hierarchical context into prompts, leveraging models’ reasoning capabilities while respecting hierarchical
+constraints to make knowledge base integration more transparent.
+While previously outlined methods are model-agnostic, Yu et al. [124] present a model-specific process for LLM
+fine-tuning to provide explainable recommendations for Click-Through Rate prediction. They developed a custom
+reward function - an alignment process to reflect user intentions, and utilize the LLaMa-3-7b model for finetuning using
+Manuscript submitted to ACM
+
+24
+
+Hohensinner et al.
+Table 8. Bias & Uncertainty
+
+Topic
+
+Focus
+
+Article
+
+Meassurig bias
+Data curation
+LLMs in research
+LLMs for text classification
+Quantifying uncertainty
+Data and model uncertainty
+Performance and Reliability
+
+Gender bias in text data
+Amplifying bias
+Amplifying data and model bias
+Mitigating human-induced bias
+Input alteration
+Software engineering
+Scaling laws
+
+[45]
+[101]
+[44]
+[24]
+[38]
+[89]
+[14]
+
+a Low-Rank Adaptation approach. Further research [91] explores using a GPT-4-based language-based explainability
+component to generate explanations of model behavior in a cancer detection downstream task. The component utilizes
+activation feature maps and GradCAM visualization to generate high-level textual explanations. Finally, contrary to
+previously outlined approaches, where methods are utilized in a post-hoc manner, Yang et al. [118] present ante-hoc,
+model-specific methods for generating explanations in evaluating mental health on social media. Through the finetuning process, these models are presented with explanations and evaluations from mental health experts and adapted
+to generate explanations jointly with predictions.
+5.4.2 Augmenting existing explanations. Work focused on the second overarching goal, augmenting existing explanations,
+aims to enhance, transform, or adapt existing explanations to make explanations more accessible and interpretable.
+Recent research [107] introduced a method based on established xAI techniques LIME and SHAP augmented with natural
+language capabilities of LLMs, to address the challenges of augmenting existing explanations. The proposed approach
+uses these xAI methods to analyze the contribution of different features in deep generative models. Subsequently, this
+post-hoc method proposes generating user-adapted, natural language explanations suited to end users with varying
+levels of technical expertise.
+5.4.3 Explaining LLMs. Finally, explaining LLMs, focuses on understanding the characteristics of the model itself.
+Following this idea, Topal et al. [105] developed a set of LLM evaluations with an emphasis on trustworthiness, fairness,
+and robustness. These evaluations provide an insight into the global characteristics and capabilities of several Turkishcapable LLMs. Overall, the multi-prompt-based method was evaluated on models such as: Llama-3.1-8B-Instruct,
+Qwen2.5-7B-Instruct, Mistral-7B-Instruct, gemma2-9b-it, making the overall approach model-agnostic.
+6
+
+Bias & Uncertainty
+
+Bias and uncertainty analysis reveal how the underlying training data and model processes influence the system’s
+behavior, highlighting the need for provenance information to detect and mitigate harmful outputs. Bias is inherent in
+human behavior [19] and, consequently, it is in data. This might lead to detrimental bias or discrimination in algorithmic
+results, decreasing “fairness". As such, research on understanding sources of bias, quantifying bias, and methods for
+mitigating bias has been conducted in the general context of AI-based systems (e.g., [72]), as well as LLMs in particular
+(e.g., [26]).
+When bias is present in LLM training data, the bias is adopted by the model itself. Bias and discrimination can
+then non-insignificantly guide the model’s actions. Jain et al. [45] propose an approach that exploits methods from
+NLP and Explainable AI to calculate a gender bias score based on the common co-occurrence of gendered nouns and
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+25
+
+pronouns in close textual proximity, i.e., within sentences. When unregulated, the models learn directly from data, and
+the stronger the bias in that data, the stronger it will be in the model’s output. Consequently, a reinforcement effect
+is expected when LLM training data is scraped from the Internet, because more and more text is generated by LLMs
+themselves. When model outputs replace human annotations, feedback loops occur that lead to generalization issues
+and the probable amplification of bias, e.g., through less diverse content or newly introduced biases. The investigation
+of emerging data feedback cycles suggests that it is essential to keep LLMs well calibrated, prefer the application of
+sampling-based decoding strategies, and keep humans in the loop of data generation [101]. Similar feedback loops
+are to be expected in scientific writing. While the application of LLMs opens the publication sphere to non-native
+speakers at a rapid pace, commonly used LLMs include all kinds of bias, particularly in failing to depict inclusion and
+diversity efforts, which is nowadays considered good practice in scientific communities. This can be partly attributed
+to the training on historical data sources. Additional bias is introduced by user preferences, e.g., through up or down
+voting, or by providing user context or specific prompting that the algorithm adapts to. Thus, if LLMs are trained
+on AI-generated research content, biases and errors will increase, and unwanted or outdated patterns are likely to
+propagate and repeat [44]. However, other research endeavors also explore the linguistic capacity of LLMs to mitigate
+human bias in text and classification tasks, ultimately improving automation. Fuhnwi et al. [24] for instance, investigates
+the use of LLM-generated categorization of spam data to avoid bias from humanly hand-labeled spam messages and
+proposes an approach that succeeds with a fairness and accuracy increase.
+Uncertainty is a quantifiable construct that indicates the degree to which an LLM is confident in the accuracy,
+robustness, and bias of its output. The level of uncertainty plays a pivotal role in user trust. If uncertainty is not marked
+properly, people may be irritated by the LLM’s hallucinations or, even worse, rely on incorrect information.
+Commonly used as a reliability indicator, it can be calculated in two components: (1) Aleatoric (data) uncertainty:
+which results from ambiguity in data or prompting and more (unknown unknowns), and (2) Epistemic (model)
+uncertainty: which increases if the model lacks skill or information to answer a question [109].
+Hou et al. [38] introduces a framework for uncertainty decomposition to evaluate LLMs on a more informed level.
+By exploiting alterations to input prompts, a strategy that is applicable for black-box models, the research work elicits
+different manifestations of uncertainty, enabling quantification of individual components and the construct as a whole.
+Ji et al. [46] investigates whether LLMs’ internal states can be exploited to determine uncertainty by inferring the risk
+of hallucination in response to a provided query. The study concludes that LLMs’ self-assessment, which takes into
+account internal states, shows more promise than other state-of-the-art methods.
+Fieback et al. [21] present an approach towards predicting hallucinations in large visual language models. Independent
+of the ground-truth dataset, the method is based purely on model output analysis, performing meta-classification to
+identify mistakes, i.e., hallucinated objects.
+Other works address the underlying factors that increase a model’s uncertainty. For instance, uncertainty may increase
+due to data leakage between training data and memorization. This likely leads to generalization issues and biased
+performance evaluations, which become apparent when the model is confronted with novel questions. Furthermore,
+there is no guarantee that outputs remain consistent over time, as temperature changes or model updates may cause
+deviations, which, again, lead to uncertainty due to the failure of reproducibility results [89]. One manifestation of
+a lack of reproducibility appears when semantically similar queries yield inconsistent or inaccurate answers (nondeterministic). Yang et al. [117] investigates this phenomenon and proposes a method that exploits the artificial addition
+of noise or bias to the hidden layer of the most important components of the LLM. The authors claim to have successfully
+improved consistency in semantically deviating queries.
+Manuscript submitted to ACM
+
+26
+
+Hohensinner et al.
+A more general approach to increasing model reliability and performance is to train according to scaling laws that
+
+aim to define the optimal ratio between model complexity, dataset size, and computing power. Recently, [14] investigated
+the accuracy of scaling laws using open-source data and models. They conclude that, in addition to dataset size, the
+specific characteristics of data are particularly influential on model and task-specific scaling. Thus, for the success of
+further research and development, foundation datasets and open datasets will play a pivotal role.
+7
+
+Privacy
+
+Data Privacy is a concern when using LLMs - especially if there is no access to the underlying model [89]. The
+relationship between privacy and provenance warrants a deeper analysis. Differential privacy [17] is an approach that
+addresses membership inference attacks. In machine learning, the objective is to prevent individual data points from
+being identifiable within the training set. In other words, the trained model should behave similarly whether or not a
+specific instance is included in the data. At the surface level, this goal appears to contrast with that of data provenance.
+Some approaches aim to combine privacy preservation with key elements of data provenance. In [49], Kirmayr et
+al. propose a system for an in-car assistant, where users may have concerns regarding the use of private data. They
+highlight that one should distinguish between semantic memory and episodic memory in conversational systems. To
+accomplish a desired level of privacy, users may opt out of specific classes that are utilized in an information extraction
+step. They further propose that transparency can be achieved by showing what data has been stored and where.
+The use of access control to ensure protection of private and confidential data is presented by Jiang et al. [47],
+in a clinical context. Furthermore, they highlight the need for interpretability of systems in such a setting. To this
+end, they examine hierarchical RAG systems in which multiple indices are governed by distinct access control rules.
+Searches are distributed across the indices for which the current user has read permissions, and the retrieved results are
+subsequently aggregated. Their work demonstrates that RAG-based architectures can serve as a practical means of
+achieving transparency and data provenance.
+8
+
+Provenance Tools & Techniques
+
+Provenance tools and techniques are the methodological backbone for capturing, managing, and analyzing the data flow
+throughout the LLM life cycle. Starting at the origin of data sources operationalized during training to the generated
+output of resulting models, tools & techniques enable sense-making of LLM decisions and tracing truthful attribution
+of answers to underlying data references, depending on the transparency potential of the chosen models. We separate
+tools from techniques by the following characteristics: (1) Tools are reusable libraries, datasets, visual inspection suites,
+or end-to-end systems, and (2) Techniques are modeling or methodological approaches that can be implemented across
+multiple tools and domains. Furthermore, we present important tools & techniques found throughout our literature
+review and summarize key concepts for each of the extracted components. Some works could be listed as either a tool
+or a technique. For overlapping items, they are placed based on their apparent main contribution.
+8.1
+
+Tools
+
+Roberts et al. [86], Yadagiri et al. [116], Shah-Mohammadi and Finkelstein [92], Iranfar et al. [43], and Longpre et al.
+[58] present provenance tools that aid in capturing and analyzing data flows through LLMs.
+• t5x and seqio. Open source libraries for JAX and TPU-based training and for task-based data pipelines. The
+design supports deterministic processing, reproducibility, recoverability, and provenance tracking [86].
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+27
+
+• Direct Velocity for authorship verification. A BERT-based classifier with linguistic features for human versus
+AI attribution. Useful for integrity checks and compliance verification [116].
+• Automated meta analysis pipeline. Outcome extraction with GPT-4 and semantic outcome alignment with
+Sentence BERT. The pipeline standardizes heterogeneous clinical reports and improves traceability [92].
+• Surgical skill assessment dataset with soft data. The Vertex Pursuit task pairs expert free text comments
+with interaction logs. Transparency comes from documenting the data pipeline and methods, while traceability
+is ensured through structured metadata with timestamps, labels, and comments. [43].
+• Data provenance explorer The data provenance explorer enables users to trace and filter data provenance information of popular finetuning data collections with an interactive UI. The explorer improves dataset transparency
+and responsible data use [58].
+8.2
+
+Techniques
+
+This section outlines the techniques presented by Raleigh and Raleigh [82], Zhu et al. [133], Yu et al. [123], Macdonald
+et al. [64], Feuer et al. [20], and Hanna et al. [34] that can be applied across multiple tools and domains.
+• Legal query reformulation as monolingual NMT. Encoder & decoder with attention to rewrite noisy
+legal queries into well-formed queries using semi-supervised pairs from logs. The paper documents the data
+generation pipeline, preprocessing steps, and reports on the algorithm used and the results obtained, covering
+several important parts of the data provenance. [82].
+• Statement level code summarization with LLMs. Evaluation of GPT-4, GPT-3.5, CodeLlama, and StarChat
+against CodeT5 on Java and Python, including prompt and temperature analyses. The paper explains the provenance of the dataset, covering selection, processing, evaluation, statistics, model configurations, experimental
+setups, and both metric-based and human-assessed results. [133].
+• Knowledge graph augmented diagnosis with LLM prompts. The DeLL approach fuses EMR text with
+knowledge graph disease subgraphs encoded with GCNs and uses LLM prompts to enrich representations for
+prediction. By documenting dataset provenance, detailing the preprocessing pipeline, including de-identification,
+and presenting the system architecture, the study enhances both traceability and transparency. Traceability
+is achieved through clear data lineage and transformation steps, while transparency is supported by openly
+describing design choices and privacy safeguards, enabling reproducibility and ethical evaluation. [123].
+• Trace-of-Thought distillation and task decomposition. Transfer teacher reasoning to smaller students
+through structured traces and decompose questions into steps to expose intermediate reasoning. This work
+enhances reasoning transparency by breaking problems into structured steps, enabling human-in-the-loop
+oversight and correction before execution. [64].
+• Prior Data Fitted Network scaling with TuneTables. TuneTables is a parameter-efficient fine-tuning method
+that scales Prior-Data Fitted Networks (PFNs) like TabPFN to millions of samples using soft prompt tuning. It
+promotes fairness via demographic parity regularization and improves interpretability by summarizing key
+features, enhancing transparency and trust.[20].
+• Circuit tracing Enables a deeper understanding of model decision-making by observing circuits of parameters
+during model inference. Includes a tool to trace circuits4 [34].
+4 https://github.com/safety-research/circuit-tracer
+
+Manuscript submitted to ACM
+
+28
+9
+
+Hohensinner et al.
+Discussion
+
+This section synthesizes our key findings across existing literature on data provenance, transparency, and traceability
+for LLMs, highlighting emerging trends, methodological challenges, and open questions that have shaped recent years,
+current progress, and the future landscape of AI development. In addition to that, it comprises the growth of adjacent
+domains of interpretability, explainability, bias & uncertainty, provenance tools & techniques, as well as data privacy,
+which are closely tied to the discipline of data provenance for LLMs.
+As the language model parameter size keeps rising, new approaches for data acquisition are needed, and preexisting
+pitfalls in data handling become more pronounced. From the error-prone licensing of datasets [58] to the generation of
+missing annotations in databases [15], the problem of scarce data labeling and unstructured, widespread data sources
+arises. Data [98] and source [42, 77] attribution emerge as the clear goal of trustworthy, reliable AI development.
+Best practices in software engineering, such as logging [22], also emerge in domains such as LLMs, generative AI,
+and ML. Furthermore, new approaches such as watermarking [121] and self-attribution [42] appear.
+Current model developments split AI research into two directions: (1) trust-focused, transparent, and open interpretation of language models, and (2) feature-driven, opaque, performance development. Then, we distinguish interpretability
+as a user-facing understanding of why a model produced an output (through inherent, passive characteristics of
+the model), and explainability as the process and interface that generates human-readable reasons. This separation
+helps align evaluation and governance. It also clarifies when to prefer interpretable design choices and when to rely
+on post hoc methods. We note that explainability-focused work aims for human-centered understandability, while
+interpretability-driven research deals with complex model analysis.
+Inherently, human bias is imparted into data sources that form the foundation of training data for LLMs. This leads
+to language models adopting unexpected behaviours [89] and biased outputs [45]. Provenance tools [58] and techniques
+[34] emerge towards AI data governance. Data privacy, however, remains an open question and a pressing concern. Due
+to the one-directional, final flow of knowledge into models, it appears impossible to protect one’s personal information,
+especially with little to no insight into the training data. But, approaches like model editing [117] aim to surgically
+remove undesired information from language models.
+To summarize, data provenance goes hand in hand with transparency and traceability for LLMs. Without a traceable
+data flow, the origins of individual datums cannot be retained, and without a transparent, open model design, traceability
+is seemingly impossible. Bias is intrinsic to data sources and thus propagates into language models’ training data. Data
+privacy concerns are directly linked to provenance tools and techniques, which aim to tackle the rise of data obfuscation
+in connection to LLMs.
+
+10
+
+Current Limitations & Future Work
+• Observation of classes in training data: In some cases, training data involves classes that represent types of
+knowledge. Future work should investigate whether these classes also propagate within model parameters, and
+their origins should be traceable and attributable.
+• Data contamination: LLMs are trained on public information corpora gathered from the web, and the sheer
+amount of data makes manual filtering impossible. It is unknown whether evaluation datasets are also included
+within the training corpora. Future research should investigate what impact of this spillage and the mixture of
+the test data on the evaluation of LLMs.
+
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+29
+
+• Propagating biases through language models: Biases are intrinsic to human-authored data sources. These
+biases propagate into LLMs through training and can lead to unintended and unwanted behaviour. Using LLMs
+for data generation forwards the learned, biased characteristics into synthetic data sources. Future research
+should aim to detect and mitigate biases resulting in LLM responses for artificial data generation.
+• Data provenance for LLM-generated content: LLMs’ generative capabilities have become popular for the
+creation of data. This source of synthetic data raises questions about the provenance of information, such as:
+Who is the author of such datasets? Future research should aim at a deeper understanding of the implications of
+these data transformations for LLM-based data generation.
+• Scarcity of labeled, annotated data: Manually labeling and annotating datasets is expensive and timeconsuming. We found that some reviewed works propose using LLMs to carry out the labeling step, also
+in a semi-supervised method. Future research should investigate what impact these LLM-generated, synthetic
+data labels have on the scientific community.
+• Prompt and version drift in LLM pipelines: Reproducibility relies on stable prompts and LLM settings and
+versions. Small changes to prompts or silent model updates or changes can change outputs and derived labels.
+This weakens traceability and provenance claims - leading to possible unstable explanations.
+• Faithfulness of explanations: Natural language explanations and attribution maps may not reflect the true
+reasoning behind model predictions. Future work should include causal validation of explanations through
+controlled interventions and perturbation analyses to assess fidelity and faithfulness.
+• The right to be forgotten: The right to be forgotten describes the right to remove one’s personal information
+from online directories accessible through internet searches. LLMs, as well, can unknowingly ingest private data
+and personal information into their parameters that one wishes to erase. Future research should investigate
+methods to detect and delete private information from language models, e.g., model unlearning.
+11
+
+Conclusion
+
+This survey offers a thorough overview of the developments in data provenance, together with transparency and
+traceability for LLMs over the past decade. Along the supporting pillars, bias & uncertainty, privacy, and provenance
+tools & techniques, we summarize key findings and highlight interconnections. Data provenance for LLMs demands
+attention not just for data flows into LLMs, but simultaneously also for output data generated by LLMs. Transparency
+enables the investigation of models’ decision-making and understanding procedures, whereas a lack of transparency
+may hinder it. Traceability aims at ways to follow the trails of data and its knowledge propagation through LLMs,
+with logging and watermarking emerging as noteworthy approaches. The surveyed papers make clear that without
+an active process, provenance information is being lost through the parameterization of model training in LLMs and
+the generated output data can no longer be attributed to the original influencing sources. Bias is inevitably present in
+data and also leads to bias in LLMs. This bias can be mitigated to a certain extent, but according to literature cannot
+be fully avoided. Privacy concerns highlight the need to be able to trace personal information being embedded into
+LLMs, with a lack of effective methods highlighting a relevant research gap. The survey presents provenance tools and
+techniques, designed to aid in tracing provenance information. They help in unraveling complex model decision-making
+processes to understand LLM-internal procedures. To synthesize the considered works, tracking the origins of data
+sources flowing into LLMs will enable the attribution of model decisions and generated responses to underlying sources,
+and will increase transparency and reproducibility. Finally, this survey lays out a roadmap of further research directions
+and future work toward transparent, robust, and reproducible AI research for LLMs.
+Manuscript submitted to ACM
+
+30
+12
+
+Hohensinner et al.
+Acknowledgements
+
+This work has been supported by the FFG, Contract No. 915297: “TrustInLLM” and Contract No. 911655: "Pro2Future II
+is funded within the Austrian COMET Programme (Competence Centers for Excellent Technologies) under the auspices
+of the Austrian Federal Ministry of Innovation, Mobility and Infrastructure (BMIMI), the Austrian Federal Ministry of
+Economy, Energy and Tourism (BMWET), and of the Provinces of Upper Austria and Styria. COMET is managed by the
+Austrian Research Promotion Agency FFG.”
+References
+[1] Mansoor Ahmed, Amil Rohani Dar, Markus Helfert, Abid Khan, and Jungsuk Kim. 2023. Data provenance in healthcare: approaches, challenges,
+and future directions. Sensors 23, 14 (2023), 6495.
+[2] Sajid Ali, Tamer Abuhmed, Shaker El-Sappagh, Khan Muhammad, Jose M Alonso-Moral, Roberto Confalonieri, Riccardo Guidotti, Javier Del Ser,
+Natalia Díaz-Rodríguez, and Francisco Herrera. 2023. Explainable Artificial Intelligence (XAI): What we know and what is left to attain Trustworthy
+Artificial Intelligence. Information fusion 99 (2023), 101805.
+[3] Mark Allen and Dalton Cervo. 2015. Data Quality Management. 131–160. doi:10.1016/B978-0-12-800835-5.00009-9
+[4] Negar Arabzadeh, Siqing Huo, Nikhil Mehta, Qinqyun Wu, Chi Wang, Ahmed Awadallah, Charles L. A. Clarke, and Julia Kiseleva. 2024. Assessing
+and Verifying Task Utility in LLM-Powered Applications. (5 2024). http://arxiv.org/abs/2405.02178
+[5] Eranga Bandara, Peter Foytik, Sachin Shetty, Ravi Mukkamala, Abdul Rahman, Xueping Liang, Ng Wee Keong, Kasun De Zoysa, Aruna Withanage,
+Nilaan Loganathan, and Isuru Udhantha. [n. d.]. DevSec-GPT-Generative-AI (With Custom-Trained Meta’s Llama2 LLM), Blockchain, NFT and PBOM
+Enabled Cloud Native Container Vulnerability Management and Pipeline Verification Platform. Technical Report.
+[6] Micaela Lucia Bangerter, Giuseppe Fenza, Domenico Furno, Mariacristina Gallo, Vincenzo Loia, Claudio Stanzione, and Ilsun You. 2024. A Hybrid
+Framework Integrating LLM and ANFIS for Explainable Fact-Checking. IEEE Transactions on Fuzzy Systems (2024). doi:10.1109/TFUZZ.2024.3431710
+[7] Adhithya Bhaskar and Victoria Stodden. 2024. Reproscreener: Leveraging LLMs for Assessing Computational Reproducibility of Machine Learning
+Pipelines. In Proceedings of the 2nd ACM Conference on Reproducibility and Replicability, REP 2024. Association for Computing Machinery, Inc,
+101–109. doi:10.1145/3641525.3663629
+[8] Stella Biderman, Hailey Schoelkopf, Quentin Anthony, Herbie Bradley, Kyle O’Brien, Eric Hallahan, Mohammad Aflah Khan, Shivanshu Purohit,
+USVSN Sai Prashanth, Edward Raff, Aviya Skowron, Lintang Sutawika, and Oskar van der Wal. 2023. Pythia: A Suite for Analyzing Large Language
+Models Across Training and Scaling. arXiv:2304.01373 [cs.CL] https://arxiv.org/abs/2304.01373
+[9] Erik Blasch, Andreas Savakis, Yufeng Zheng, Genshe Chen, Ivan Kadar, Uttam Majumder, and Ali K. Raz. 2022. Joint data learning panel summary.
+SPIE-Intl Soc Optical Eng, 18. doi:10.1117/12.2619537
+[10] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry,
+Amanda Askell, et al. 2020. Language models are few-shot learners. Advances in neural information processing systems 33 (2020), 1877–1901.
+[11] Collin Burns, Jesse Thomason, and Wesley Tansey. 2020. Interpreting Black Box Models via Hypothesis Testing. In FODS 2020 - Proceedings of the
+2020 ACM-IMS Foundations of Data Science Conference. Association for Computing Machinery, Inc, 47–57. doi:10.1145/3412815.3416889
+[12] Lawrence Chan, Adrià Garriga-Alonso, and ... 2022. Causal Scrubbing: a method for rigorously testing interpretability hypotheses. AI Alignment
+Forum. https://www.alignmentforum.org/posts/JvZhhzycHu2Yd57RN/causal-scrubbing-a-method-for-rigorously-testing
+[13] Sirui Cheng, Siyu Zhang, Jiayi Wu, Muchen Lan, and Yaoru Sun. 2025. FacGPT: An Effective and Efficient Method for Evaluating Knowledge-Based
+Visual Question Answering. In Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in
+Bioinformatics), Vol. 15359 LNAI. Springer Science and Business Media Deutschland GmbH, 201–214. doi:10.1007/978-981-97-9431-7_16
+[14] Mehdi Cherti, Romain Beaumont, Ross Wightman, Mitchell Wortsman, Gabriel Ilharco, Cade Gordon, Christoph Schuhmann, Ludwig Schmidt, and
+Jenia Jitsev. 2023. Reproducible scaling laws for contrastive language-image learning. In Proceedings of the IEEE Computer Society Conference on
+Computer Vision and Pattern Recognition, Vol. 2023-June. IEEE Computer Society, 2818–2829. doi:10.1109/CVPR52729.2023.00276
+[15] Juhwan Choi, Eunju Lee, Kyohoon Jin, and YoungBin Kim. 2024. GPTs Are Multilingual Annotators for Sequence Generation Tasks. (2 2024).
+http://arxiv.org/abs/2402.05512
+[16] Pablo Corona-Fraga, Aldo Hernandez-Suarez, Gabriel Sanchez-Perez, Linda Karina Toscano-Medina, Hector Perez-Meana, Jose Portillo-Portillo, Jesus
+Olivares-Mercado, and Luis Javier García Villalba. 2025. Question–Answer Methodology for Vulnerable Source Code Review via Prototype-Based
+Model-Agnostic Meta-Learning. Future Internet 17 (1 2025). Issue 1. doi:10.3390/fi17010033
+[17] Cynthia Dwork. 2006. Differential privacy. In International colloquium on automata, languages, and programming. Springer, 1–12.
+[18] Nelson Elhage, Tristan Hume, Catherine Olsson, and ... 2022. Toy Models of Superposition. arXiv:2209.10652 (2022).
+[19] Mihal Emberton. 2021. Unconscious bias is a human condition. The Permanente Journal 25 (2021), 20–199.
+[20] Benjamin Feuer, Robin Tibor Schirrmeister, Valeriia Cherepanova, Chinmay Hegde, Frank Hutter, Micah Goldblum, Niv Cohen, and Colin White.
+[n. d.]. TuneTables: Context Optimization for Scalable Prior-Data Fitted Networks. Technical Report. https://github.com/penfever/TuneTables.
+[21] Laura Fieback, Jakob Spiegelberg, and Hanno Gottschalk. 2025. MetaToken: Detecting Hallucination in Image Descriptions by Meta Classification.
+(3 2025). http://arxiv.org/abs/2405.19186
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+31
+
+[22] Patrick Loic Foalem, Foutse Khomh, and Heng Li. 2023. Studying Logging Practice in Machine Learning-based Applications. (1 2023). http:
+//arxiv.org/abs/2301.04234
+[23] Jibril Frej, Didier Schwab, Jean-Pierre Chevallet, and Univ Grenoble. 2020. MLWIKIR: A Python toolkit for building large-scale Wikipedia-based
+Information Retrieval Datasets in Chinese, English, French, Italian, Japanese, Spanish and more. Technical Report. https://github.com/fxsjy/jieba
+[24] Gerard Shu Fuhnwi, Matthew Revelle, Bradley Whitaker, and Clemente Izurieta. 2025. Using Large Language Models to Mitigate Human-Induced
+Bias in SMS Spam: An Empirical Approach. In 2025 IEEE 4th International Conference on AI in Cybersecurity, ICAIC 2025. Institute of Electrical and
+Electronics Engineers Inc. doi:10.1109/ICAIC63015.2025.10848636
+[25] Isabella Gagliardi and Maria Teresa Artese. 2023. Ensemble-Based Short Text Similarity: An Easy Approach for Multilingual Datasets Using
+Transformers and WordNet in Real-World Scenarios. Big Data and Cognitive Computing 7 (12 2023). Issue 4. doi:10.3390/bdcc7040158
+[26] Isabel O Gallegos, Ryan A Rossi, Joe Barrow, Md Mehrab Tanjim, Sungchul Kim, Franck Dernoncourt, Tong Yu, Ruiyi Zhang, and Nesreen K
+Ahmed. 2024. Bias and fairness in large language models: A survey. Computational Linguistics 50, 3 (2024), 1097–1179.
+[27] Ankush Ramprakash Gautam. [n. d.]. Impact of High Data Quality on LLM Hallucinations. International Journal of Computer Applications 975
+([n. d.]), 8887.
+[28] Lotem Golany, Filippo Galgani, Maya Mamo, Nimrod Parasol, Omer Vandsburger, Nadav Bar, and Ido Dagan. 2024. Efficient Data Generation for
+Source-grounded Information-seeking Dialogs: A Use Case for Meeting Transcripts. (10 2024). http://arxiv.org/abs/2405.01121
+[29] Mara Graziani, Lidia Dutkiewicz, Davide Calvaresi, José Pereira Amorim, Katerina Yordanova, Mor Vered, Rahul Nair, Pedro Henriques Abreu,
+Tobias Blanke, Valeria Pulignano, et al. 2023. A global taxonomy of interpretable AI: unifying the terminology for the technical and social sciences.
+Artificial intelligence review 56, 4 (2023), 3473–3504.
+[30] Luca Gregori, Pasquale Leonardo Lazzaro, Marialaura Lazzaro, Paolo Missier, and Riccardo Torlone. 2025. An LLM-guided platform for multi-granular
+collection and management of data provenance: L. Gregori et al. Journal of Big Data 12, 1 (2025), 187.
+[31] Xu Gu, Xiaoliang Chen, Peng Lu, Zonggen Li, Yajun Du, and Xianyong Li. 2024. AGCVT-prompt for sentiment classification: Automatically
+generating chain of thought and verbalizer in prompt learning. Engineering Applications of Artificial Intelligence 132 (6 2024). doi:10.1016/j.engappai.
+2024.107907
+[32] Honghao Gui, Shuofei Qiao, Jintian Zhang, Hongbin Ye, Mengshu Sun, Lei Liang, Jeff Z. Pan, Huajun Chen, and Ningyu Zhang. 2024. InstructIE: A
+Bilingual Instruction-based Information Extraction Dataset. (7 2024). http://arxiv.org/abs/2305.11527
+[33] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. 2025.
+Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 (2025).
+[34] Michael Hanna, Mateusz Piotrowski, Jack Lindsey, and Emmanuel Ameisen. 2025. circuit-tracer. https://github.com/safety-research/circuit-tracer.
+The first two authors contributed equally and are listed alphabetically..
+[35] Richard Heersmink, Barend de Rooij, María Jimena Clavel Vázquez, and Matteo Colombo. 2024. A phenomenology and epistemology of large
+language models: transparency, trust, and trustworthiness. Ethics and Information Technology 26 (9 2024). Issue 3. doi:10.1007/s10676-024-09777-3
+[36] Melanie Herschel, Ralf Diestelkämper, and Houssem Ben Lahmar. 2017. A survey on provenance: What for? What form? What from? The VLDB
+Journal 26, 6 (2017), 881–906.
+[37] Toby D. Hocking, Joseph R. Barr, and Tyler Thatcher. 2022. Interpretable linear models for predicting security vulnerabilities in source code. In
+Proceedings - 2022 4th International Conference on Transdisciplinary AI, TransAI 2022. Institute of Electrical and Electronics Engineers Inc., 149–155.
+doi:10.1109/TransAI54797.2022.00032
+[38] Bairu Hou, Yujian Liu, Kaizhi Qian, Jacob Andreas, Shiyu Chang, and Yang Zhang. 2024. Decomposing Uncertainty for Large Language Models
+through Input Clarification Ensembling. (6 2024). http://arxiv.org/abs/2311.08718
+[39] Cheng-Hsun Hsueh, Paul Kuo-Ming Huang, Tzu-Han Lin, Che-Wei Liao, Hung-Chieh Fang, Chao-Wei Huang, and Yun-Nung Chen. 2024.
+Editing the Mind of Giants: An In-Depth Exploration of Pitfalls of Knowledge Editing in Large Language Models. arXiv:2406.01436 [cs.CL]
+https://arxiv.org/abs/2406.01436
+[40] Rui Hu, Zheng Yan, Wenxiu Ding, and Laurence T Yang. 2020. A survey on data provenance in IoT. World Wide Web 23, 2 (2020), 1441–1463.
+[41] Baixiang Huang, Canyu Chen, and Kai Shu. 2025. Authorship attribution in the era of llms: Problems, methodologies, and challenges. ACM SIGKDD
+Explorations Newsletter 26, 2 (2025), 21–43.
+[42] Lei Huang, Xiaocheng Feng, Weitao Ma, Liang Zhao, Yuchun Fan, Weihong Zhong, Dongliang Xu, Qing Yang, Hongtao Liu, and Bing Qin. 2024.
+Advancing Large Language Model Attribution through Self-Improving. (10 2024). http://arxiv.org/abs/2410.13298
+[43] Arash Iranfar, Mohammad Soleymannejad, Behzad Moshiri, Hamid D Taghi, and Hamid D Taghirad. [n. d.]. Highlights Natural Language Processing
+and Soft Data for Motor Skill As-sessment: A Case Study in Surgical Training Simulations Natural Language Processing and Soft Data for Motor Skill
+Assessment: A Case Study in Surgical Training Simulations. Technical Report. https://ssrn.com/abstract=4936534
+[44] Rishab Jain and Aditya Jain. 2023. Generative AI in Writing Research Papers: A New Type of Algorithmic Bias and Uncertainty in Scholarly Work.
+(12 2023). http://arxiv.org/abs/2312.10057
+[45] Shipra Jain, Sreya Dey, Prateek Bajaj, and A. S. Rohit Kumar. 2021. A Data-Centric Approach Towards Deducing Bias in Artificial Intelligence
+Systems for Textual Contexts. In Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in
+Bioinformatics), Vol. 13029 LNAI. Springer Science and Business Media Deutschland GmbH, 323–333. doi:10.1007/978-3-030-88483-3_25
+[46] Ziwei Ji, Delong Chen, Etsuko Ishii, Samuel Cahyawijaya, Yejin Bang, Bryan Wilie, and Pascale Fung. 2024. LLM Internal States Reveal Hallucination
+Risk Faced With a Query. (9 2024). http://arxiv.org/abs/2407.03282
+Manuscript submitted to ACM
+
+32
+
+Hohensinner et al.
+
+[47] Emily Jiang, Alice Chen, Irene Tenison, and Lalana Kagal. 2024. MediRAG: Secure Question Answering for Healthcare Data. In Proceedings - 2024
+IEEE International Conference on Big Data, BigData 2024. Institute of Electrical and Electronics Engineers Inc., 6476–6485. doi:10.1109/BigData62323.
+2024.10825604
+[48] Geewook Kim and Minjoon Seo. 2024. On Efficient Language and Vision Assistants for Visually-Situated Natural Language Understanding: What
+Matters in Reading and Reasoning. (10 2024). http://arxiv.org/abs/2406.11823
+[49] Johannes Kirmayr, Lukas Stappen, Phillip Schneider, Florian Matthes, and Elisabeth André. [n. d.]. CarMem: Enhancing Long-Term Memory in LLM
+Voice Assistants through Category-Bounding. Technical Report. 343–357 pages. https://github.com/johanneskirmayr/CarMem.
+[50] Myeongseob Ko, Feiyang Kang, Weiyan Shi, Ming Jin, Zhou Yu, and Ruoxi Jia. 2024. The Mirrored Influence Hypothesis: Efficient Data Influence
+Estimation by Harnessing Forward Passes. (6 2024). http://arxiv.org/abs/2402.08922
+[51] Yanis Labrak, Adrien Bazoge, Emmanuel Morin, Pierre-Antoine Gourraud, Mickael Rouvier, and Richard Dufour. 2024. BioMistral: A Collection
+of Open-Source Pretrained Large Language Models for Medical Domains. In Findings of the Association for Computational Linguistics: ACL 2024,
+Lun-Wei Ku, Andre Martins, and Vivek Srikumar (Eds.). Association for Computational Linguistics, Bangkok, Thailand, 5848–5864. doi:10.18653/
+v1/2024.findings-acl.348
+[52] Ke Li, Sheng Hong, Cai Fu, Yunhe Zhang, and Ming Liu. 2023. Discriminating Human-authored from ChatGPT-Generated Code Via Discernable
+Feature Analysis. In Proceedings - 2023 IEEE 34th International Symposium on Software Reliability Engineering Workshop, ISSREW 2023. Institute of
+Electrical and Electronics Engineers Inc., 120–127. doi:10.1109/ISSREW60843.2023.00059
+[53] Yufei Li, Xiao Yu, Yanghong Guo, Yanchi Liu, Haifeng Chen, Cong Liu, Uc Riverside, Stellar Cyber, Ut Dallas, and Nec Labs America. [n. d.].
+Distantly-Supervised Joint Extraction with Noise-Robust Learning. Technical Report. 10202–10217 pages. https://github.com/yul091/
+[54] Jack Lindsey, Wes Gurnee, Emmanuel Ameisen, Brian Chen, Adam Pearce, Nicholas L. Turner, Craig Citro, David Abrahams, Shan Carter, Basil
+Hosmer, Jonathan Marcus, Michael Sklar, Adly Templeton, Trenton Bricken, Callum McDougall, Hoagy Cunningham, Thomas Henighan, Adam
+Jermyn, Andy Jones, Andrew Persic, Zhenyi Qi, T. Ben Thompson, Sam Zimmerman, Kelley Rivoire, Thomas Conerly, Chris Olah, and Joshua
+Batson. 2025. On the Biology of a Large Language Model. Transformer Circuits Thread (2025). https://transformer-circuits.pub/2025/attributiongraphs/biology.html
+[55] Jiacheng Liu, Taylor Blanton, Yanai Elazar, Sewon Min, YenSung Chen, Arnavi Chheda-Kothary, Huy Tran, Byron Bischoff, Eric Marsh, Michael
+Schmitz, Cassidy Trier, Aaron Sarnat, Jenna James, Jon Borchardt, Bailey Kuehl, Evie Cheng, Karen Farley, Sruthi Sreeram, Taira Anderson, David
+Albright, Carissa Schoenick, Luca Soldaini, Dirk Groeneveld, Rock Yuren Pang, Pang Wei Koh, Noah A. Smith, Sophie Lebrecht, Yejin Choi,
+Hannaneh Hajishirzi, Ali Farhadi, and Jesse Dodge. 2025. OLMoTrace: Tracing Language Model Outputs Back to Trillions of Training Tokens.
+arXiv:2504.07096 [cs.CL] https://arxiv.org/abs/2504.07096
+[56] Yilun Liu, Shimin Tao, Weibin Meng, Jingyu Wang, Wenbing Ma, Yanqing Zhao, Yuhang Chen, Hao Yang, Yanfei Jiang, and Xun Chen. 2024.
+Interpretable Online Log Analysis Using Large Language Models with Prompt Strategies. (1 2024). http://arxiv.org/abs/2308.07610
+[57] Yibo Liu, Haisu Zhang, Teng Zong, Jianping Wu, and Wei Dai. 2023. Knowledge Base Question Answering via Semantic Analysis. Electronics
+(Switzerland) 12 (10 2023). Issue 20. doi:10.3390/electronics12204224
+[58] Shayne Longpre, Robert Mahari, Anthony Chen, Naana Obeng-Marnu, Damien Sileo, William Brannon, Niklas Muennighoff, Nathan Khazam,
+Jad Kabbara, Kartik Perisetla, Xinyi Wu, Enrico Shippole, Kurt Bollacker, Tongshuang Wu, Luis Villa, Sandy Pentland, and Sara Hooker. 2024. A
+large-scale audit of dataset licensing and attribution in AI. Nature Machine Intelligence 6 (8 2024), 975–987. Issue 8. doi:10.1038/s42256-024-00878-8
+[59] Yuze Lou, Chuan Lei, Xiao Qin, Zichen Wang, Christos Faloutsos, Rishita Anubhai, and Huzefa Rangwala. [n. d.]. DATALORE: can a large language
+model find all lost scrolls in a data repository? Technical Report. https://openai.com/research/gpt-4
+[60] Jiaying Lu, Wenjing Ma, Jiaming Shen, Steffen Staab, Bo Xiong, and Carl Yang. 2023. HiPrompt: Few-Shot Biomedical Knowledge Fusion via
+Hierarchy-Oriented Prompting. In SIGIR 2023 - Proceedings of the 46th International ACM SIGIR Conference on Research and Development in
+Information Retrieval. Association for Computing Machinery, Inc, 2052–2056. doi:10.1145/3539618.3591997
+[61] Yu Lu, Deliang Wang, Qinggang Meng, and Penghe Chen. 2020. Towards Interpretable Deep Learning Models for Knowledge Tracing. (5 2020).
+http://arxiv.org/abs/2005.06139
+[62] Jeffrey Jian Ma, Hengzhi Pei, Leonard Lausen, and George Karypis. 2025. Understanding Silent Data Corruption in LLM Training. In Proceedings of
+the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), Wanxiang Che, Joyce Nabende, Ekaterina Shutova,
+and Mohammad Taher Pilehvar (Eds.). Association for Computational Linguistics, Vienna, Austria, 20372–20394. doi:10.18653/v1/2025.acl-long.996
+[63] Xiaoye Ma, Weiheng Liu, Changyi Zhao, and Liliya R. Tukhvatulina. 2025. Can Large Language Model Predict Employee Atrition?. In Proceedings
+of 2024 5th International Conference on Computer Science and Management Technology, ICCSMT 2024. Association for Computing Machinery, Inc,
+1164–1172. doi:10.1145/3708036.3708229
+[64] Kincaid Macdonald, Ajai Ruparelia, Boomer Rogers, Adonis Bovell, and Branden Stone. 2024. Binary Malware Attribution using LLM Embeddings
+and Topological Data Analysis. Technical Report.
+[65] Pascal Meunier. 2008. Software transparency and purity. Commun. ACM 51, 2 (Feb. 2008), 104. doi:10.1145/1314215.1314232
+[66] Shubhanshu Mishra and Jana Diesner. [n. d.]. PyTAIL: An Open Source Tool for Interactive and Incremental Learning of NLP Models with Human
+in the Loop for Online Data. ([n. d.]), 190. doi:10.5281/zenodo.7236429
+[67] Kamila Misiejuk, Rogers Kaliisa, and Jennifer Scianna. 2024. Augmenting assessment with AI coding of online student discourse: A question of
+reliability. Computers and Education: Artificial Intelligence 6 (6 2024). doi:10.1016/j.caeai.2024.100216
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+33
+
+[68] Sedir Mohammed, Lukas Budach, Moritz Feuerpfeil, Nina Ihde, Andrea Nathansen, Nele Noack, Hendrik Patzlaff, Felix Naumann, and Hazar
+Harmouch. 2025. The effects of data quality on machine learning performance on tabular data. Information Systems 132 (2025), 102549. doi:10.
+1016/j.is.2025.102549
+[69] Mehrad Moradshahi, Victoria Tsai, Giovanni Campagna, and Monica S Lam. [n. d.]. Contextual Semantic Parsing for Multilingual Task-Oriented
+Dialogues. Technical Report. 902–915 pages. https://github.com/stanford-oval/
+[70] John X. Morris, Chawin Sitawarin, Chuan Guo, Narine Kokhlikyan, G. Edward Suh, Alexander M. Rush, Kamalika Chaudhuri, and Saeed Mahloujifar.
+2025. How much do language models memorize? arXiv:2505.24832 [cs.CL] https://arxiv.org/abs/2505.24832
+[71] Raza Mukhlis, Saied Saleem, Hyunwook Kwon, Jamil Hussain, Ahmet Arif Aydin, and Mugahed A. Al-Antari. 2024. A Novel CAD Framework with
+Visual and Textual Interpretability: Multimodal Insights for Predicting Respiratory Diseases. In 8th International Artificial Intelligence and Data
+Processing Symposium, IDAP 2024. Institute of Electrical and Electronics Engineers Inc. doi:10.1109/IDAP64064.2024.10710824
+[72] Eirini Ntoutsi, Pavlos Fafalios, Ujwal Gadiraju, Vasileios Iosifidis, Wolfgang Nejdl, Maria-Esther Vidal, Salvatore Ruggieri, Franco Turini, Symeon
+Papadopoulos, Emmanouil Krasanakis, et al. 2020. Bias in data-driven artificial intelligence systems—An introductory survey. Wiley Interdisciplinary
+Reviews: Data Mining and Knowledge Discovery 10, 3 (2020), e1356.
+[73] Paulinus Ofem, Bassey Isong, and Francis Lugayizi. 2022. On the Concept of Transparency: A Systematic Literature Review. IEEE Access 10 (2022),
+89887–89914. doi:10.1109/ACCESS.2022.3200487
+[74] Bofeng Pan, Natalia Stakhanova, and Suprio Ray. 2023. Data provenance in security and privacy. Comput. Surveys 55, 14s (2023), 1–35.
+[75] Liang Pang, Kangxi Wu, Sunhao Dai, Zihao Wei, Zenghao Duan, Jia Gu, Xiang Li, Zhiyi Yin, Jun Xu, Huawei Shen, et al. 2025. Large Language
+Model Sourcing: A Survey. arXiv preprint arXiv:2510.10161 (2025).
+[76] Dario Pasquini, Evgenios M Kornaropoulos, and Giuseppe Ateniese. 2025. { LLMmap } : Fingerprinting for large language models. In 34th USENIX
+Security Symposium (USENIX Security 25). 299–318.
+[77] Nilay Patel, Shivashankar Subramanian, Siddhant Garg, Meta Ai, Pratyay Banerjee, and Amita Misra Amazon. [n. d.]. Towards Improved Multi-Source
+Attribution for Long-Form Answer Generation. Technical Report. 3906–3919 pages. https://www.politifact.com/
+[78] Cristiano Patrício, Luís F. Teixeira, and João C. Neves. 2025. A two-step concept-based approach for enhanced interpretability and trust in skin
+lesion diagnosis. Computational and Structural Biotechnology Journal 28 (1 2025), 71–79. doi:10.1016/j.csbj.2025.02.013
+[79] Guilherme Penedo, Hynek Kydlíček, Loubna Ben Allal, Anton Lozhkov, Margaret Mitchell, Colin Raffel, Leandro Von Werra, and Thomas Wolf.
+2024. The FineWeb datasets: decanting the web for the finest text data at scale. In Proceedings of the 38th International Conference on Neural
+Information Processing Systems (Vancouver, BC, Canada) (NIPS ’24). Curran Associates Inc., Red Hook, NY, USA, Article 970, 39 pages.
+[80] Alec Radford, Karthik Narasimhan, Tim Salimans, Ilya Sutskever, et al. 2018. Improving language understanding by generative pre-training. (2018).
+[81] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al. 2019. Language models are unsupervised multitask
+learners. OpenAI blog 1, 8 (2019), 9.
+[82] Arunprasath Shankar LexisNexis Raleigh and Venkata Nagaraju Buddarapu LexisNexis Raleigh. [n. d.]. Legal Query Reformulation using Deep
+Learning. Technical Report.
+[83] Sabbir M. Rashid, James P. McCusker, Paulo Pinheiro, Marcello P. Bax, Henrique O. Santos, Jeanette A. Stingone, Amar K. Das, and Deborah L.
+McGuinness. 2020. The semantic data dictionary – an approach for describing and annotating data. Data Intelligence 2 (10 2020), 443–486. Issue 4.
+doi:10.1162/dint_a_00058
+[84] Hannah Rashkin, Vitaly Nikolaev, Matthew Lamm, Lora Aroyo, Michael Collins, Dipanjan Das, Slav Petrov, Gaurav Singh Tomar, Iulia Turc, and
+David Reitter. 2022. Measuring Attribution in Natural Language Generation Models. (8 2022). http://arxiv.org/abs/2112.12870
+[85] Rahul Ravi, Gouri Ginde, and Jon Rokne. 2024. PRAGyan – Connecting the Dots in Tweets. (7 2024). http://arxiv.org/abs/2407.13909
+[86] Adam Roberts, Hyung Won Chung, Anselm Levskaya, Gaurav Mishra, James Bradbury, Daniel Andor, Sharan Narang, Brian Lester, Colin Gaffney,
+Afroz Mohiuddin, Curtis Hawthorne, Aitor Lewkowycz, Alex Salcianu, Marc van Zee, Jacob Austin, Sebastian Goodman, Livio Baldini Soares,
+Haitang Hu, Sasha Tsvyashchenko, Aakanksha Chowdhery, Jasmijn Bastings, Jannis Bulian, Xavier Garcia, Jianmo Ni, Andrew Chen, Kathleen
+Kenealy, Jonathan H. Clark, Stephan Lee, Dan Garrette, James Lee-Thorp, Colin Raffel, Noam Shazeer, Marvin Ritter, Maarten Bosma, Alexandre
+Passos, Jeremy Maitin-Shepard, Noah Fiedel, Mark Omernick, Brennan Saeta, Ryan Sepassi, Alexander Spiridonov, Joshua Newlan, and Andrea
+Gesmundo. 2022. Scaling Up Models and Data with {𝑡 5𝑥 } and {𝑠𝑒𝑞𝑖𝑜 } . (3 2022). http://arxiv.org/abs/2203.17189
+[87] Daniel Rodriguez-Cardenas, David N. Palacio, Dipin Khati, Henry Burke, and Denys Poshyvanyk. 2023. Benchmarking Causal Study to Interpret
+Large Language Models for Source Code. (8 2023). http://arxiv.org/abs/2308.12415
+[88] Tommaso Ruga, Eugenio Vocaturo, and Ester Zumpano. 2024. On the Role of LLM to Forecast the Next Pandemic. In Proceedings - 2024
+IEEE International Conference on Bioinformatics and Biomedicine, BIBM 2024. Institute of Electrical and Electronics Engineers Inc., 6567–6573.
+doi:10.1109/BIBM62325.2024.10822835
+[89] June Sallou, Thomas Durieux, and Annibale Panichella. 2024. Breaking the Silence: the Threats of Using LLMs in Software Engineering. In
+Proceedings - International Conference on Software Engineering. IEEE Computer Society, 102–106. doi:10.1145/3639476.3639764
+[90] Abeed Sarker and Graciela Gonzalez-Hernandez. 2018. An unsupervised and customizable misspelling generator for mining noisy health-related
+text sources. Journal of Biomedical Informatics 88 (12 2018), 98–107. doi:10.1016/j.jbi.2018.11.007
+[91] Syed Jawad Hussain Shah, Ahmed Albishri, Rong Wang, and Yugyung Lee. 2025. Integrating local and global attention mechanisms for enhanced
+oral cancer detection and explainability. Computers in Biology and Medicine 189 (5 2025). doi:10.1016/j.compbiomed.2025.109841
+Manuscript submitted to ACM
+
+34
+
+Hohensinner et al.
+
+[92] Fatemeh Shah-Mohammadi and Joseph Finkelstein. 2024. Toward Automated Meta-Analysis: Leveraging Large Language Model-Driven Outcome
+Alignment and Data Extraction. In Proceedings of the 2024 IEEE 6th Eurasia Conference on Biomedical Engineering, Healthcare and Sustainability,
+ECBIOS 2024. Institute of Electrical and Electronics Engineers Inc., 482–487. doi:10.1109/ECBIOS61468.2024.10885505
+[93] Zejiang Shen, Kyle Lo, Lauren Yu, Nathan Dahlberg, Margo Schlanger, and Doug Downey. [n. d.]. Multi-LexSum: Real-World Summaries of Civil
+Rights Lawsuits at Multiple Granularities. Technical Report. https://multilexsum.github.io.
+[94] Yogesh L Simmhan, Beth Plale, and Dennis Gannon. 2005. A survey of data provenance in e-science. ACM Sigmod Record 34, 3 (2005), 31–36.
+[95] Yogesh L Simmhan, Beth Plale, Dennis Gannon, et al. 2005. A survey of data provenance techniques. Computer Science Department, Indiana
+University, Bloomington IN 47405 (2005), 69.
+[96] Jie Song, George Alter, and H. V. Jagadish. 2022. Structured data transformation algebra (SDTA) and its applications. Distributed and Parallel
+Databases 40 (9 2022), 373–408. Issue 2-3. doi:10.1007/s10619-022-07418-6
+[97] Tianhang Song, Haolei Hu, Xinxin Chen, and Kangli Zi. 2024. Leveraging Slot-Aware Enhancements for Improved Zero-Shot Dialogue State
+Tracking. In 2024 6th International Conference on Frontier Technologies of Information and Computer, ICFTIC 2024. Institute of Electrical and
+Electronics Engineers Inc., 783–788. doi:10.1109/ICFTIC64248.2024.10913312
+[98] Yiheng Su, Junyi Jessy Li, and Matthew Lease. [n. d.]. Wrapper Boxes: Faithful Attribution of Model Predictions to Training Data. Technical Report.
+[99] Haoran Sun, Renren Jin, Shaoyang Xu, Leiyu Pan, Supryadi, Menglong Cui, Jiangcun Du, Yikun Lei, Lei Yang, Ling Shi, Juesi Xiao, Shaolin Zhu,
+and Deyi Xiong. 2024. FuxiTranyu: A Multilingual Large Language Model Trained with Balanced Data. (10 2024). http://arxiv.org/abs/2408.06273
+[100] Yiding Sun, Feng Wang, Yutao Zhu, Wayne Xin Zhao, and Jiaxin Mao. 2024. An Integrated Data Processing Framework for Pretraining Foundation
+Models. In SIGIR 2024 - Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval. Association
+for Computing Machinery, Inc, 2713–2718. doi:10.1145/3626772.3657671
+[101] Rohan Taori and Tatsunori B. Hashimoto. 2022. Data Feedback Loops: Model-driven Amplification of Dataset Biases. (9 2022). http://arxiv.org/abs/
+2209.03942
+[102] Gemma Team et al. 2024. Gemma: Open Models Based on Gemini Research and Technology. arXiv:2403.08295 [cs.CL] https://arxiv.org/abs/2403.
+08295
+[103] Kimi Team et al. 2025. Kimi K2: Open Agentic Intelligence. arXiv:2507.20534 [cs.LG] https://arxiv.org/abs/2507.20534
+[104] Danielle R. Thomas, Conrad Borchers, Sanjit Kakarla, Jionghao Lin, Shambhavi Bhushan, Boyuan Guo, Erin Gatz, and Kenneth R. Koedinger. 2025.
+Does Multiple Choice Have a Future in the Age of Generative AI? A Posttest-only RCT. In 15th International Conference on Learning Analytics and
+Knowledge, LAK 2025. Association for Computing Machinery, Inc, 494–504. doi:10.1145/3706468.3706530
+[105] Mustafa Burak Topal, Aysun Bozanta, and Ayşe Başar. 2025. How do LLMs perform on Turkish? A multi-faceted multi-prompt evaluation. Expert
+Systems with Applications 279 (6 2025). doi:10.1016/j.eswa.2025.127421
+[106] Jason Tsay, Alan Braz, Martin Hirzel, Avraham Shinnar, and Todd Mummert. 2022. Extracting enhanced artificial intelligence model metadata from
+software repositories. Empirical Software Engineering 27 (12 2022). Issue 7. doi:10.1007/s10664-022-10206-6
+[107] Luís Valina, Brígida Teixeira, Arsénio Reis, Zita Vale, and Tiago Pinto. 2024. Explainable Artificial Intelligence for Deep Synthetic Data Generation
+Models. In Proceedings - 2024 IEEE Conference on Artificial Intelligence, CAI 2024. Institute of Electrical and Electronics Engineers Inc., 555–556.
+doi:10.1109/CAI59869.2024.00109
+[108] Lin Wang, Lanting Fang, and Yining Hu. 2025. A dynamic provenance graph-based detector for advanced persistent threats. Expert Systems with
+Applications 265 (2025), 125877. doi:10.1016/j.eswa.2024.125877
+[109] Tianyang Wang, Yunze Wang, Jun Zhou, Benji Peng, Xinyuan Song, Charles Zhang, Xintian Sun, Qian Niu, Junyu Liu, Silin Chen, et al. 2025. From
+aleatoric to epistemic: Exploring uncertainty quantification techniques in artificial intelligence. arXiv preprint arXiv:2501.03282 (2025).
+[110] Xinchen Wang, Ruida Hu, Cuiyun Gao, Xin-Cheng Wen, Yujia Chen, and Qing Liao. 2024. ReposVul: A Repository-Level High-Quality Vulnerability
+Dataset. (2 2024). http://arxiv.org/abs/2401.13169
+[111] Qiuhong Wei, Zhengxiong Yao, Ying Cui, Bo Wei, Zhezhen Jin, and Ximing Xu. 2024. Evaluation of ChatGPT-generated medical responses: A
+systematic review and meta-analysis. doi:10.1016/j.jbi.2024.104620
+[112] Karl Werder, Balasubramaniam Ramesh, and Rongen (Sophia) Zhang. 2022. Establishing Data Provenance for Responsible Artificial Intelligence
+Systems. ACM Trans. Manage. Inf. Syst. 13, 2, Article 22 (March 2022), 23 pages. doi:10.1145/3503488
+[113] Lowri Williams, Eirini Anthi, Laura Arman, and Pete Burnap. 2024. Topic Modelling: Going beyond Token Outputs. Big Data and Cognitive
+Computing 8 (5 2024). Issue 5. doi:10.3390/bdcc8050044
+[114] Bicheng Xu, Rong Peng, Yongchang Ding, and Lin Fang. 2024. An interpretable logic KBQA method based on open-source large language models.
+In Proceedings of the International Conference on Software Engineering and Knowledge Engineering, SEKE. Knowledge Systems Institute Graduate
+School, 140–145. doi:10.18293/SEKE2024-138
+[115] Ran Xu, Wenqi Shi, Yue Yu, Yuchen Zhuang, Yanqiao Zhu, May D. Wang, Joyce C. Ho, Chao Zhang, and Carl Yang. 2024. BMRetriever: Tuning
+Large Language Models as Better Biomedical Text Retrievers. (10 2024). http://arxiv.org/abs/2404.18443
+[116] Annepaka Yadagiri, Dimpal Kalita, Abhishek Ranjan, Ashish Kumar Bostan, Parthib Toppo, and Partha Pakray. 2024. Team cnlp-nits-pp at PAN:
+Leveraging BERT for Accurate Authorship Verification: A Novel Approach to Textual Attribution Notebook for the PAN Lab at CLEF 2024. Technical
+Report.
+[117] Jingyuan Yang, Dapeng Chen, Yajing Sun, Rongjun Li, Zhiyong Feng, and Wei Peng. 2025. Enhancing Semantic Consistency of Large Language
+Models through Model Editing: An Interpretability-Oriented Approach. (1 2025). http://arxiv.org/abs/2501.11041
+Manuscript submitted to ACM
+
+Tracing the Data Trail: A Survey of Data Provenance, Transparency and Traceability in LLMs
+
+35
+
+[118] Kailai Yang, Tianlin Zhang, Ziyan Kuang, Qianqian Xie, Jimin Huang, and Sophia Ananiadou. [n. d.]. MentaLLaMA: Interpretable Mental Health
+Analysis on Social Media with Large Language Models. Proceedings of the ACM Web Conference 2024 (WWW ’24), May 13â•fi17, 2024, Singapore,
+Singapore 1 ([n. d.]), 2024. doi:10.1145/3589334.3648137
+[119] Yuning Yang, Zilong Hou, Yansong Wang, Hongli Ma, Pingping Sun, Zhiqiang Ma, Ka Chun Wong, and Xiangtao Li. 2022. HCRNet: High-throughput
+circRNA-binding event identification from CLIP-seq data using deep temporal convolutional network. Briefings in Bioinformatics 23 (3 2022). Issue
+2. doi:10.1093/bib/bbac027
+[120] Dansheng Yao, Mengqi Zhu, Hehua Zhu, Wuqiang Cai, and Long Zhou. 2024. Integrating synthetic datasets with CLIP semantic insights for single
+image localization advancements. ISPRS Journal of Photogrammetry and Remote Sensing 218 (12 2024), 198–213. doi:10.1016/j.isprsjprs.2024.10.027
+[121] Pei Gen Ye, Zhengdao Li, Zuopeng Yang, Pengyu Chen, Zhenxin Zhang, Ning Li, and Jun Zheng. 2025. Periodic watermarking for copyright
+protection of large language models in cloud computing security. Computer Standards and Interfaces 94 (8 2025). doi:10.1016/j.csi.2025.103983
+[122] Yunhu Ye, Binyuan Hui, Min Yang, Binhua Li, Fei Huang, and Yongbin Li. 2023. Large Language Models are Versatile Decomposers: Decomposing
+Evidence and Questions for Table-based Reasoning. In SIGIR 2023 - Proceedings of the 46th International ACM SIGIR Conference on Research and
+Development in Information Retrieval. Association for Computing Machinery, Inc, 174–184. doi:10.1145/3539618.3591708
+[123] Tong Yu, Wenhui Fu, Doneming Dai, Kunli Zhang, and Yu Song. 2024. Research on Intelligent Diagnosis Integrating Disease Subgraph and Large
+Language Model. In 2024 3rd International Conference on Cloud Computing, Big Data Application and Software Engineering, CBASE 2024. Institute of
+Electrical and Electronics Engineers Inc., 557–562. doi:10.1109/CBASE64041.2024.10824535
+[124] Xiaohan Yu, Li Zhang, and Chong Chen. 2024. Explainable CTR Prediction via LLM Reasoning. (12 2024). http://arxiv.org/abs/2412.02588
+[125] Hao Yuan, Parker Hicks, Mansooreh Ahmadian, Kayla A. Johnson, Lydia Valtadoros, and Arjun Krishnan. 2025. Annotating publicly-available
+samples and studies using interpretable modeling of unstructured metadata. Briefings in Bioinformatics 26 (1 2025). Issue 1. doi:10.1093/bib/bbae652
+[126] Yuqian Yuan, Wentong Li, Jian Liu, Dongqi Tang, Xinjie Luo, Chi Qin, Lei Zhang, and Jianke Zhu. 2024. Osprey: Pixel Understanding with Visual
+Instruction Tuning. (3 2024). http://arxiv.org/abs/2312.10032
+[127] Guillaume Zambrano. 2024. Case Law as Data: Prompt Engineering Strategies for Case Outcome Extraction with Large Language Models in a
+Zero-Shot Setting. Law, Technology and Humans 6 (2024), 80–101. Issue 3. doi:10.5204/lthj.3623
+[128] Bowen Zhang, Daijun Ding, Zhichao Huang, Ang Li, Yangyang Li, Baoquan Zhang, and Hu Huang. 2024. Knowledge-Augmented Interpretable
+Network for Zero-Shot Stance Detection on Social Media. IEEE Transactions on Computational Social Systems (2024). doi:10.1109/TCSS.2024.3388723
+[129] Haodi Zhang, Jiahong Li, Yichi Wang, and Yuanfeng Songi. 2023. Integrating Automated Knowledge Extraction with Large Language Models
+for Explainable Medical Decision-Making. In Proceedings - 2023 2023 IEEE International Conference on Bioinformatics and Biomedicine, BIBM 2023.
+Institute of Electrical and Electronics Engineers Inc., 1710–1717. doi:10.1109/BIBM58861.2023.10385557
+[130] Zhu Zhang, Jie Yuan, and Amulya Gupta. 2024. Let the Laser Beam Connect the Dots: Forecasting and Narrating Stock Market Volatility. INFORMS
+Journal on Computing 36 (11 2024), 1400–1416. Issue 6. doi:10.1287/ijoc.2022.0055
+[131] Yilun Zhao, Lyuhao Chen, Arman Cohan, and Chen Zhao. [n. d.]. TAPERA: Enhancing Faithfulness and Interpretability in Long-Form Table QA by
+Content Planning and Execution-based Reasoning. Technical Report. 12824–12840 pages. https://github.com/yilunzhao/TaPERA
+[132] Xuanhe Zhou, Junxuan He, Wei Zhou, Haodong Chen, Zirui Tang, Haoyu Zhao, Xin Tong, Guoliang Li, Youmin Chen, Jun Zhou, et al. 2025. A
+Survey of LLM × DATA. arXiv preprint arXiv:2505.18458 (2025).
+[133] Jie Zhu, Yun Miao, Tingting Xu, Junwu Zhu, and Xiaolei Sun. 2024. On the Effectiveness of Large Language Models in Statement-level Code
+Summarization. In IEEE International Conference on Software Quality, Reliability and Security, QRS. Institute of Electrical and Electronics Engineers
+Inc., 216–227. doi:10.1109/QRS62785.2024.00030
+
+Manuscript submitted to ACM
+
+

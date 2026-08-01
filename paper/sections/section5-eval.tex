@@ -1,0 +1,113 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+This section validates that fine-grained provenance at both record and token granularity is necessary for practical author revocation. We measure revocation precision, reconcile recovery rates, storage overhead, query latency across four dataset scales, token-index integration overhead in a real processing framework, and whether provenance-based forget sets improve machine unlearning effectiveness over random baselines. This is a functional validation on real data, not a comprehensive performance benchmark.
+
+% ===========================================================================
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+The evaluation dataset originates from a Chinese Wikipedia (zhwiki) dump comprising 219,555 wiki pages authored by 482,543 unique contributors under CC-BY-SA-4.0 licenses. The data construction pipeline has two stages.
+
+\emph{Stage 1 --- Parse.} A stream parser extracts the latest-revision wikitext and the full contributor list from each page in the XML dump. Only namespace-0 articles with $\geq$50 characters and at least one contributor are retained, producing one source file per page and a metadata index (title, authors, year).
+
+\emph{Stage 2 --- Track.} At each target scale, wiki source texts are written as JSONL records via HuggingFace Datasets or Datatrove pipelines, with \texttt{ob} provenance tracking inserted at the document processing stage. Each record receives author registration, section creation, and provenance linking through the \texttt{OBTrack} pipeline step. The resulting JSONL lines each track to their wiki page sources through the three-layer chain, while the Datatrove pipeline additionally produces token-index entries for token-level provenance queries.
+
+% ===========================================================================
+\subsection{Revocation Precision}
+\label{sec:revocation-precision}
+
+The central question is whether record-level provenance granularity matters in practice. To answer it, we simulate author revocation at the 10k scale for four contributors with widely different contribution shares, using a HuggingFace tokenization pipeline on zhwiki data. Table~\ref{tab:revocation} reports the results.
+
+\input{tables/table3-revocation}
+
+Without record-level provenance, the only available action is to discard the entire training set---there is no intermediate file-level option, because wiki pages are collaborative documents that cannot be subdivided by author. The resulting over-deletion ranges from 1.3$\times$ (InternetArchiveBot, 79.5\% coverage) to 101$\times$ (HuangQQ, 1.0\%). Since each generated record derives from exactly one wiki page, file-level deletion is equivalent to record-level deletion here; remaining over-deletion comes from co-authorship within pages.
+
+The over-deletion factor follows a heavy-tailed distribution across all authors in the dataset: the four benchmark authors in Table~\ref{tab:revocation} span two orders of magnitude in over-deletion. This pattern is consistent across all four tested scales (1k--220k): the largest-share author (InternetArchiveBot, 63--80\% coverage) consistently has 1.3--1.6$\times$ over-deletion, while the smallest-share authors ($\approx$1\%) consistently face $\approx$100$\times$ over-deletion under dataset-level revocation. All four authors have 100\% of their records in multi-author sections---meaning that even record-level revocation affects shared content. This co-deletion is inherent to collaborative authorship.
+
+% ===========================================================================
+\subsection{Reconcile Effectiveness}
+\label{sec:reconcile-effectiveness}
+
+When data files are edited after initial tracking, provenance links break because content hashes no longer match. We evaluate the reconcile mechanism (\S\ref{sec:package-ecosystem}) with deterministic mutations (seed\,=\,42): 10\% text edited, 5\% deleted, 5\% new lines, using \texttt{nomic-embed-text-v1.5} at cosine threshold 0.85. Table~\ref{tab:reconcile} reports the two-phase recovery rates.
+
+\input{tables/table4-reconcile}
+
+Hash matching recovers 85--87\% of original lines; embedding similarity recovers an additional 10--13\%, bringing total recovery to 96--98\% across all scales. Recovery improves with dataset size (96.3\% at 1k to 98.2\% at 100k). The remaining 2--4\% are genuinely new or heavily rewritten content requiring manual re-tracking via \texttt{ob.track()}.
+
+% ===========================================================================
+\subsection{Scalability}
+\label{sec:scalability}
+
+Table~\ref{tab:scalability} reports operation latency across four scales from 1k to 220k lines, averaged over three runs per scale, using real zhwiki data from the HuggingFace pipeline. The implementation uses rayon for parallel bucket scanning and a binary index (Appendix~\ref{sec:index}) that stores author-to-section routing. \texttt{show} and \texttt{purge} use parallel rayon workers to scan 256 bucket files concurrently; at 220k lines, \texttt{show} completes in 80\,ms and \texttt{revoke} in 22\,ms.
+
+\input{tables/table5-scalability}
+
+Line coverage is 100\% at all scales, confirming every data line has a complete provenance chain.
+
+% ===========================================================================
+\subsection{Token-Level Provenance Evaluation}
+\label{sec:token-eval}
+
+We evaluate the token-index layer on three axes: integration overhead in a real processing framework, query performance, and metadata preservation.
+
+\emph{Framework integration}. We validate the integration pattern with two frameworks on zhwiki data at four scales: from 1k pages (2.8M gpt2 tokens, 4.8k authors) to 220k pages (712M tokens, 483k authors). For Datatrove~\cite{penedo2024datatrove}, Pipeline~A is a vanilla pipeline (reader $\rightarrow$ tokenizer $\rightarrow$ packed output); Pipeline~B inserts OBProvenanceBlock between reader and tokenizer. For HuggingFace Datasets, an equivalent \texttt{.map()} callback applies provenance tracking per document. Table~\ref{tab:token-overhead} reports both frameworks across all four scales.
+
+\input{tables/table6-token-overhead}
+
+At the 1k-page scale, the Datatrove provenance block adds 13.8\% throughput overhead while HuggingFace adds only 2.0\%, reflecting that provenance tracking is I/O-bound and HuggingFace's pipeline is already bottlenecked on tokenization. Storage overhead follows a consistent trend: from 1.33$\times$ at 1k pages to 1.23$\times$ at 220k pages, reflecting that structured JSONL provenance metadata grows sublinearly relative to token data. HuggingFace shows a 4.0\% throughput penalty at the 220k-page scale (712M tokens). The storage ratio is higher at small scales because \texttt{.ob/} stores structured metadata (author names, emails, section hashes, licenses) while the packed output is compact binary token IDs (2\,bytes each).
+
+\emph{Query performance}. After Pipeline~B completes, \texttt{ob show -{}-author NAME -{}-tokenizer gpt2} traverses the full author $\rightarrow$ section $\rightarrow$ token-index chain in 3--69\,ms across the four tested scales (Table~\ref{tab:token-overhead}). At the 220k-page scale (712M tokens, 483k authors), \texttt{ob revoke} completes in 16\,ms.
+
+\emph{Metadata preservation}. Pipeline~A produces packed binary output with document boundaries but \emph{no author information}---consistent with the behavior of Datatrove's DocumentTokenizer and Megatron-LM's preprocess\_data, which discard metadata during tokenization. Pipeline~B preserves the complete author $\rightarrow$ section $\rightarrow$ token-index chain, enabling provenance queries that are impossible in the vanilla pipeline.
+
+% ===========================================================================
+\subsection{Cross-Domain Generalization}
+\label{sec:cross-domain}
+
+To evaluate whether ob generalizes beyond wiki-style text, we apply the same integration pattern to Linux kernel C source code. The attribution source is \texttt{git blame -e}, which provides line-level authorship for each \texttt{.c}/\texttt{.h} file---a more accurate attribution than the file-level \texttt{git log --name-only} approach used by The Stack~\cite{kocetkov2022thestack} and StarCoder~\cite{li2023starcoder}. Files are first filtered by commit frequency (top $N$ most-committed \texttt{.c}/\texttt{.h}/\texttt{.S}/\texttt{.rs}/\texttt{.dts}/\texttt{.dtsi} files), then attributed via \texttt{git blame} on the top 1,000 files (line-level, budget-capped), with bulk \texttt{git log} commit-frequency attribution for the remainder. We test three scales: 1\,000, 10\,000, and all $\approx$44k attributed source files (Table~\ref{tab:cross-domain}).
+
+\begin{table}[t]
+\centering
+\caption{Linux kernel cross-domain benchmark. Attribution via \texttt{git blame -e} (line-level authorship on top $N$ \texttt{.c}/\texttt{.h} files). Over-deletion compares file-level against record-level precision (revoking \texttt{torvalds}).}
+\label{tab:cross-domain}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+& & \multicolumn{2}{c}{\textbf{Throughput drop}} & \textbf{Storage} & \textbf{Over-del.} \\
+\cmidrule(lr){3-4}
+\textbf{Files} & \textbf{Authors} & Datatrove & HF & (Datatrove) & \\
+\midrule
+1\,000 & 671 & $-$25.9\% & $-$0\% & 1.06$\times$ & 9$\times$ \\
+10\,000 & 5\,285 & $-$41.2\% & $-$0\% & 1.02$\times$ & — \\
+44\,222 & 6\,964 & — & $-$1\% & 1.01$\times$ & 1.3$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both frameworks integrate ob provenance tracking with no code changes to the pipeline pattern established in \S\ref{sec:token-eval}. Storage overhead stays under 1.06$\times$ across scales, and all ob queries complete under 10\,ms. The HuggingFace throughput penalty is negligible ($<$1\%); Datatrove shows higher overhead (25.9--41.2\%), driven by kernel source files being smaller and faster to process, which makes the provenance block a larger relative cost.
+
+The over-deletion analysis reveals that file-level deletion remains wasteful even with accurate attribution: at the smallest scale (1\,000 files, 671 authors), revoking Linus Torvalds' contributions at file granularity would delete 9$\times$ more lines than necessary. At the full scale ($\approx$44k files), the over-deletion factor drops to 1.3$\times$.
+
+% ===========================================================================
+\subsection{Application: Machine Unlearning}
+\label{sec:mu}
+
+This subsection asks whether that precision translates to a downstream task: given a revocation request, does ob's line-level forget set enable more effective machine unlearning than a same-size random baseline?
+
+\emph{Setup.} We fine-tune Qwen3-1.7B~(1.7B parameters) with QLoRA~(rank\,=\,16, 4-bit NF4 quantization, bf16) on ChatML QA pairs generated from zhwiki data via the Zhipu GLM-4-Flash API. The SFT checkpoint (1 epoch, lr\,=\,2$\times$10$^{-4}$, effective batch\,=\,16) serves as the shared starting point for all unlearning runs. We select two contributors with different contribution shares---Berthe (9.3\%, 14\,882 lines) and Antigng-bot (8.6\%, 11\,618 lines)---and construct paired forget sets for each: \emph{line} uses ob's provenance to select exactly the lines attributed to the target author, while \emph{random} draws a same-size random subset from the full corpus (seed\,=\,42). Both forget sets contain the same number of lines; the only difference is \emph{which} lines are selected.
+
+We apply three unlearning algorithms: NPO~\cite{zhang2024npo} ($\beta$\,=\,0.1, 5 epochs, lr\,=\,10$^{-5}$), RMU~\cite{li2024wmdp} (layer\,=\,14, $\alpha$\,=\,100, 80 steps), and gradient ascent (3 epochs, lr\,=\,5$\times$10$^{-5}$). Evaluation uses four metrics: forget-set perplexity~(PPL, higher\,=\,better forgetting), retain-set PPL~(lower\,=\,better utility preservation), forget-set ROUGE-L~(lower\,=\,less memorization), and retain-set ROUGE-L~(higher\,=\,better preservation). All metrics are computed on sampled subsets (1\,000 lines for PPL, 100 for ROUGE-L) from the respective splits.
+
+\input{tables/table8-unlearning}
+
+\input{figures/fig7-npo-ratio}
+
+\emph{NPO results.} Table~\ref{tab:unlearning} shows that ob's line-level forget sets dominate the random baseline on \emph{all four metrics} for both authors (Figure~\ref{fig:npo-advantage}). Averaging across the two authors, NPO with line-level provenance achieves forget PPL\,=\,8.97 (2.56$\times$ SFT baseline) versus 6.32 (1.80$\times$) for random---a 42\% improvement in forgetting. Simultaneously, retain PPL is 4.58 (1.52$\times$) versus 5.97 (1.98$\times$)---a 23\% improvement in utility preservation. The ROUGE-L metrics tell the same story: line-level achieves forget ROUGE-L\,=\,0.146 (0.37$\times$ SFT) versus 0.259 (0.65$\times$), and retain ROUGE-L\,=\,0.355 (0.87$\times$) versus 0.296 (0.73$\times$). The consistency across both authors---who differ in contribution share and forget-set size---indicates that the advantage stems from the \emph{selection quality} of provenance-based forget sets rather than any author-specific artifact.
+
+\emph{RMU results.} All four RMU variants produce metrics nearly identical to the SFT baseline (Table~\ref{tab:unlearning}), confirming the known incompatibility between RMU and QLoRA~\cite{li2024wmdp}: 4-bit quantization introduces step sizes ($\sim$0.05) that dwarf RMU's weight updates ($\sim$10$^{-4}$), preventing the hidden-state steering that RMU requires. All published RMU results use full fine-tuning.
+
+\emph{Gradient Ascent.} All gradient ascent runs produce catastrophic model collapse (Table~\ref{tab:unlearning}), with forget PPL reaching 4.4--4.8$\times$10$^{8}$ for line-level and 1.8$\times$10$^{5}$--6.7$\times$10$^{6}$ for random. Retain PPL is similarly elevated, confirming total utility loss. However, the ROUGE-L metrics reveal a secondary signal: line-level variants preserve retain ROUGE-L at 0.30--0.32, while random variants collapse to 0.06---a 5$\times$ difference. This suggests that precise forget sets create a more \emph{bimodal} degradation pattern: extreme on the targeted content, relatively preserved elsewhere. Random forget sets distribute the destructive gradient signal across all content, producing more uniform degradation. Even with a destructive algorithm, provenance-based targeting preserves more of the retain set.
+
+\emph{Takeaway.} Line-level provenance enables NPO to achieve simultaneously better forgetting and better retention than random baseline forget sets, across two authors with different contribution profiles. This demonstrates that the provenance problem---\emph{which data to forget?}---directly affects unlearning quality.

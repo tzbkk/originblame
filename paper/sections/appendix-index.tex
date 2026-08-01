@@ -1,0 +1,34 @@
+\section{Bucket-Routing Index}
+\label{sec:index}
+
+\texttt{show} and \texttt{purge} grow super-linearly because they scan all 256 document-index shard files and expand each record's section and author links. The bucket-routing index eliminates this full scan by pre-computing which shard files are relevant for each author and section.
+
+\paragraph{Structure.}
+The index is a fourth layer stored in \texttt{.ob/index/}, sharded by the same 2-character hex prefix as the other layers. Each shard file contains JSONL records of the form \texttt{\{"id": "<hash>", "refs": ["ab", "cd", ...]\}}, where \texttt{id} is either an author ID or a section hash, and \texttt{refs} lists the 2-character bucket prefixes of the next layer's relevant shards. Specifically:
+\begin{itemize}
+	\item \textbf{Author entries}: \texttt{id} = author ID, \texttt{refs} = section bucket prefixes containing that author.
+	\item \textbf{Section entries}: \texttt{id} = section hash, \texttt{refs} = document-index bucket prefixes containing records that reference that section.
+\end{itemize}
+The index is built by a single pass over the document-index and section layers via \texttt{ob index build}.
+
+\paragraph{Query path.}
+For \texttt{show\,--\,author --index}, the query proceeds in three hops, each reading only the relevant shard files:
+\begin{enumerate}
+	\item Look up author entries in the index $\to$ obtain section bucket prefixes.
+	\item Read those section shards to find matching sections $\to$ look up section entries in the index $\to$ obtain document-index bucket prefixes.
+	\item Read only those document-index shards to collect results.
+\end{enumerate}
+\texttt{purge\,--\,author --index} follows the same three-hop path but returns only \texttt{(line\_hash, file)} pairs without expanding section and author details.
+
+\paragraph{Implementation details.}
+Two optimizations reduce I/O:
+\begin{enumerate}
+	\item \textbf{Batched bucket reads.} At each hop, IDs are grouped by their 2-character prefix so each shard file is read at most once, even when hundreds of IDs map to the same bucket.
+	\item \textbf{Batch pre-loading.} For \texttt{show}, all author records referenced by matched sections are loaded into memory in a single pass over the author shards before the document-index loop, replacing per-result \texttt{get\_author()} calls with constant-time dict lookups.
+\end{enumerate}
+
+\paragraph{Unified binary index.}
+The binary index (OBIDXF02) uses type-tagged references to serve both the document-index and token-index layers. Each reference has a 1-byte type tag: \texttt{0x00} for document-index shard prefixes and \texttt{0x01} for token-index byte ranges. A single section hash can reference both document-index shards and token-index ranges across multiple tokenizers. Queries filter by type and tokenizer to access only the relevant layer.
+
+\paragraph{Performance.}
+Line-level query latency across all scales is reported in Table~\ref{tab:scalability} (\S\ref{sec:scalability}); token-index query latency in Table~\ref{tab:token-overhead} (\S\ref{sec:token-eval}). The index is opt-in via the \texttt{--index} flag; without it, both commands fall back to the parallel full-scan path.

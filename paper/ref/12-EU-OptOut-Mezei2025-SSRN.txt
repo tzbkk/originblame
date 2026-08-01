@@ -1,0 +1,1118 @@
+The Multi-layered Regulation of Rights Reservation (Opt-out) Under EU Copyright Law
+and the AI Act – For the Benefit of Whom?
+(v3.0)
+Péter Mezei
+Professor at University of Szeged, Hungary; Chief researcher, Vytautas Magnus University
+(Lithuania); Adjunct professor (dosentti), University of Turku (Finland)
+E-mail address: mezei.peter@szte.hu
+
+Abstract:
+The rapid development of generative artificial intelligence (GenAI), the trendiest type of artificial
+intelligence (AI) these days, prompts legislation around the Globe to (re)consider the need for and
+the details of regulatory solutions to manage the copyright consequences of this phenomenon. The
+European Union (EU) – like in other fields of law – is in the forefront of regulation.
+On the one hand, the EU’s Copyright in the Digital Single Market Directive introduced a specific
+text- and data-mining (TDM) exception for the benefit of research organisations and cultural
+heritage institutions (Article 3), as well as any user (Article 4). The latter exception might be
+directly relevant for GenAI model developers and providers, including its provisions on the
+reservation of rights. Under this, rightsholders might ‘opt out’ their works and other protected
+subject matter from TDM. The CDSM Directive did, however, not conclusively clarify how, when,
+in what exact form and by whom such reservation might be exercised. In any case, these rules, so
+far, imagined a collaboration via the flagging of reserved contents by rightsholders and,
+consequently, the respect of such opt-outs by GenAI providers.
+On the other hand, the AI Act, published in the Official Journal in July 2024, will affect the
+functioning of such rights reservation mechanisms by introducing an obligation to put in place a
+policy document on how GenAI developers comply with rights reservation rules [Article 53(1)(c)]
+and to draw and make publicly available a sufficiently detailed summary on the data used for
+training purposes [Article 53(1)(d)]. Furthermore, the newly established AI Office will step in with
+its administrative role and duties to oversee the compliance with the AI Act, especially in the form
+of a Code of Practice. Consequently, the formerly clear private law setting has now been
+supplemented with some administrative, public law features.
+Currently, however, the efficacy of the EU’s multi-layered legislation is far from being certain.
+The present chapter aims to review how these layers of norms will ultimately be put into practice
+and co-exist in the European Union.
+Keywords:
+generative AI, reservation of rights, European Union, CDSM Directive, AI Act, multi-layered
+regulation
+
+1
+
+1. Introduction
+Elsewhere,1 I listed my concerns regarding the meaning and proper functioning of the recently
+introduced all-purpose or commercial text- and data-mining (TDM) exception of the European
+Union (EU) copyright law.2
+I noted that the new exception (or limitation) has shady contours, especially its rights reservation
+prong.3 The latter works like a ‘complex equation’, since the legislation neither clarified the
+acceptable timing, location and scope, including the actual declarer, of such reservations;4 nor
+considered fully their potential consequences for the law, industry and society. Finally, I stressed
+that while it looks like we are waiting for Godot (and more clarification regarding these elements),
+the generative artificial intelligence (GenAI) industry has rapidly outpaced the normative concerns
+by offering certain – more or less functioning – solutions to ‘opt out’ from the training of GenAI
+models. It looked like that the new regime of Article 4(3) CDSM Directive is just another EU norm
+that only triggers questions rather than offers practical answers.5
+The newly published AI Act6 seems to bring some guidance to a few of these pending issues,
+especially via the AI Office’s draft Code of Practice.7 Yet, the AI Act raised a few other novel
+challenges. All these concerns – including those surrounding the reservation of rights – were
+recently discussed by a great number of commentators.8 Overall, we are certainly getting closer to
+Péter Mezei: A saviour or a dead end? Reservation of rights in the age of generative AI, 46(7) European Intellectual
+Property Review (2024) 461-469.
+2
+Directive (EU) 2019/790 of the European Parliament and of the Council of 17 April 2019 on copyright and related
+rights in the Digital Single Market and amending Directives 96/9/EC and 2001/29/EC (Text with EEA relevance),
+Article 4.
+3
+Ibid, Article 4(3).
+4
+Mezei (2024) 465-468.
+5
+On some of the very same questions see especially Paul Keller: Considerations for Opt-out Compliance Policies by
+AI Model Developers, Open Future Policy Brief #6 (2024), available at https://openfuture.eu/wpcontent/uploads/2024/05/240516considerations_of_opt-out_compliance_policies.pdf; Hanjo Hamann: Artificial
+Intelligence and the Law of Machine-Readability: A Review of Human-to-Machine Communication Protocols and
+their (In)Compatibility with Article 4(3) of the Copyright DSM Directive, 15(2) JIPITEC (2024a) 102-117; Hanjo
+Hamann: Nutzungsvorbehalte für KI-Training in der Rechtsgeschäftslehre der Maschinenkommunikation.
+Dogmatische und praktische Schwächen von Art. 4 Abs. 3 DSM-RL und § 44b Abs. 3 UrhG, 16(2) Zeitschrift für
+Geistiges Eigentum / Intellectual Property Journal (2024b) 113-168.
+6
+Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised
+rules on artificial intelligence and amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU) No 168/2013,
+(EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144 and Directives 2014/90/EU, (EU) 2016/797 and (EU)
+2020/1828 (Artificial Intelligence Act) (Text with EEA relevance).
+7
+A Code of Practice per Article 56(1) AI Act is aimed “to contribute to the proper application of this Regulation,
+taking into account international approaches”. Based on this, the AI Office has drafted three versions of the GeneralPurpose AI Code of Practice. See First Draft of the General-Purpose AI Code of Practice, 14 November 2024
+(https://ec.europa.eu/newsroom/dae/redirection/document/109946); Second Draft of the General-Purpose AI Code of
+Practice, 19 December 2024 (https://ec.europa.eu/newsroom/dae/redirection/document/111374); and Third Draft
+General-Purpose AI Code of Practice, 11 March 2025 (https://code-of-practice.ai/?section=summary).
+8
+See the following selection of papers published since early 2024: Haimo Schack: Auslesen von Webseiten zu KITrainingszwecken als Urheberrechtsverletzung de lege lata et ferenda, 77(2) Neue Juristische Wochenschrift (2024)
+113-117; Franz Hofmann: Retten Schranken Geschäftsmodelle generativer KI-Systeme? 68(3) Zeitschrift für Urheberund Medienrecht (2024) 166-174; Gina Maria Ziaja: The text and data mining opt-out in Article 4(3) CDSMD:
+Adequate veto right for rightholders or a suffocating blanket for European artificial intelligence innovations? 19(5)
+Journal of Intellectual Property Law and Practice (2024) 453-459; Matthias Leistner: TDM und KI-Training in der
+Europäischen Union. Erste Fingerzeige des LG Hamburg im “LAION”-Urteil, 126(22) Gewerblicher Rechtsschutz
+und Urheberrecht (2024) 1665-1675; Anke Moerland: Tekst- en datamining over de grens, 2024(4) Ars Aequi (2024)
+1
+
+2
+
+decipher certain elements of the TDM equation, especially regarding the reproduction/TDM
+overlaps; the beneficiary of the rights reservation; and certain transparency requirements. Yet, I
+continue to believe that the pending problems far outweigh the available solutions.
+Therefore, this chapter aims to shed light on numerous open questions. First, it will discuss the
+overlap of the reproduction right and TDM and further clarify the concept and meaning of the
+rights reservation requirement (section 2). This will be followed by the review of the AI Act’s
+novel rules that are relevant for the proper functioning of Article 4(3) CDSM Directive (section
+3). Finally, the famous Kneschke v. LAION judgment will be discussed. This decision sheds light
+– at least in dictum – on certain aspects of rights reservation (section 4).
+2. Overlaps of GenAI, TDM and rights reservation
+2.1. Is GenAI training covered by the commercial TDM exception?
+Under EU law, one of the most heated conversations surrounding GenAI and the commercial TDM
+exception circulates around a very existential question. Namely, does the present normative
+framework on commercial TDM offer an exemption from copyright liability for GenAI model
+providers, or does AI training necessitate authorization in the lack of its fitting into the concept of
+TDM?
+Many sceptical – or rather ‘originalist’ – voices highlight that neither the CDSM Directive, nor the
+AI Act expressly refers to GenAI. At first sight, that could have been true for the CDSM Directive,
+672-681; Tim W. Dornis, Sebastian Stober: Urheberrecht und Training generativer KI-Modelle, Nomos (2024);
+Giuseppe B. Abbamonte: The Application of the Copyright TDM Exceptions and Transparency Requirements in the
+AI Act to the Training of Generative AI, 46(7) European Intellectual Property Review (2024) 479-487; Kalpana Tyagi:
+Copyright, text & data mining and the innovation dimension of generative AI, 19(7) Journal of Intellectual Property
+Law & Practice (2024) 557-570; Tim W. Dornis: Generatives KI-Training und der TDM-Trugschluss, 126(22)
+Gewerblicher Rechtsschutz und Urheberrecht (2024) 1676-1685; Thomas Margoni: TDM and generative AI: Lawful
+access and opt-outs, 2024(2) Auteurs en Media (2024) 175-188; Luca Schirru, Allan Rocha de Souza, Mariana G.
+Valente, Alice de Perdigão Lana: Text and Data Mining Exceptions in Latin America, 55(10) IIC - International
+Review of Intellectual Property and Competition Law (2024) 1624-1653; Eleonora Rosati: Is text and data mining
+synonymous with AI training? 19(12) Journal of Intellectual Property Law and Practice (2024a) 851-852; Kacper
+Szkalej, Martin Senftleben: Generative AI and Creative Commons Licences - The Application of Share Alike
+Obligations to Trained Models, Curated Datasets and AI Output, 15(3) JIPITEC (2024) 313-337; Maryna Manteghi:
+Can text and data mining exceptions and synthetic data training mitigate copyright-related concerns in generative AI?
+16(2) Law, Innovation and Technology (2024) 663-686; Eleonora Rosati: Infringing AI: Liability for AI-Generated
+Outputs under International, EU, and UK Copyright Law, 15 European Journal of Risk Regulation (2024b) 1-25
+(online first); Daniel J. Gervais, Haralambos Marmanis, Noam Shemtov, Catherine Zaller Rowland, The Heart of the
+Matter: Copyright, AI Training, and LLMs (September 21, 2024), available at SSRN:
+https://ssrn.com/abstract=4963711; Max Dregelies: KI-Training unter dem AI Act, 126(20) Gewerblicher
+Rechtsschutz und Urheberrecht (2024) 1484-1493; Jan Bernd Nordemann, Arman Rasouli: Die Regelungen der KIVerordnung mit Urheberrechtsbezug – Möglichkeit der privaten Rechtsdurchsetzung? 68(11) Zeitschrift für Urheberund Medienrecht (2024) 780-789; A. Feder Cooper, James Grimmelmann: The Files are in the Computer: On
+Copyright, Memorization, and Generative AI, Chicago-Kent Law Review (forthcoming 2024), available at SSRN:
+https://ssrn.com/abstract=4803118; João Pedro Quintais: Generative AI, Copyright and the AI Act, 56 Computer Law
+& Security Review (2025) 106107; Bohdan Widła: Thou Shalt Not Conduct Research on Software? Text and Data
+Mining of Computer Programs in the Current EU Copyright Framework, 74(1) GRUR International (2025) 3-18;
+Bernd Justin Jütte: Rechtsentwicklung zur KI im angelsächsischen Rechtsraum, 69(3) Zeitschrift für Urheber- und
+Medienrecht (2025) 188-196; Matthew Sag, Peter K. Yu: The Globalization of Copyright Exceptions for AI Training,
+74 Emory Law Journal (forthcoming 2025); Tim W. Dornis: The Training of Generative AI is not Text and Data
+Mining, 47(2) European Intellectual Property Review (forthcoming 2025).
+
+3
+
+as the most famous GenAI applications entered the commercial landscape well after the entry into
+force of that norm. Also, as Eleonora Rosati put it, “the AI Act recognizes the relevance of TDM
+to AI training, but in no way does it indicate that TDM is synonymous with AI training or that
+everything in-between TDM and AI training is covered by Article 3 or 4 of the DSM Directive”.9
+Tim Dornis followed a differently logic by reviewing the substance of machine learning. He argued
+that training GenAI far exceeds the scope of any automated analytical technique and is indeed
+intended to be utilized for creative activities that endanger the livelihood of authors and other
+rightsholders.10
+This restrictive point of view is, however, without merits for various reasons. First, the TDM
+exception was introduced in a purposefully broad and flexible form, thus allowing for the
+development of new business solutions,11 including models not yet foreseen in 2019.12 Also, both
+the CDSM Directive and the AI Act expressly connect13 TDM to reproduction (of works and other
+subject matter) per the InfoSoc Directive14 and extraction (of database) per the Database
+Directive.15 Finally, the AI Act clearly combines all relevant issues at stake, namely GenAI
+training, use (reproduction or extraction) and TDM, in a regulatory pasticcio in its recital 105.16
+In sum, I join the majority of commentators17 who argue that this question has been settled at the
+latest in 2024 (with the publication of the AI Act), but most probably already in 2019 (at the time
+of the CDSM Directive’s acceptance).18 The existing law classifies the training of general-purpose
+AI (GPAI) models as a reproduction/extraction of copyrighted materials; even if – as some rightly
+
+Schack (2024) 114-115; Rosati (2024b) 7-8.
+Dornis (2025).
+11
+“[T]ext and data mining techniques are widely used … [for] … the development of new applications or
+technologies” and “encourage innovation also in the private sector”. See CDSM Directive, recital 18. See further:
+“[t]he development and training of such [general-purpose AI] models require access to vast amounts of text, images,
+videos and other data”. See AI Act, recital 105.
+12
+To that effect see de la Durantaye (2023) 652; Hofmann (2024) 170-171. Indeed, any argument against the
+interpretation of the norm flexibly or openly would equal with the requirement of case-by-case legislation regarding
+any novel technologies solutions.
+13
+“[T]his Directive should provide, under certain conditions, for an exception or limitation for reproductions and
+extractions of works or other subject matter, for the purposes of text and data mining”. See CDSM Directive, recital
+18. See further: “Directive (EU) 2019/790 introduced exceptions and limitations allowing reproductions and
+extractions of works or other subject matter, for the purpose of text and data mining, under certain conditions”. See
+AI Act, recital 105.
+14
+Directive 2001/29/EC of the European Parliament and of the Council of 22 May 2001 on the harmonisation of
+certain aspects of copyright and related rights in the information society, Article 2.
+15
+Directive 96/9/EC of the European Parliament and of the Council of 11 March 1996 on the legal protection of
+databases, Article 6(2)(b) and 9(b).
+16
+If not in the same vein as Singapore’s Copyright Act, which defines computational data analysis with reference to
+two categories, the AI Act has just managed to combine TDM and machine learning. Singapore’s law differentiates
+between “using a computer program to identify, extract and analyse information or data from the work or recording”;
+and “using the work or recording as an example of a type of information or data to improve the functioning of a
+computer program in relation to that type of information or data”; where the latter option is illustrated by an express
+reference to “use of images to train a computer program to recognise images”. See Copyright Act 2021 of the Republic
+of Singapore, Section 243.
+17
+Schack (2024) 113-114; Hofmann (2024) 168; Peukert (2024) 503; Moerland (2024) 672-681; Hamann (2024a)
+105; Leistner (2024) 1668-1669; Nordemann - Rasouli (2024) 780; Manteghi (2024) 669-670; Gervais et al. (2024) 5
+and 9-11; Cooper - Grimmelmann (2024) 21-23; Quintais (2025) 6; Sag - Yu (2025) 7-9.
+18
+This is also confirmed by LG Hamburg, Urt. v. 27.9.2024 (310 O 227/23) - LAION, 126(22) Gewerblicher
+Rechtsschutz und Urheberrecht (2024) 1712-1713, para. 48-50.
+9
+
+10
+
+4
+
+pointed out19 – such uses have an incidental or integral nature. Although case law in Europe is
+scarce yet, but the existing examples seem to side with this conclusion, declaring the downloading
+of images to compare their substance with the connected metadata a reproduction/extraction and
+also TDM.20 This naturally does not mean that the TDM exception would apply to ex post uses.
+Any generation of an illegal output by/via a GenAI application or the making available to the
+public of any of such outputs or the training data does not fit into the scope of Article 4 CDSM
+Directive.21
+In other words, the task is not anymore to declassify GenAI training as TDM; it seems to be settled
+by now.22 The real issue is to find the right boundaries and requirements of any such use; that is,
+how Article 4 CDSM Directive and Article 53 AI Act have to be put in practice. As a part of that
+we shall take a close look at the rights reservation requirement of the CDSM Directive.
+2.2. What is the reservation of rights in essence?
+There are various conceptual elements of the commercial TDM exception that might need to be
+discussed in great depth. The first of these can easily be sidestepped at the moment (but will be
+revisited shortly in subchapter 3.1). The EU acquis is drafted flexibly to allow for the transposition
+of Article 4 in either the form of an exception or a limitation. Yet, the EU Member States have
+typically introduced remuneration-free exceptions rather than paid but permitted limitations, thus
+rendering moot any debate about this categorization dilemma.23
+The other notable provisions of Article 4 that require scrutiny are lawful access; retaining copies
+for not longer than it is necessary for those text and data mining purposes; respect of reservation
+of rights; and no effect on scientific TDM per Article 3 CDSM Directive. The majority of these
+were analysed in the previous years in great depth.24 The present chapter aims to focus solely on
+As Kraetzig put it: “it is a reproduction that no human eye ever looks at”. (“Es ist eine Vervielfältigung, auf die nie
+ein menschliches Auge blickt”.) See Viktoria Kraetzig: KI-Kunst als schöpferische Zerstörung, 77(11) Neue
+Juristische Wochenschrift (2024) 699. To the same effect see Szkalej - Senftleben (2024) 319 (“if labelling and training
+involve copying of copyright-protected data, at least in the operating memory, these acts are likely to constitute
+reproductions within the meaning of the broad right granted in the EU, even though they are merely a means to an
+end”; footnotes omitted.)
+20
+LG Hamburg (2024) 1712, para. 42.
+21
+In this regard see Tim W. Dornis: Generative AI, Reproductions Inside the Model, and the Making Available to the
+Public, 56(6) IIC - International Review of Intellectual Property and Competition Law (forthcoming 2025) 14-20;
+Séverine Dusollier, Martin Kretschmer, Thomas Margoni, Péter Mezei, João Pedro Quintais, Ole-Andreas Rognstad:
+Copyright and Generative AI: Opinion, 16(1) JIPITEC (2025) 122-124.
+22
+Hamann (2024a) 106.
+23
+On any possible remuneration for TDM see: Martin Senftleben: Generative AI and Author Remuneration, 54(10)
+IIC - International Review of Intellectual Property and Competition Law (2023) 1535-1560; Christophe Geiger,
+Vincenzo Iaia: The Forgotten Creator: Towards a Statutory Remuneration Right for Machine Learning of Generative
+AI, 52 Computer Law & Security Review (2024) 105925.
+24
+Rossana Ducato, Alain Strowel: Limitations to Text and Data Mining and Consumer Empowerment: Making the
+Case for a Right to ‘Machine Legibility’, 50(6) IIC - International Review of Intellectual Property and Competition
+Law (2019) 649-684; Rossana Ducato, Alain Strowel: Ensuring text and data mining: remaining issues with the EU
+copyright exceptions and possible ways out, 43(5) European Intellectual Property Review (2021) 322-337; Thomas
+Margoni, Martin Kretschmer: A Deeper Look into the EU Text and Data Mining Exceptions: Harmonisation, Data
+Ownership, and the Future of Technology, 71(8) GRUR International (2022) 685-701; Thomas Margoni: Saving
+research: Lawful access to unlawful sources under Art. 3 CDSM Directive?, Kluwer Copyright Blog, 22 December
+2023 (https://copyrightblog.kluweriplaw.com/2023/12/22/saving-research-lawful-access-to-unlawful-sources-underart-3-cdsm-directive/); Kacper Szkalej: The paradox of lawful text and data mining? Some experiences from the
+19
+
+5
+
+the rights reservation prong, which is generally referred to as ‘opt-out’. While this might only be
+a futile exercise, it looks necessary to flag that the term ‘opt-out’ is flawed (even if it is a mere
+metaphor).
+On the one hand, the rights reservation does not put rightsholders in a position that is ‘external’ to
+their rights; they do not only ‘rule out’ some user behaviour. Indeed, foreclosing TDM practically
+puts rightsholders back to an ‘internal’ position, that is, where they might require the authorization
+of and payment for commercial TDM activities. In other words, Article 4(3) might rather be called
+an ‘opt-back’; or as Hanjo Hamann coined, an ‘exception-exception’.25
+Viewed from a contractual perspective, a rights reservation is neither an offer, nor an acceptance;
+hence it represents no solid ground for an authorization yet. Paul Keller coined rights reservation
+– viewed from model trainers’ perspective – an ‘expression’ or ‘statement’ of intent that the trainers
+shall respect.26 Indeed, it looks like a mere ‘non-acceptance’ of the non-authorized (and non-paid)
+use of protected subject matter. As such, it is only an expression of the will of the rightsholders to
+negotiate the terms of authorization with the users;27 opening the doors for individual or – possibly
+– collective rights management.
+This semantic clarification is an important starting point for the upcoming discussions, as it clearly
+highlights the position that rightsholders and users might have. The formers must be in the position
+to express their will on the banning of non-authorized TDM towards users; who, in turn, shall not
+take TDM ‘granted’ and/or look at rights reservation as a simple ‘exiting’ of contents from GenAI
+developers’ activities. To the contrary, they shall get ready to authorize the use of the training data.
+3. The AI Act and rights reservation
+Following a long debate – and several revisions in its substance –, the AI Act has been published
+during the summer of 2024. Originally, it was aimed not to include any words on the copyright
+aspects of AI. Policymakers were, however, prompted to reflect on the accelerated development
+of GenAI, and hence the final version included a few, yet relevant provisions with a sight on
+copyright law. Indeed, these provisions have direct relevance for the purposes of our discussion.28
+Before discussing the relevant provisions of the AI Act and the freshly founded AI Office’s draft
+Code of Practice, we shall cast our eyes on a crucial point of the regulation. Namely, its copyrightrelevant provisions oblige only GPAI model29 providers,30 who differ from GPAI system31
+providers. As Quintais puts, “the model is the engine, whereas the system is the car one drives on
+the road”.32 In other terms, the models represent the underlying knowledge that systems are built
+on to ultimately serve customers. The evident example here is the distinction between GPT and
+ChatGPT; where the former is the model that the latter system relies on. Since current GenAI
+applications (systems) are not necessarily developed by the model providers, the AI Act’s ultimate
+
+research sector and where we (should) go from here (October 23, 2024), available at SSRN:
+https://ssrn.com/abstract=5000116.
+25
+‘Rückausnahme’ in German language. See Hamann (2024a) 107.
+26
+Keller (2024) 3.
+27
+To this effect see de la Durantaye (2023) 651.
+28
+On the legislative history, see Peukert (2024) 497-498.
+29
+Article 3(63) AI Act.
+30
+Article 3(3) AI Act, where ‘providers’ mean those who develop and place GPAI models on the market.
+31
+Article 3(66) AI Act.
+32
+Quintais (2025) 5.
+
+6
+
+decision to focus on the model providers has clear implications for the distinct stakeholders’
+responsibilities.33
+3.1. Article 53(1)(c) AI Act on a policy to comply with EU copyright law
+Article 53(1)(c) rules that GPAI model providers shall “put in place a policy to comply with Union
+law on copyright and related rights, and in particular to identify and comply with, including
+through state-of-the-art technologies, a reservation of rights expressed pursuant to Article 4(3) of
+Directive (EU) 2019/790”. This provision is based on two premises: first, the requirement to ‘put
+in place’ a policy document; and, second, to identify and comply with the reservation of rights,
+which, in essence, requires GPAI model providers to adhere to the CDSM Directive.
+As regards the first prong, ‘putting in place’ shall mean the complex and recurring task of GPAI
+model providers to draw up, publish and keep such policy document up-to-date, as well as to
+effectuate their commitments. Publishing the policy shall be understood in a broad sense: the
+document shall be accessible to the general public, rather than solely to the AI Office. This is
+evident from the language and structure of the AI Act itself. In Article 53(1)(a), the AI Act
+introduces a limited publication obligation (‘upon request, to the AI Office and the national
+competent authorities’) regarding the technical documentation of GPAI models; whereas Article
+53(1)(c) does not include any such limitation.
+As regards the second prong, GPAI model providers’ policy, in line with effet utile,34 shall be
+meaningful. This does not mean that the policy document itself shall create the framework for any
+rights reservation; the policy document is definitely not the right means for that. Yet, the document
+shall not hinder rightsholders in effectively reserving their rights in line with the state of the art
+technologies, including, but not limited to GPAI model providers’ internal solutions.35 This is even
+more true in light of the scope of the AI Act and the CDSM Directive. The latter introduced the
+rights reservation requirement with websites hosting data used for training purposes in mind, rather
+than model providers that scraped data from those websites.36
+Article 53(4) AI Act leaves it to the GPAI model providers to choose from three alternatives as
+regards the compliance with the previous obligation. They might follow the AI Office’s Code of
+Practice (to be accepted by early May 2025); or – once and in case it is published – a harmonized
+standard; or they might individual demonstrate their alternative compliance mechanism to the
+European Commission.37 It is to be seen, which approach will turn to become the default one.
+At the moment, we are only aware of the AI Office’s third draft Code of Practice that provides
+guidance both on the scope and modalities of the policy requirement per Article 53(1)(c); and the
+modalities and methods of the rights reservation mechanism that will be considered compliant with
+Article 53(4) AI Act. The Internet Engineering Task Force chartered a working group in February
+2025 to carry out a standardization process;38 but this process has no visible output yet. Also, Open
+Future has published a ‘vocabulary’ for rights reservation with the aim to offer it to opt-out model
+providers as an “external source to define the scope of opt-outs/rights reservations expressed via
+For more on this see Peukert (2024) 500-501; Quintais (2025) 5. Also, compare to recital 97 AI Act.
+Koen Lenaerts: L’égalité de traitement en droit communautaire. Un principe unique aux apparences multiples, 27(12) Cahiers de Droit Europeen (1991) 38.
+35
+Mezei (2024) 467-468.
+36
+Quintais (2025) 8.
+37
+Ibid, 11-12.
+38
+Suresh Krishnan, Mark Nottingham: IETF setting standards for AI preferences, IETF News, 27 February 2025
+(https://www.ietf.org/blog/aipref-wg/).
+33
+34
+
+7
+
+their systems” and as a benchmark for any future standardization processes (e.g. the one by the
+above mentioned IETF).39
+The first draft of this document stressed that the policy shall cover the entire lifecycle of the model;
+signatories of the Code of Practice shall diligently request information from any third party they
+intend to conclude a contract with about the use of data for the development of GPAI models
+whether and how these third parties complied with the rights reservation requirement (upstream
+copyright compliance); and GPAI model providers shall also comply with copyright rules
+‘downstream’, that is when they provide access to their models on the market. 40 The Code of
+Practice further delineated – via five sub-measures – how GPAI model providers might comply
+with the obligation under Article 53(1)(c). These included, inter alia, the respect of robots.txt as
+well as making best efforts to identify and comply with any other appropriate machine-readable
+rights reservation protocols; and the commitment to discuss the possibilities of the creation of
+interoperable standards with representatives of rightsholders and standardisation organisations.41
+The second draft of the Code of Practice developed the internal logic of the prescribed
+requirements, and encapsulated various novel elements at the same time. As such, e.g. it listed
+already 11 measures with an overall 16 key performance indicators. The document – with more
+streamlined language – stuck to the fundamental obligations related to drawing up and
+implementing an internal copyright policy. It also included numerous straightforward proposal,
+like requesting GPAI model providers to make reasonable efforts to assess whether third-party
+datasets complied with copyright law (measure 2.3); to commit ensuring lawful access to the
+training data (measure 2.4); not to crawl pirate websites (measure 2.5); to commit to reservations
+expressed through the Robots Exclusion Protocol (robots.txt) (measure 2.6); to identify forms of
+appropriate expressions of rights reservations other than robots.txt and make best efforts to comply
+with the reservations expressed through those technologies (measure 2.7); or to prevent overfitting
+(measure 2.9) are all significant steps toward a robust, clear and standardized regulatory
+environment for developing GenAI.42
+Finally, the copyright section of the third draft of the Code of Practice is polished in various
+aspects; at the same time, it was clearly watered down in other aspects, leading to a Janus-face
+proposal.
+On the one hand it eliminated the key performance indicators, and clustered the former 11
+measures into only six, structuring them in a clearer and more coherent manner. On the other hand,
+Measure I.2.1. continues to require the drawing up, keeping up-to-date and implementing a rights
+reservation policy and a drafting of a summary of it; but the third draft requires signatories to make
+available to the public only the latter, and not the significantly more important policy document.
+Also, while Measure I.2.2. stresses that signatories shall not reproduce or extract unlawfully
+accessible materials for TDM purposes, the document expressly narrows the scope of this
+obligation to ‘crawling’, and – as a part of this obligation – to the respect of technical protection
+measures (that is an already existing obligation per InfoSoc Directive); and to make best efforts
+not to crawl from pirate websites (a similarly existing obligation in light of the existing CJEU case
+law). None of these redundant obligations are as problematic as equalizing TDM obligations with
+
+Paul Keller: A vocabulary for opting out of AI training and other forms of TDM, Open Future, 7 March 2025
+(https://openfuture.eu/publication/a-vocabulary-for-opting-out-of-ai-training-and-other-forms-of-tdm/), 3.
+40
+AI Office First Draft Code of Practice (2024) 14-15.
+41
+Ibid, 15-16.
+42
+AI Office Second Draft Code of Practice (2024) 22-24.
+39
+
+8
+
+(or at least limiting it to) web-crawling; to be addressed in greater depth below.43 Next, the
+substance of Measure I.2.3. was transformed into a ‘web-crawling-friendly’ obligation to comply
+with the state-of-the-art robots.txt exclusions; and a rather limited ‘best efforts’ requirement to
+identify and comply with other appropriate machine-readable protocols. This crawling-centric
+approach continues to disregard the fact that robots.txt is not a truly effective solution to exclude
+TDM activities, as it was designed to deal with web-crawling in general.44 Measure I.2.4 to 6 seem
+to be almost in line with the substance of the second draft, with the caveat of continued focus on
+web-crawling, and the replacement of ‘overfitting’ with a focus on ‘memorization’.
+At the moment of the closing of this manuscript, the Code of Practice is yet in its draft phase. The
+current third draft will undergo a public review yet. In any case, the document sparked significant
+criticism.45 My main comments are as follows.
+First, Article 56(8) AI Act mandates the AI Office to encourage and facilitate the review and
+adaptation of the Code of Practice, with a special focus on the emerging standards, including the
+deployment of state-of-the-art solutions for the proper exercise of the reservation of rights by their
+beneficiaries. On the long run, it seems essential that no exclusivity is granted to a certain
+technological solution. The draft’s requirement to identify and comply with rights reservation
+protocols other than robots.txt can be commended. Making robots.txt the ‘chosen one’ is, however,
+a misplaced idea.46 It is not only outdated, but de facto ineffective to manage opt-outs as imagined
+by the EU legislation.47 Overall, the it should have been named as an alternative, rather than the
+main route for expressing TDM reservations.
+Second, the AI Office might need to expressly determine who are actually entitled to deploy the
+reservation so that we can understand clearly whether the protocols developed by GPAI model
+providers and/or independent third parties fit into the scope of the EU acquis and whether ‘pressrelease-like’ declarations of reservations by CMOs48 or licensees, e.g. publishers,49 are to be treated
+valid ones or not.
+See the analysis of the Gamekapocs ruling in sub-chapter 4.3.
+As a positive development, Measure I.2.3.(4) requires signatories to take reasonable measures to make public the
+information and syndicate a web feed on the measures that the signatories made under the reservation-compliance
+duties.
+45
+Probably the most critical comment came from the European authors' federations, who coined the third draft “toxic
+in its entirety”. See https://all-about-digital-publishing.com/en/1/authors-code-practice.
+46
+The dominance of robots.txt seems to be clearly present in German academia. Compare to de la Durantaye (2023)
+651; Kraetzig (2024) 699; Hofmann (2024) 171.
+47
+On robots.txt’s relative ineffectiveness against TDM, see Hamann (2024) 113-114; Manteghi (2024) 676-677; Enze
+Liu, Elisa Luo, Shawn Shan, Geoffrey M. Voelker, Ben Y. Zhao, Stefan Savage: Somesite I Used To Crawl: Awareness,
+Agency and Efficacy in Protecting Content Creators From AI Crawlers, arXiv:2411.15091 [cs.HC] (22 November
+2024); Teresa Nobre: 2nd draft of the GPAI Code of Practice: better, but not there yet, Communia, February 5, 2025
+(https://communia-association.org/2025/02/05/2nd-draft-of-the-gpai-code-of-practice-better-but-not-there-yet/).
+48
+See the French SACEM’s October 2023 (https://societe.sacem.fr/actualites/notre-societe/pour-une-intelligenceartificielle-vertueuse-transparente-et-equitable-la-sacem-exerce-son-droit), the Belgian Sabam’s December 2023
+(https://www.sabam.be/en/press/sabam-safeguards-rights-its-authors-ai-use), the Hungarian Artisjus’ December 2023
+(https://www.artisjus.hu/felhasznaloknak/mas-felhasznalas/ai-tdm-objection/#english), the Dutch Pictoright’s
+February 2024 (https://pictoright.nl/nieuws/collectieve-opt-out-pictoright-aangeslotenen/) or the French ADAMI and
+SPEDIDAM’s March 2024 (https://www.aepo-artis.org/adami-and-spedidam-exercise-the-opt-out-right/) ‘objections’
+or ‘exercises of opting out’.
+49
+See
+e.g.
+Sony
+Music’s
+‘declaration
+of AI
+training
+opt
+out’ from
+May
+2024
+(https://www.sonymusic.com/sonymusic/declaration-of-ai-training-opt-out/); or Penguin Random House’s express
+reservation of the books published by it from TDM: Matilda Battersby: Penguin Random House underscores copyright
+protection in AI rebuff, The Bookseller, 18 October 2024 (https://www.thebookseller.com/news/penguin-randomhouse-underscores-copyright-protection-in-ai-rebuff).
+43
+44
+
+9
+
+Third, the second and third drafts included some wordings that seem to downplay the CDSM
+Directive’s provisions. E.g. measure 2.4 of the second draft planned to pose an obligation on GPAI
+model providers to make “reasonable and proportionate efforts” to ensure lawful access to training
+data; unlike Article 4(1) CDSM Directive that clearly necessitate the existence of such lawful
+access. Similarly, requiring steps to foreclose the use of pirated materials in the input phase
+disregards the fact that numerous AI developers have already relied on such sources.50 measures
+2.9 and 2.10 of the second draft as well as Measure I.2.5 of the third draft focus on the infringing
+outputs – a topic that the AI Act did not regulate at all.51 Some have further criticised the draft’s
+preferential treatment of small and medium sized enterprises.52 Most importantly, however, the
+third draft unnecessarily equalized TDM with web-crawling, significantly tightening (practically,
+excluding) the relevance of the Code of Practice for non-crawling-based TDM activities. Whether
+this was a plan or an unintended side-effect, is yet unknown.53
+Finally, the AI Office might need to clarify the other pending/open questions, as expressed in the
+introduction of this paper, namely the timing and the place of expressing the reservation of rights.
+Both the second and the third drafts took steps towards the latter: as part of measure 2.7, the second
+draft referred to “right reservation at source or work level pursuant to Article 4(3)”;54 while the
+
+The Chinese AI application, DeepSeek R1’s public appearance and success in January 2025 raised concerns of the
+lawfulness of data scraping by the developer of this Chinese model. The technical description of DeepSeek-VL
+expressly stated that “DeepSeek-VL’s pretraining dataset is compiled from a variety of sources, including but not
+limited to Common Crawl, Web Code, E-books, Educational Materials, and arXiv Articles.” See Haoyu Lu, Wen Liu,
+Bo Zhang, Bingxuan Wang, Kai Dong, Bo Liu, Jingxiang Sun, Tongzheng Ren, Zhuoshu Li, Hao Yang, Yaofeng Sun,
+Chengqi Deng, Hanwei Xu, Zhenda Xie, Chong Ruan: DeepSeek-VL: Towards Real-World Vision-Language
+Understanding, arXiv:2403.05525 [cs.AI] (11 March 2024), 5. Whereas, later on, the same document noted that Ebooks and educational matters included “860K English and 180K Chinese e-books from Anna’s Archive”. Ibid, at 7.
+Importantly enough, “Anna’s Archive” is treated to be a massive open access, yet unauthorized (‘pirate’) search engine
+for literary materials, being subject to numerous legal disputes in countries like the United Kingdom or the United
+States. To the contrary, R1’s technical description did not clarify the sources and actual contents of the model’s training
+data. See DeepSeek-AI: DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning,
+arXiv:2501.12948 [cs.CL] (22 January 2025). Furthermore, on the use of ‘pirated’ contents to train GenAI applications
+see especially: Thomas Heldrup: Report on Pirated Content Used in the Training of Generative AI, Rights Alliance
+(March 2025), available at: https://rettighedsalliancen.dk/wp-content/uploads/2025/03/Report-on-pirated-contentused-in-training-of-AI.pdf. Unsurprisingly, various rightsholder associations and publishers have regularly protested
+against any such acts of AI developers, and the draft Code of Practice’s position on this matter. See Porter Anderson:
+UK Publishers and Cambridge, Call out Meta and Piracy in Generative AI Training, 25 March 2025
+(https://publishingperspectives.com/2025/03/uk-publishers-and-cambridge-call-out-meta-and-piracy-in-generativeai-training/); Joint statement by a coalition of authors, performers and other rightsholders active across the EU’s
+cultural and creative sectors regarding the third draft of the EU AI Act’s GPAI Code of Practice, 28 March 2025
+(https://europeanwriterscouncil.eu/2503_nosupport_cop/).
+51
+Coalition of Rightholder Organisations Share Serious Concerns About the 2nd Draft of the General-Purpose AI
+Code of Practice, January 27, 2025 (https://impalamusic.org/coalition-of-rightholder-organisations-share-seriousconcerns-about-the-2nd-draft-of-the-general-purpose-ai-code-of-practice/); Nobre (2025); Iva Galović: ‘GeneralPurpose AI Code of Practice’ - Joint letter from authors and performers sent to Executive Vice-President Virkkunen
+and Commissioner Micallef, AEPO-Artis, February 17, 2025 (https://www.aepo-artis.org/general-purpose-ai-code-ofpractice_joint-letter-from-authors-and-performers-to-executive-vice-president-virkkunen-and-commissionermicallef/).
+52
+Ibid.
+53
+Paul Keller: Is web scraping the only copyright concern for AI? The Code of Practice’s blind spot, Communia, 21
+March 2025 (https://communia-association.org/2025/03/21/is-web-scraping-the-only-copyright-concern-for-ai-thecode-of-practices-blind-spot/).
+54
+AI Office Second Draft Code of Practice (2024) 23.
+50
+
+10
+
+third draft amended this language to “asset-based or location-based metadata”.55 This formulation
+seems to take the view that opt-outs deployed both at the rightsholders’ and third parties’ website
+comply with the legislative framework.
+3.2. Article 53(1)(d) AI Act on a sufficiently detailed summary of training data
+Article 53(1)(d) prescribes that GPAI model providers “draw up and make publicly available a
+sufficiently detailed summary about the content used for training of the general-purpose AI model,
+according to a template provided by the AI Office”.
+First, the arguments expressed in the para 3.1. above on ‘drawing up’, ‘publish’ and making the
+sufficiently detailed summary ‘meaningful’ as well as the alternative methods of compliance per
+Article 53(4) apply mutatis mutandis under Article 53(1)(d). Similarly, in line with the effet utile,
+the summary shall include relevant information about how the providers respected the reservation
+of rights.
+At the same time, the regulation is quite instructive on GPAI model providers’ limited duty under
+this provision: they shall disclose only a summary. As such, this document cannot be expected to
+be complete, yet it is aimed to be “comprehensive”;56 it shall focus on ‘contents’ (a clearly
+copyright term) rather than on ‘data’.57 Hence, the focus point of this question is on the threshold
+of ‘sufficient details’. As regards this, Article 56(2)(b) AI Act expressly mandates the AI Office to
+set the ‘adequate level58 of detail’ in its Code of Practice. Although the first draft of this document,
+in a rather limited fashion stated that “Signatories will draw up, keep up-to-date and provide the
+AI Office upon its request with information about data sources used for training, testing and
+validation and about authorisations to access and use protected content for the development of a
+general-purpose AI”.59 The second draft did completely removed this point from its text,
+transferring the question to the AI Office’s template per Article 53(1)(d) AI Act.60
+It is to be seen, whether the final version will clarify the threshold of ‘adequate level of detail’ in
+greater depth. For a reasonable example in this regard, we might take a quick look at the recent
+Californian Generative Artificial Intelligence: Training Data Transparency Act61. This act obliges
+GenAI system or service developers62 to post on their websites ‘high-level summary’ regarding
+the data used to train GenAI system or service. Such documentation focuses on ‘datasets’, instead
+of individual data (including protected subject matter). The actual data to be posted includes, but
+is not limited to, e.g. the sources or owners of the datasets; the description of how the datasets
+further the intended purposes of the GenAI system or service; the number and description of data
+points; whether the datasets include subject matter protected by copyright, trademark or patent, or
+
+AI Office Third Draft Code of Practice (2025) Measure I.2.3.(b).
+Quintais (2025) 11.
+57
+Compare to the terminological differences in Article 53(1)(a) and (d). See further Peukert (2024) 502.
+58
+As such ‘adequate level’ seems to be used as an equivalent of ‘sufficient’.
+59
+AI Office Code of Practice (2024) 16.
+60
+A short presentation of the draft template is available via the European Commission’s website at
+https://ec.europa.eu/newsroom/dae/redirection/document/111909.
+61
+AB-2013 Generative artificial intelligence: training data transparency was added to Part 4 of Division 3 of the Civil
+Code of California. See https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202320240AB2013.
+62
+Ibid, Section 3110(b).
+55
+56
+
+11
+
+the datasets [more precisely their contents] are entirely in the public domain etc.63 It is to be seen
+whether the EU’s AI Office will follow the same logic in its Code of Practice’s final version.64
+Finally, the template – to be developed by the AI Office, too – might necessitate the disclosure of
+the location of the training of GPAI models. This can be of practical relevance: in case the disclosed
+data evidence that the training took place within the EU, the harmonized copyright rules on
+reproduction and TDM will directly cover the GPAI model provider’s activities. To the contrary,
+if the training occurred outside of the EU, the copyright acquis remains directly inapplicable with
+the caveat included in recital 106 AI Act. According to it, the obligation to put in place a
+compliance policy per Article 53(1)(c) remains due for GPAI model providers if they place a GPAI
+model on the EU market. This recital sparked heated debates about the regulation’s
+‘extraterritorial’ reach;65 yet, it cannot be read to impose extraterritorial application of the
+European and Member States’ copyright.66 As the European Copyright Society’s opinion
+concluded, “[t]his recital arguably goes beyond the legal provision it supports, potentially
+dislodging the territoriality principle of copyright law, under which the provisions of EU copyright
+law do not apply outside its jurisdiction.”67
+4. Developing European case law on text- and data-mining
+Although this chapter reviews the EU approach to TDM and rights reservation, we cannot but
+admit that neither the EU nor its Member States can present much practical insight into these topics
+yet. The vast majority of practical developments are either only loosely connected to our topic,
+stem from other jurisdictions or are due to non-EU corporations. Nevertheless, there are already
+(to the best of my knowledge) three court decisions related to rights reservations in Europe. The
+first reactions of commentators, however, seem to suggest that the case law did not contribute to
+the effective operationalization of the EU provisions.68
+4.1. Kneschke v. LAION – machine-readibility of rights reservation
+The first of this case law trio is the famous Kneschke v. LAION trial court ruling. There the Regional
+Court (LG) of Hamburg addressed the lawfulness of the building of a dataset by LAION that
+consists of 5.85 billion image-text data-pairs. ‘LAION-5B’ was built in the second half of 2021,
+and it was based on the scraping of the Common Crawl dataset, a public web archive, that also
+included hyperlinks to contents of a photo agency that hosted plaintiff’s – a professional
+Ibid, Section 3111(a)(1)-(12).
+Also, the UK Government’s Open consultation, published on 17 December 2024, invites stakeholders to reflect on
+the consultation paper’s most preferred policy option (‘A data mining exception which allows right holders to reserve
+their rights, underpinned by supporting measures on transparency’). See Open consultation – Copyright and Artificial
+Intelligence, 17 December 2024, para. 67-74 (https://www.gov.uk/government/consultations/copyright-and-artificialintelligence/copyright-and-artificial-intelligence).
+65
+This paper skips analyzing this issue, but see in depth Peukert (2024) 505-506; Malte Stieper, Michael Denga: The
+international reach of EU copyright through the AI Act, Beiträge zum Transnationalen Wirtschaftsrecht, Heft 194
+(2024) 13-15; Quintais (2025) 9-10.
+66
+To the same effect see Nordemann - Raouli (2024) 781.
+67
+Dusollier et al. (2025) 11.
+68
+Martin Kretschmer, Bartolomeo Meletti, Lionel Bently, Gabriele Cifrodelli, Magali Eben, Kristofer Erickson, Aline
+Iramina, Zihao Li, Luke McDonagh, Emma Perot, Luis Porangaba, Amy Thomas: Copyright and AI: Response by the
+CREATe Centre to the UK Government’s Consultation, CREATe Working Paper 2025/2, 20-22
+(https://zenodo.org/records/14931964/files/2025_02_AI%20Consultation.pdf).
+63
+64
+
+12
+
+photographer’s – pictures. LAION’s dataset building necessitated the visiting of the photo
+agency’s website, from where it downloaded the respective images as well as their relevant
+descriptions. LAION then checked the substance of the images to see whether they match with the
+descriptions. Images that were not in line with their descriptions were filtered out. The ultimate
+LAION dataset consisted of only the links to the source pictures; including some leading to various
+photographs of the plaintiff of the case.69 The plaintiff alleged that any such building of datasets
+ran against his reproduction right over the photographs, and no exception to that use applied.70
+The LG Hamburg disagreed. Although it found both the temporary acts of reproduction71
+exception72 and the commercial TDM73 exception74 inapplicable to the instant case, the court sided
+with the defendant that the dataset building fits into the scientific TDM75 exception.76 For the
+purposes of our analysis, we shall focus shortly on the last point and in greater depth on the refusal
+of the commercial TDM exception.
+The LG Hamburg discussed in detail that, first, defendant’s use fit conceptually within the concept
+of TDM and, second, the scraped sources were also lawfully accessible. Yet, ultimately, the ruling
+added – in dictum – that plaintiff’s reservation of rights rendered the applicability of Article 44b
+of the German Copyright Act (UrhG) moot.
+As regards the first of these elements, the court found the building of the dataset both
+technologically and legally covered by Article 44b UrhG. On the one hand, LAION’s acts
+represent automated analysis of works in order to obtain information.77 On the other hand, such
+interim parts of an overall greater and more complex process78 can also benefit from the exception
+envisaged by the CDSM Directive.79 The LG Hamburg further stressed that the defendant might
+Christoph Schuhmann, Romain Beaumont, Richard Vencu, Cade Gordon, Ross Wightman, Mehdi Cherti, Theo
+Coombes, Aarush Katta, Clayton Mullis, Mitchell Wortsman, Patrick Schramowski, Srivatsa Kundurthy, Katherine
+Crowson, Ludwig Schmidt, Robert Kaczmarczyk, Jenia Jitsev: LAION-5B: An open large-scale dataset for training
+next generation image-text models, arXiv:2210.08402v1 [cs.CV] (16 October 2022).
+70
+Ibid, at 1710-1711.
+71
+Article 44a UrhG.
+72
+LG Hamburg (2024) 1711-1712, para. 31-37.
+73
+Article 44b UrhG.
+74
+LG Hamburg (2024) 1712-1715, para. 38-72.
+75
+Article 60d UrhG.
+76
+LG Hamburg (2024) 1715-1716, para. 73-89. On the judgment see Jonathan Pukas, Jan Bernd Nordemann: German
+Regional Court (Landgericht) of Hamburg paves the way to treat the reproduction of works as AI training data under
+the EU text and data mining exceptions, Kluwer Copyright Blog, 25 October 2024
+https://copyrightblog.kluweriplaw.com/2024/10/25/german-regional-court-landgericht-of-hamburg-paves-the-wayto-treat-the-reproduction-of-works-as-ai-training-data-under-the-eu-text-and-data-mining-exceptions/;
+Paul
+Goldstein, Christiane Stuetzle, Susan Bischoff: Kneschke vs. LAION – Landmark Ruling on TDM exceptions for AI
+training
+data
+–
+Part
+1,
+Kluwer
+Copyright
+Blog,
+13
+November
+2024
+(https://copyrightblog.kluweriplaw.com/2024/11/13/kneschke-vs-laion-landmark-ruling-on-tdm-exceptions-for-aitraining-data-part-1/); Paul Goldstein, Christiane Stuetzle, Susan Bischoff: Kneschke vs. LAION – Landmark Ruling
+on TDM exceptions for AI training data – Part 2, Kluwer Copyright Blog, 14 November 2024
+(https://copyrightblog.kluweriplaw.com/2024/11/14/kneschke-vs-laion-landmark-ruling-on-tdm-exceptions-for-aitraining-data-part-2/); Leistner (2024) 1665-1675; Maryna Manteghi: Kneschke vs. LAION: Opening Fresh
+Perspectives on AI Training and TDM Exceptions, European Law Blog, 14 January 2025
+(https://www.europeanlawblog.eu/pub/tk4iacho/release/1).
+77
+LG Hamburg (2024) 1712, para. 42-43.
+78
+Here, the court rightly differentiated between three main parts of the overall training process, namely, the creation
+of the dataset; the subsequent training of the artificial neural network; and the subsequent use of the trained algorithm
+to generate contents. See ibid, at 1712, para. 46.
+79
+Ibid, at 1712-1713, para. 44-50.
+69
+
+13
+
+be exempted from liability as the application possibilities (and plans) are not conclusively
+foreseeable at the time of the building of the dataset.80 Finally, the court found the use in line with
+the three-step test.81
+As regards the second element, the decision declared plaintiff’s watermarked images lawfully
+accessible as they were freely available over the internet.82
+Finally, as regards the third statement, the LG Hamburg were of the view that plaintiff’s rights
+reservation via the photo agency’s website was expressed by a person authorized to do so; the
+reservation had not to be specifically or consciously addressed to certain users; the reservation was
+clearly formulated; and – most importantly – the actual human readable expression was also
+‘machine comprehensible’, that is, expressed on a language that a machine can understand.83
+For the final outcome of the case, the LG Hamburg’s third finding was the most important, as it
+found defendant’s acts to fit into the scientific TDM exception. As the court noted, the building of
+the dataset meets the concept of scientific research,84 irrespective of the fact that the dataset was
+made ultimately freely available online to any subsequent AI developer, including for-profit
+entities.85 Also, the LG Hamburg took the view that the defendant carried out its research activity
+in a non-commercial manner.86 Such conclusion is not even against the law, if the beneficiary of
+the scientific TDM exception collaborates with other – private and clearly for-profit – entities.87
+The decision deserves commendation and criticism alike. On the one hand, it provided certain
+clarity regarding at least one (and indirectly another one) of the uncertain elements of the complex
+TDM equation mentioned above, namely, the actual declarer of the rights reservation. More
+precisely, the court took the view that creators of photographs might deploy their reservations via
+a licensee’s website and its terms and conditions, and, consequently, on an external licensed
+location.
+The decision remained, however, limited as regards certain aspects of the concerns related to the
+location and the timing of the reservation. Since the facts of the case were limited, the court had
+no reason to and did not discuss any other scenarios, e.g. where the data is located at multiple
+locations;88 or – very typically – where the data is appearing online without the rightsholders’
+permission. The same argument is true for the timing of the rights reservation. As the facts of the
+case covered clearly ex ante reservations via standardized terms and conditions, we are shy of
+answers as regards more complex factual situations.
+Also, the ruling shall be commended for the clear and right differentiation between the various
+sub-parts of any AI training. At the same time, concerns might arise at this point, too. The
+unconditional acceptance of defendants’ provision of free access to the 5.85 billion images over
+the internet ex post the dataset building is troublesome. That act is factually and legally
+independent from (or secondary to) the lawful training per Article 60d UrhG.89 It equals with
+making available to the public – a use that is not covered by the commercial TDM exception.
+
+Ibid, at 1712, para. 47.
+Ibid, at 1713, para. 51-54.
+82
+Ibid, at 1713, para. 55-57.
+83
+Ibid, at 1713-1715, para. 58-72.
+84
+Article 60c UrhG.
+85
+LG Hamburg (2024) 1715, para. 76-77.
+86
+Ibid, at 1716, para. 79-81.
+87
+Ibid, at 1716, para. 82-89.
+88
+Or as Matthias Leistner says: ‘data wandering’. See Leistner (2024) 1673.
+89
+Hoffman (2024) 170; Gervais et al. (2024) 22-23; Rosati (2024a) 851.
+80
+81
+
+14
+
+Also, while some commentators also recommend to follow a more flexible approach to the
+machine-readability requirement,90 the LG Hamburg’s conclusion is far from being
+straightforward. At its surface, it complies with recital 18 of the CDSM Directive. 91 It, however,
+completely disregards the logic of the Directive, which referred to machine-readability as a legal
+term rather than as a technical requirement. In fact, it prescribes the automated analytical review
+of and compliance with the machine-readable reservations.92 The ruling might sidestep the
+diversity of natural languages, and could lead almost inevitably to the dominance of English as a
+standard language of rights reservations. Any such consequence would, however, not only
+endanger the right to express rightsholders’ wills on their native languages, and so conflict with
+fundamental EU rules on language diversity, but it would also necessitate trainers to rely on a
+single (or only a few) languages when they train their algorithms to detect and comply with rights
+reservations. Finally, while the court found the actual terms and conditions clearly formulated, the
+exact language seem not to be designed to counter TDM but online scraping in general.93 It is to
+be seen, whether the court of appeals or any other court would find any such standard terms and
+conditions similarly clear and valid to reserve TDM rights.
+4.2. HowardsHome – specific exclusions under robots.txt?
+Importantly, the second court decision related to – yet less focused on – TDM in the European
+Union was published in October 2024. It this case, that focused on RSS-feeds-based news
+aggregation, the Amsterdam District Court found, on the one hand, that plaintiffs failed to
+adequately substantiate that their contents were saved behind paywalls, hence defendant had lawful
+access to the training data.94 On the other hand, the court rejected that plaintiffs’ reservations were
+machine-readable. The court based this conclusion on the facts that plaintiffs’ robots.txt protocol
+excluded specific AI bots from their websites (e.g. GPTBot, ChatGPT-User, CCBOT and
+anthropic.ai), but not defendant’s scraping technology.95
+The ruling deserves closer attention for at least two reasons. First, the conclusion that a ‘machinereadable’ rights reservation shall expressly include any and all possible text- and data-miner bot
+puts an extra burden on rightsholders to identify and exclude those bots from accessing the hosted
+data ; and this might decrease the efficacy of the CDSM Directive’s provisions.96 Second, there
+“At the very least, non-human-readability poses a major practical obstacle to expressing, revising, and
+communicating TDM reservations”. See Hamann (2024a) 118.
+91
+“In the case of content that has been made publicly available online, it should only be considered appropriate to
+reserve those rights by the use of machine-readable means, including metadata and terms and conditions of a website
+or a service” (highlights by P.M.). See recital 18 CDSM Directive.
+92
+Leistner (2024) 1672.
+93
+“RESTRICTIONS. YOU MAY NOT: (…) 18. Use automated programs, applets, bots or the like to access the
+website or any content thereon for any purpose, including, by way of example only, downloading Content, indexing,
+scraping or caching any content on the website”. LG Hamburg (2024) 1711.
+94
+DPG Media et al. v. HowardsHome, Rechtbank Amsterdam, C/13/737170 / HA ZA 23-690,
+ECLI:NL:RBAMS:2024:6563,
+para.
+4.32
+(https://uitspraken.rechtspraak.nl/details?id=ECLI:NL:RBAMS:2024:6563&showbutton=true&keyword=mediahuis
+&idx=3).
+95
+Ibid, para. 4.33.
+96
+Etienne Valk, Iris Toepoel, DPG Media et al vs. HowardsHome – A national ruling on DSM’s press publishers’
+rights
+and
+TDM
+exceptions,
+Kluwer
+Copyright
+Blog,
+January
+16,
+2025
+(https://copyrightblog.kluweriplaw.com/2025/01/16/dpg-media-et-al-vs-howardshome-a-national-ruling-on-dsmspress-publishers-rights-and-tdm-exceptions/); Alessandro Cerri: Dutch court holds that TDM opt-out must be done by
+90
+
+15
+
+seems to be a divergence between the German and the Dutch rulings regarding the meaning of
+‘machine readable’ reservations. This divergence is so fundamental that the need for a uniform
+interpretation of the term by the Court of Justice of the European Union grew significantly.
+4.3. Gamekapocs – web-scraping as TDM?
+The latest TDM decision in the European Union was made in Hungary. This ruling deserves close
+attention, as the Municipal Court of Appeals had to decide – among others – whether the scraping
+of plaintiff’s website by Google for purposes of indexing the relevant contents fits into the general
+purpose TDM exception.
+In its 3 December 2024 judgment, the Municipal Court of Appeals reversed the trial court’s refusal
+of such defence, and concluded that “[i]t was not disputed that the defendant had lawful access to
+the plaintiff’s press publications and did not circumvent the technical measures taken by the
+plaintiff to access them. Moreover, the robots exclusion protocol assigned to the plaintiff’s website
+allowed all search robots, including the defendant’s search robot, to crawl and index, and the
+plaintiff did not object to the indexing in the form required by law. The robots exclusion protocol
+is not of significance for consent, but primarily for the fact that it is – in accordance with the
+provisions of the Copyright Act – a machine-readable form by which the right holder could object
+to the text- and data-mining by the search engine. Since the defendant does not save the download
+of the page required for crawling, as it does not keep a copy of the page, and the data and
+information contained in the index are not copies, the statutory condition in Article 35/A(1)(c) [of
+the Copyright Act] is also satisfied”.97
+In short, the Hungarian ruling declared web-scraping / search engine indexing ‘a form’ of TDM.
+Although any such judgment aligns with the aims of the third draft of Code of Practice, it raises
+considerable concerns as regards its reasonableness.
+First, although the CDSM Directive defines TDM in a broad, technical sense, 98 the telos of the
+directive was not to exempt every automated data analysis from liability under Article 4. Indeed,
+the recitals of the directive make it clear, on the one hand, that the “processing of large amounts of
+information with a view to gaining new knowledge and discovering new trends possible”99 might
+be carried out for research purposes (per Article 3 CDSM Directive) or for “government services,
+complex business decisions and the development of new applications or technologies” (per Article
+4 CDSM Directive).100 None of these options seem to align with the decades old practices of webscraping by search engines. On the other hand, the preamble of the directive also expressly notes
+that “there can also be instances of text and data mining that do not involve acts of reproduction
+or where the reproductions made fall under the mandatory exception for temporary acts of
+reproduction provided for in Article 5(1) of Directive 2001/29/EC”,101 in which case Article 4
+CDSM Directive cannot be applied. Even more, Article 4(2) also notes that reproduced or extracted
+information might only be retained as long as they are necessary for the purposes of text- and data"machine-readable" means, The IPKat, February 16, 2025 (https://ipkitten.blogspot.com/2025/02/dutch-court-holdsthat-tdm-opt-out-must.html).
+97
+Municipal Court of Appeals, Case 9.Pf.20.353/2024/6-II, 3 December 2024, para. [51]. (Hungarian court decisions
+might be located via https://eakta.birosag.hu/anonimizalt-hatarozatok in anonimized forms. This actual court ruling
+might be found by using the keyword 20.353/2024.)
+98
+CDSM Directive Article 2(6).
+99
+CDSM Directive, Recital (8).
+100
+CDSM Directive, Recital (18).
+101
+CDSM Directive, Recital (9).
+
+16
+
+mining; where the emphasis lies on the ‘mining’ rather than any subsequent services provided by
+the user. The Municipal Court of Appeals’ ruling seems to legitimize the permanent storage of
+collected information for indexing purposes – a conclusion that goes beyond the scope of general
+purpose TDM.
+Second, the inclusion of web-scraping into the concept of general purpose TDM might run afoul
+of the three-step test. This conclusion leads to a mishmash of distinct technological activities and
+subjects them to a single legal provision.102 This does not generate any clearer legal situation, but,
+to the contrary, makes the interpretation and application of the CDSM Directive even more risky.
+Namely, general purpose TDM – as presented in recital 18 – was in line with the three-step test,
+especially since it guarantees rightsholders the opt-out right under Article 4(3). To the contrary:
+the application of this rule to the single most important technology that Internet browsing is based
+upon surpasses the limits of ‘certain, special cases’. Any such interpretation of Article 4 would
+simply make the exception a general rule. Furthermore, the third step (‘unreasonable prejudice to
+the legitimate interests of the rightsholders’) speaks against the court’s ruling for at least two
+reasons. Namely, since rightsholders, who host their data on their websites, are typically interested
+in the indexing of their contents for browsing purposes, hence they let bots scrape their sites.
+However, they do not necessarily want to let commercial companies use their contents for purposes
+other than indexing. Declaring indexing and automated content analysis a single concept would
+make rightsholders lose their ability to make decisions related to technologies with distinct scope
+and aims.103 Also, closely connected to that, with any such merger, rightsholders would lose their
+express statutory right – guaranteed by Article 4(3) CDSM Directive – to opt-out from TDM;
+whereas indexing has been for long seen as the backbone of search engines, an activity that was
+exempted from liability per the safe harbours of e-commerce law, hence hardly contested by
+anyone.104
+5. (Not a real) Conclusion
+This chapter cannot end with a conclusive statement. It would be indeed hard to answer the
+question raised by the chapter’s title itself: who is the real beneficiary of the new rights reservation
+regime of the EU?
+To the contrary, the rights reservation dilemma is far from being fixed. As shown above, there are
+some slightly clearer answers to a limited number of sub-questions, yet, the original hypothesis,
+namely, that Article 4(3) CDSM Directive is a ‘complex equation’ still stands. We cannot but agree
+with Paul Keller’s point of view, who argued that there will most probably be no one-size-fits-all
+and flexible enough solution in this matter.105
+While the number of reservations and the available technological solutions have mushroomed, we
+still face numerous spin-off concerns. E.g. the quantity of available high quality training data is in
+a clear decline, endangering the creation of unbiased AI models;106 GenAI developers have
+InfoSoc Directive, Article 5(5) via CDSM Directive, Article 7(2).
+As Hamann recalled, robots.txt allow for only two declarations: ‘allow’ and ‘disallow’; no further declarations are
+standardized. See Hamann (2024) 114.
+104
+Keller (2025) 6.
+105
+Keller (2024) 2.
+106
+Shayne Longpre et al.: Consent in Crisis: The Rapid Decline of the AI Data Commons, arXiv:2407.14933v2
+[cs.CL] (24 July 2024); Kevin Roose: The Data That Powers A.I. Is Disappearing Fast, The New York Times, 19 July
+2024 (https://www.nytimes.com/2024/07/19/technology/ai-data-restrictions.html); Nicola Jones: The AI Revolution
+Is Running Out of Data. What Can Researchers Do? 636 Nature (2024) 290-292. Also, following solutions like Glaze
+102
+103
+
+17
+
+numerous practices that ultimately aim to ‘greenwash’ their practices;107 and numerous rights
+reservation models not tested under Article 4(3) takes prevalence.108
+There is also a lack of clear frameworks for transparent deployment of reservations and the
+authorization of training data use. The importance of the transparency of opt-outs is perfectly
+evidenced by the European Commission’s recent tender to carry out a study to assess the feasibility
+of a central registry for rights reservations.109
+Regarding authorizations, we might recall OpenAI’s agreements with numerous media
+companies110 that seem to suggest the capability and willingness of GenAI developers and
+rightsholders to agree on providing access to reliable (unbiased) training data. The findings of Amy
+Thomas and Martin Kretschmer further show the increase of such contracting practices, but also
+suggest that Big Tech companies are not the largest licensees, news/media corporations are the
+primary licensors, but image database makers earn the largest shares from such contracts.111
+Overall, this trend might be in the right direction, yet neither the exact copyright terms of the
+agreements;112 nor the amounts that the actual creators of such contents, namely journalists, would
+or Nightshade to make training data unlearnable [compare to Mezei (2024) 467], new tools, like HarmonyCloak
+entered the market. See Syed Irfan Ali Meerza, Lichao Sun, and Jian Liu. Harmonycloak: Making Music Unlearnable
+for Generative AI, Proceedings of the 46th IEEE Symposium on Security and Privacy (2025), available at
+https://mosis.eecs.utk.edu/publications/meerza2024harmonycloak.pdf.
+107
+Péter Mezei: From Strategy to Extremism - Greenwashing Generative AI, 14(2) Lex & Forum (2024) 357-372.
+108
+To name a few novel approaches/developments, terms and conditions of online platforms, e.g. LinkedIn – the
+leading professional social media platform – have been updated to make the use of clients’ data for machine learning
+the default, except ‘opt-outs’ in line with the standardized terms. See Chris Velazco: LinkedIn is training AI on you unless
+you
+opt
+out
+with
+this
+setting,
+The
+Washington
+Post,
+23
+September
+2024
+(https://www.washingtonpost.com/technology/2024/09/23/linkedin-training-ai-setting-opt-out/). Also, as stated in
+their press release, “The Frankfurt-based publishing technology and distribution company Bookwire is implementing
+innovative solutions to protect copyrighted content from unauthorized use by Artificial Intelligence (AI) while also
+developing solutions for licensing content to AI providers.” According to the release, such solutions include a
+combination of a TDM Opt-Out notice in the ONIX data and the metadata of all ePubs, and the generation of an
+International Standard Content Code for each product in the Bookwire system. See Bookwire Offers Innovative
+Solutions
+to
+Protect
+Content
+from
+Unauthorized
+AI
+Usage,
+11
+October
+2024
+(https://www.bookwire.net/company/newsroom/detail/innovative-solutions-to-protect-from-ai-usage/).
+109
+The call was launched on February 10, 2025 with a deadline to submit bids by March 5, 2025. See
+https://op.europa.eu/en/web/public-procurement/procurement-details/-/procurement/8726813a-bd9b-4f58-867901c80f7a1abf.
+110
+Media partners include – as of August 2024 – Associated Press, Axel Springer, The Financial Times, DotDash
+Meredith, News Corp, Vox Media, The Atlantic and Time Magazine. See Matt O’Brien, ChatGPT-maker OpenAI
+signs deal with AP to license news stories, Associated Press, 13 July 2023 (https://apnews.com/article/openai-chatgptassociated-press-ap-f86f84c5bcc2f3b98074b38521f5f75a); Helen Coster, Global news publisher Axel Springer
+partners with OpenAI in landmark deal, Reuters, 13 December 2023 (https://www.reuters.com/business/mediatelecom/global-news-publisher-axel-springer-partners-with-openai-landmark-deal-2023-12-13/); Katie Robertson,
+OpenAI Strikes a Deal to License News Corp Content, The New York Times, 22 May 2024
+(https://www.nytimes.com/2024/05/22/business/media/openai-news-corp-content-deal.html);
+Melissa
+Koenig,
+OpenAI Is Making Rapid-Fire Media Deals: Every News Publication on ChatGPT Now, Observer, 31 May 2024
+(https://observer.com/2024/05/openai-news-media-deal-list/); Diana Kwon: Publishers are selling papers to train AIs
+- and making millions of dollars, 636 Nature (2024) 529-530; Quintais (2025) 12; Sag - Yu (2025) 38-39.
+111
+Amy Thomas, Martin Kretschmer: The AI licensing economy, CREATe Blog, 24 February 2025
+(https://www.create.ac.uk/blog/2025/02/24/the-ai-licensing-economy/).
+112
+It might be a good indication of pro-copyright substance in these agreements that intellectual property was
+highlighted as a key reason behind contracting by OpenAI representatives in interviews. See O’Brien (2023). Indeed,
+OpenAI’s head of intellectual property and content also gave interviews related to some of these agreements. See
+Coster (2023).
+
+18
+
+receive from such deals, if any;113 nor the long-lasting effects of any such licensing is known at
+the moment. Importantly enough, it is far from being certain whether any such individual
+authorization practice can come into existence;114 alternatively, as the Spanish government
+recently proposed, a new extended collecting licencing regime might need to be put in place to
+remunerate TDM practices.115
+Another million-dollar question might be how training data that are both already used and ex-post
+expressly reserved from TDM might be ‘unlearned’, or, as a variation to the same theme, can
+‘machine unlearning’ be ordered as a sanction/injunction116 in a court proceeding? Empirical
+evidence suggests that machine unlearning or model disgorgement,117 while still in its infancy and
+experimental in nature, might properly work to filter out sensitive, including copyright-protected
+materials from the training data without necessitating developers to build their models from
+scratch.118 The long run consequences of such unlearning is, however, much less foreseeable.
+Finally, it is truly impossible to foresee at the moment whether the actual regulatory approach is
+the right one to solve the problems generated by GenAI. There are numerous conflicting statements
+regarding the ideal breadth and depth of laws. On the end of the spectrum, some advocate for more
+– though mainly soft – rules to complement the current norms to tackle e.g. unauthorized data
+scraping.119 To the contrary, the report of the Hungarian Presidency (Fall 2024) of the European
+Union on AI and copyright matters concluded that the responses of 20 Member States on the
+Presidency’s questionnaire indicated no dire need to add any further (especially copyright-specific)
+regulations to the field, yet more clarity and certainty remains necessary.120
+On the other end of the spectrum, both as a geo-political reaction to DeepSeek’s instant success
+and as a Realpolitik reflection on the threats of Europe falling behind in the AI arms race, President
+Sharing revenues of media companies with journalists is a general problem. Compare to Ula Furgał, The journalists’
+share, Kluwer Copyright Blog, 12 July 2024 (https://copyrightblog.kluweriplaw.com/2024/07/12/the-journalistsshare/).
+114
+Senftleben (2023) 1546.
+115
+Teresa Nobre: A first look at the Spanish proposal to introduce ECL for AI training, Kluwer copyright Blog, 11
+December
+2024
+(https://copyrightblog.kluweriplaw.com/2024/12/11/a-first-look-at-the-spanish-proposal-tointroduce-ecl-for-ai-training/).
+116
+Quintais (2025) 13.
+117
+Model disgorgement is defined as “the elimination or reduction of not only any improperly used data, but also the
+effects of improperly used data on any component of an ML model”. See: Alessandro Achille, Michael Kearns, Carson
+Klingenberg, Stefano Soatto: AI model disgorgement: Methods and choices, 121(18) PNAS (2024) e2307304121 at
+1.
+118
+Ronan Eldan and Mark Russinovich: Who’s Harry Potter? Approximate Unlearning in LLMs, arXiv:2310.02238v2
+[cs.CL] (4 October 2023); Guihong Li, Hsiang Hsu, Chun-Fu Chen, Radu Marculescu: Machine Unlearning for
+Image-to-Image Generative Models, arXiv:2402.00351v2 [cs.LG] (2 February 2024); Swanand Ravindra Kadhe,
+Farhan Ahmed, Dennis Wei, Nathalie Baracaldo, Inkit Padhi: Split, Unlearn, Merge: Leveraging Data Attributes for
+More Effective Unlearning in LLMs, arXiv:2406.11780v1 [cs.LG] 17 Jun 2024. To the contrary, see Ed Newton-Rex:
+The insurmountable problems with generative AI opt-outs (November 2024), available at
+https://ed.newtonrex.com/optouts (not peer-reviewed).
+119
+The OECD proposed that “[a] ‘data scraping code of conduct,’ standard contract terms, standard technical tools
+and initiatives for building awareness could help chart a responsible path for data scraping in an internationally
+coordinated manner.” See OECD: Intellectual Property Issues in Artificial Intelligence Trained on Scraped Data,
+OECD
+Artificial
+Intelligence
+Papers
+No.
+33
+(2025)
+9
+(https://www.oecd.org/content/dam/oecd/en/publications/reports/2025/02/intellectual-property-issues-in-artificialintelligence-trained-on-scraped-data_a07f010b/d5241a23-en.pdf).
+120
+Policy questionnaire on the relationship between generative Artificial Intelligence and copyright and related rights
+– Revised Presidency summary of the Member States contributions, 16710/24, WK 15203/24 REV 1 (2024) 3-5
+(https://data.consilium.europa.eu/doc/document/ST-16710-2024-REV-1/en/pdf).
+113
+
+19
+
+Emmanuel Macron voiced his concerns about over-regulating AI. He reportedly told participants
+of the February 2025 AI summit in Paris that “[i]f we regulate before we innovate, we won’t have
+any innovation of our own”.121 Almost simultaneously, President Ursula von der Leyen proclaimed
+“to mobilise a total of EUR 200 billion for AI investments in Europe. We will have a focus on
+industrial and mission-critical applications. It will be the largest public-private partnership in the
+world for the development of trustworthy AI”.122 This statement seems to reflect both the dire need
+to invest and keep AI – with a reference to ‘trustworthiness’ – under control.
+In sum, it is truly fascinating to wait for Godot. I tend to believe that collaborative regulatory
+solutions, like the fair and balanced Code of Practice of the AI Office, templates and/or standards
+shall be the right way to find the most optimal solution to the many sub-questions of the debates
+surrounding rights reservations. The true benefits and beneficiaries – just as the right terminology
+– of any such regulatory approach nevertheless remains murky at the moment.
+
+Aurelien Breeden, Liz Alderman: Macron Pitches Lighter Regulation to Fuel A.I. Boom in Europe, The New York
+Times, February 10, 2025 (https://www.nytimes.com/2025/02/10/business/ai-summit-paris.html).
+122
+Speech by President von der Leyen at the Artificial Intelligence Action Summit, February 11, 2025
+(https://ec.europa.eu/commission/presscorner/detail/en/SPEECH_25_471).
+121
+
+20
+
+

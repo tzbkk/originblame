@@ -1,0 +1,4 @@
+\begin{abstract}
+	When a data contributor requests removal, model trainers face a practical gap: unlearning algorithms require a forget set, yet no tool can locate which training records belong to a given author. Existing provenance systems operate at file or dataset level, forcing catastrophic over-deletion. We present \texttt{ob}, a record- and token-level data provenance system that propagates author identity through data processing pipelines and resolves revocation requests into precise forget sets via deterministic queries. Evaluation on 219,555 Wikipedia pages demonstrates that record-level provenance eliminates dataset-level over-deletion (from 101$\times$ to 1.3$\times$), while integration adds 1.3--4.0\% throughput overhead (HuggingFace) and 2.1--19.0\% (Datatrove) on wiki data. On a 1.7B model, provenance-based forget sets improve unlearning by 42\% over random baselines.
+\end{abstract}
+

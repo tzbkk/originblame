@@ -1,0 +1,20 @@
+\section{Introduction}
+
+When a data contributor requests removal, the model trainer must identify and remove that contributor's data from the training set. Machine unlearning methods such as Negative Preference Optimization (NPO)~\cite{zhang2024npo} and Representation Misdirection for Unlearning (RMU)~\cite{li2024wmdp} can degrade the influence of specific data once a forget set is provided, but all existing research assumes this forget set is already known. In practice, training datasets are assembled from thousands of sources through data processing, tokenization, and packing; by the time the dataset reaches the trainer, the connection between individual training lines and their original contributors has been lost. Without fine-grained provenance, the only options are catastrophic over-deletion (discard the entire dataset) or imprecise post-hoc inference~\cite{dangelo2025forsid}. forget-set quality directly determines unlearning effectiveness. Benchmarks such as TOFU~\cite{maini2024tofu} and MUSE~\cite{shi2025muse} evaluate unlearning algorithms on synthetically curated forget sets, but their results cannot translate to real-world compliance without a mechanism to locate affected data at training granularity. Figure~\ref{fig:unlearning-gap} illustrates this gap between knowing \emph{who} to forget and knowing \emph{which data} to forget.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/fig1}
+	\caption{The unlearning pipeline gap. Existing methods assume a pre-defined forget set, but locating affected data remains unsolved. OriginBlame fills this gap.}
+	\label{fig:unlearning-gap}
+\end{figure}
+
+As shown in Table~\ref{tab:provenance-comparison}, data version control tools (DVC \cite{dvc}, LakeFS \cite{lakefs}, Delta Lake \cite{deltalake}) operate at file or dataset level. Experiment management tools (MLflow \cite{mlflow}, Weights \& Biases \cite{wandb}) track metadata but not data origins. Provenance tools like yProv4ML \cite{padovani2025yprov4ml} capture dataset-level relationships, while DLProv~\cite{pina2025dlprov} requires extensive instrumentation. None provide record-level provenance with author attribution.
+
+OriginBlame (ob) tracks which training records derive from which source sections and which authors contributed to those sections, via a three-layer architecture (Figure~\ref{fig:three-layer}) with an independent token-index layer. Users integrate with one \texttt{ob.track()} call per record. ob provides precise forget sets at both record and token granularity.
+
+We emphasize that ob does not discover authorship; it \emph{propagates} it. ob applies to data collection pipelines where author identity is already established by the source environment---for example, MediaWiki revision histories or GitHub commits---but this attribution is \emph{lost} during tokenization and packing. ob preserves the provenance chain across these transformations, enabling downstream queries (e.g., ``find all training lines from author~$a_i$'') that would otherwise require post-hoc inference.
+
+\input{tables/table1-provenance}
+
+This paper makes three contributions. First, we design a three-layer content-addressable architecture (authors $\leftarrow$ sections $\leftarrow$ document-index) with no ML or GPU dependencies. Second, we show that this architecture resolves author revocation requests into precise forget sets via deterministic queries and demonstrate that record-level provenance eliminates the dataset-level over-deletion that file-level tools incur. Third, we introduce an independent token-index layer that records source attribution during tokenization and packing, extending forget-set production to token granularity without requiring document-index records.

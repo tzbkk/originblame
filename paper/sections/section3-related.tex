@@ -1,0 +1,9 @@
+\section{Related Work}
+
+As shown in Table~\ref{tab:provenance-comparison}, existing provenance tools stop at file or dataset granularity. Chen et al.~\cite{chen2026finegrained} propose fine-grained sample-level traceability with contribution scores across ML pipelines but focus on training-stage data usage auditing rather than authorship attribution. OriginBlame coexists with tools like DVC and HuggingFace Datasets: DVC manages file versions, while ob manages record-level author provenance.
+
+Machine unlearning research similarly assumes the forget set is known (Table~\ref{tab:unlearning-benchmarks}). Benchmarks TOFU~\cite{maini2024tofu} and OpenUnlearning use pre-defined forget sets, while MUSE~\cite{shi2025muse} evaluates unlearning on real-world corpora with known forget/retain splits. Unlearning methods like NPO, RMU, GradAscent, and exact unlearning algorithms~\cite{muresanu2025exact} directly receive forget sets as input. ForSId~\cite{dangelo2025forsid} (\S2) is the only work addressing forget-set identification, but operates post-hoc with model access. OriginBlame captures origin information at recording time, requiring no model access. \input{tables/table2-unlearning}
+
+This positioning complements methods like Attribute-to-Delete~\cite{georgiev2024attribute}, which use datamodels to simulate unlearning but still require the forget set as input.
+
+IPFS's content-addressing design~\cite{trautwein2022ipfs} inspired OriginBlame's hash chain mechanism, but IPFS operates at chunk level (256\,KB blocks) while OriginBlame refines granularity to lines. OriginBlame uses plain JSONL rather than a special file system. Compared to git-blame, designed for code editing scenarios, OriginBlame targets generated data scenarios: supporting multi-source attribution where a single line may fuse contributions from multiple authors, and author-initiated revocation.

@@ -1,0 +1,7 @@
+\section{Conclusion}
+
+Machine unlearning research has overlooked a prerequisite: locating the affected data. OriginBlame addresses this gap with a three-layer content-addressable architecture that propagates author identity through data processing pipelines, resolving revocation requests into precise forget sets without model access or post-hoc inference.
+
+Evaluation across multiple domains and scales confirms practical deployability: record-level provenance eliminates the 1--2 orders-of-magnitude over-deletion inherent in dataset-level approaches; integration overhead remains modest across frameworks; and two-phase reconcile recovers 96--98\% of provenance links after mutations. On the downstream unlearning task, provenance-based forget sets substantially outperform random baselines, demonstrating that the provenance problem directly affects unlearning quality.
+
+The source code and evaluation scripts are available at \url{https://github.com/tzbkk/originblame}; the Rust implementation at \url{https://github.com/tzbkk/rust-originblame}.

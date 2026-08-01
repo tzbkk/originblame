@@ -1,0 +1,96 @@
+\section{System Design}
+
+\subsection{Architecture Overview}
+
+OriginBlame (abbreviated as ob) stores all provenance metadata in a \texttt{.ob/} directory colocated with the project data. All files are plain JSONL with no configuration files or central database.
+
+\textbf{Three-tier model}. ob employs a hierarchical storage architecture. As illustrated in Figure~\ref{fig:three-layer}, three core layers are linked by content-addressable hashes in a strict parent--child relationship:
+
+\textbf{Authors layer} (top) stores identities and revocation tags: \texttt{id} (SHA-256 of \texttt{name+email}), \texttt{name}, \texttt{email}, and \texttt{revoked} (boolean). The \texttt{revoked} field is the single source of truth for revocation, cascading lazily at query time; \texttt{email} serves as the lookup key for \texttt{revoke}. \textbf{Sections layer} (middle) stores file-level copyright: \texttt{section\_hash} (primary key, SHA-256 of \texttt{\{path, authors, license, year\}}), \texttt{path} (source file path, groups records by file), \texttt{authors} (list of author ids), \texttt{license}, \texttt{year}, and \texttt{revoked} (boolean). \textbf{Document-index layer} (bottom) stores per-record provenance: \texttt{line\_hash} (SHA-256 of data content), \texttt{file} (output data file), \texttt{sources} (list of section hashes identifying contributing sources), \texttt{source\_type} (origin indicator, e.g., \texttt{"track"} for explicit tracking), and \texttt{revoked} (boolean). The unique key is \texttt{(line\_hash, file, sources)}. Each document-index entry corresponds to one output record (one line in the data file), linked to its contributing sections and their authors. Document-index records do not store line numbers---\texttt{blame} computes hashes from data files at query time.
+
+\textbf{Storage}. All core files are sharded into 256 buckets by the first two hexadecimal characters of their primary hash: \texttt{document-index/00}--\texttt{/ff}, \texttt{sections/00}--\texttt{/ff}, \texttt{authors/00}--\texttt{/ff}. Empty buckets are not created. This design enables O(1) lookup---given a \texttt{line\_hash}, \texttt{blame} directly reads \texttt{document-index/\{first two hex chars\}} without scanning unrelated buckets. Multi-process safety is achieved without locks: each process writes to isolated files (\texttt{docidx.\{pid\}}, \texttt{lock.\{pid\}}), which \texttt{ob clean} later merges into sharded buckets. Unmerged pid files block read operations until clean completes. An \texttt{embeddings.\{model\}/} directory stores per-model embedding vectors sharded into 256 buckets for reconcile (\S\ref{sec:package-ecosystem}); the core requires no ML libraries or GPU---embeddings are computed by the reconcile utility (\S\ref{sec:package-ecosystem}), not the user.
+
+\textbf{Content-addressable hashing}. ob hashes dict inputs by serializing to JSON with sorted keys then applying SHA-256~\cite{nist2015fips1804}; str inputs are hashed as raw UTF-8 bytes. No normalization is performed. The collision probability for $n$ records over a $k$-bit hash space is bounded by the birthday approximation $p \approx n^2 / 2^{k+1}$~\cite[Thm.~A.4]{katz2020moderncrypto}. At the largest evaluated scale ($n = 2.2 \times 10^5$ records, $k = 256$), this yields $p < 10^{-68}$---negligible relative to any practical failure mode.
+
+\textbf{Design principles}. ob follows two core principles. First, \emph{what is not recorded does not exist}: ob performs no post-hoc inference and does not mark unprovenanced content as provenanced. Second, \emph{single-hop provenance}: the system tracks only direct mappings from raw sources to final output, without tracing intermediate processing stages. Deleting raw data files does not affect provenance or revocation.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/fig2}
+	\caption{Three-layer reference architecture with hash-based sharding.}
+	\label{fig:three-layer}
+\end{figure}
+
+\subsection{Core Workflow}
+
+OriginBlame is designed as both a library and a CLI tool, with a Rust native implementation and optional Python bindings. Users initialize a project with \texttt{ob init}, creating the \texttt{.ob/} directory; the Python init wrapper additionally writes a \texttt{.gitignore} for temporary files. One-time setup requires three CLI calls and one Python API call: (1)~\texttt{ob init}, (2)~\texttt{ob author.add NAME EMAIL}, (3)~\texttt{ob register.add --path PATH --authors AUTHOR --license LICENSE --year YEAR}, (4)~\texttt{source.append(PATH)} (Python API). Integration into an existing data pipeline requires adding a single \texttt{track()} call at the point where each training record is written to disk---for example, inserting \texttt{track(record, file="data/train.jsonl")} immediately before writing the record to the output file. The user's existing pipeline logic remains unchanged; ob only observes the data passing through.
+
+\textbf{Source management}: \texttt{source.append(path)} resolves paths to section records and activates them, registering all sections associated with that path. An optional \texttt{section} parameter selects a single section by its hash. \texttt{source.pop()} removes the most recently appended source, or a specific source by file path. \texttt{with ob.sources(...):} provides scoped tracking. Track operations associate with all active sources automatically---the caller does not pass sources explicitly.
+
+\textbf{ob.track() workflow}: The \texttt{track(data, file)} library function records provenance for a single data entry. Source attribution is resolved either from an explicit \texttt{source=} parameter (a file path that resolves to registered sections, or a list of section hashes) or, by default, from the source stack. As shown in Figure~\ref{fig:track-flow}, it (1)~computes the SHA-256 hash of \texttt{data} (JSON serialization for all types), (2)~resolves the active source list into section hashes, (3)~checks for duplicates (idempotent), and (4)~writes to process-isolated files via WAL (\texttt{lock.\{pid\}} $\rightarrow$ \texttt{docidx.\{pid\}}) in the Python API (the Rust native implementation writes directly to sharded buckets). If the process crashes before the lock is deleted, remaining data can be recovered by \texttt{ob clean}. An optional \texttt{embedding} parameter (Python API) stores a per-record embedding vector alongside the document-index record for later use by reconcile (\S\ref{sec:package-ecosystem}).
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/fig3}
+	\caption{The track() workflow. After hash computation, the system checks for duplicates and writes to process-isolated temporary files under WAL protection.}
+	\label{fig:track-flow}
+\end{figure}
+
+\textbf{Query functionality}: ob provides two orthogonal query methods. \textbf{ob blame} performs a forward query: given a file path and line number, it reads the line, computes SHA-256 to obtain \texttt{line\_hash}, queries \texttt{document-index/\{line\_hash[:2]\}}, and traverses the provenance chain: \texttt{line\_hash $\rightarrow$ sources (section\_hashes) $\rightarrow$ sections (author\_ids, license, path) $\rightarrow$ authors (name, email)}. \textbf{ob show} performs a reverse query: given \texttt{-{}-author}, it traverses \texttt{authors $\rightarrow$ sections $\rightarrow$ document-index} without reading data files. With \texttt{-{}-index}, both commands use the bucket-routing index (Appendix~\ref{sec:index}) for faster lookup. Additional filters include \texttt{-{}-section} (filter by section hash), \texttt{-{}-license} (filter by license name), \texttt{-{}-revoked} (show only revoked entries), and \texttt{-{}-tokenizer} (token-level granularity); these can be combined for intersection queries. \texttt{ob status} displays aggregate author counts and, with \texttt{-{}-tokenizer}, token-index statistics including entry counts, active/revoked breakdowns, and total token counts.
+
+\textbf{Operation log}: The \texttt{.ob/log} file records state-changing operations (author/section registration, revocation, purge, clean, merge) as append-only log lines with timestamps, providing an audit trail for administrative actions. Read-only operations (blame, show, status) and per-record tracking are excluded to avoid volume overhead. \texttt{ob clean} rotates the log. \texttt{ob log} queries the log with optional \texttt{-{}-op} and \texttt{-{}-since} filters.
+
+\subsection{Revocation and Purge}
+
+ob supports revocation at three granularity levels (Figure~\ref{fig:revocation}), all based on a tag model rather than bulk deletion. The single source of truth for revocation resides on the author record; all authors are equal---a contributor of a single line holds the same revocation rights as a contributor of the entire dataset.
+
+\textbf{Author-level revoke}. \texttt{ob revoke -{}-author "z@e.com"} sets \texttt{revoked=true} on the author record. No other files are modified at this point. When a subsequent query (e.g., \texttt{blame} or \texttt{show}) encounters a revoked author, it evaluates the revocation status lazily along the chain: scan authors for \texttt{revoked=true} $\rightarrow$ find all sections whose \texttt{author\_ids} include that author $\rightarrow$ collect all document-index entries referencing those section hashes. The result is a \texttt{(file, line\_hash)} list of every data line traceable to the revoked author. The \texttt{-{}-reverse} flag undoes a revocation by toggling the tag back to \texttt{false}; with \texttt{-{}-tokenizer}, revocation also marks matching token-index entries.
+
+\textbf{Section-level revoke}. \texttt{ob revoke -{}-section HASH} toggles \texttt{revoked=true} on a specific section record, affecting only the document-index entries that reference that section without revoking the author. This handles cases where a single file or data source must be withdrawn without affecting other content from the same contributor.
+
+\textbf{Line-level revoke}. \texttt{ob revoke -{}-line-hash HASH -{}-file FILE} toggles \texttt{revoked=true} on a single document-index entry, enabling granular line-level withdrawal. This is the finest revocation granularity, useful when a specific data line must be removed without affecting any other lines from the same section or author.
+
+\textbf{Purge}. \texttt{ob purge --file FILE} physically deletes revoked data lines from the specified file, leaving document-index cleanup to \texttt{ob clean} which archives revoked metadata into \texttt{archive/}. A safety constraint enforces \textbf{no purge without prior revoke}: purge can only delete lines that belong to revoked authors or revoked sections, preventing accidental data loss. The \texttt{-{}-index} variant routes directly to the relevant index buckets for faster operation. The \texttt{-{}-dry-run} flag previews which lines would be deleted without modifying files. The \texttt{-{}-reverse} flag restores previously purged lines from the archive directory.
+
+\textbf{Lazy cascade rationale}. All revocation levels share a common design: the revoke operation modifies only a tag field on a single record. By default, queries exclude revoked entries (document-index and token-level alike); the \texttt{-{}-revoked} flag explicitly requests revoked entries. This yields two properties: (1)~revoke is lightweight regardless of how many data lines are affected; (2)~revocation is fully reversible---canceling a revoke removes the tag with immediate effect.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/fig4}
+	\caption{Revocation levels in ob. Author revoke cascades lazily from authors to sections to document-index. Section-level revoke marks sections. Purge physically deletes revoked entries after prior revoke.}
+	\label{fig:revocation}
+\end{figure}
+
+\subsection{Package Ecosystem}
+\label{sec:package-ecosystem}
+
+The ob architecture separates a core package from an optional utility package for advanced features.
+
+\textbf{Core package} provides CLI commands for setup (\texttt{init}, \texttt{author.add}, \texttt{register.add}), source management via Python API (\texttt{source.append/pop}), querying (\texttt{blame}, \texttt{show}, \texttt{status}), audit logging (\texttt{log}), revocation (\texttt{revoke}, \texttt{purge}), and maintenance (\texttt{clean}, \texttt{merge}, \texttt{index build}, \texttt{generate-set}, \texttt{version}). The core compiles to a single native binary; users integrate via \texttt{author.add + register.add + source.append + track}.
+
+\textbf{Utility features} (enabled via compile-time feature flags) provide optional parsers (\texttt{parse --parser mediawiki}), reconcile (\texttt{reconcile}), and export (\texttt{export-copyright}). The core binary performs zero imports of utility modules; when compiled without these features, ob omits the corresponding commands entirely.
+
+\textbf{Reconcile mechanism}: Reconcile operates in two phases (Figure~\ref{fig:reconcile}). Pass~1 attempts hash exact matching: each line is hashed and looked up in the document-index; a hit means unchanged content. Pass~2 performs embedding-based semantic matching via cosine similarity; a hit inherits the old record's sources, and unmatched old records are marked as orphans. Lines missing both phases require manual \texttt{track()}.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/fig5}
+	\caption{Two-phase reconcile strategy. Phase 1 attempts exact hash matching; Phase 2 falls back to embedding-based semantic matching. Unmatched lines are flagged as new.}
+	\label{fig:reconcile}
+\end{figure}
+
+\subsection{Token-Level Provenance}
+
+The three-layer architecture (authors $\leftarrow$ sections $\leftarrow$ document-index) captures per-record provenance, but tokenization and packing into binary shards eliminates record-level identity. ob addresses this with an independent \textbf{token-index} layer that links each document's token range in the packed binary to its source and author chain, operating in parallel to the document-index.
+
+\textbf{Token-index entry}. Each entry stores \texttt{token\_count} (number of tokens produced from one document), \texttt{sources} (list of section hashes, linking to the author chain), \texttt{tokenizer} (identifier string, e.g., ``gpt2'' or ``llama3''), and \texttt{revoked} (boolean). The token-index is completely independent of the document-index: entries share the same source references but require no line hashes, and the two layers can exist with or without each other.
+
+\textbf{Two operating modes}. In \emph{file mode}, the pipeline writes JSONL data files and calls \texttt{track()} to create document-index records; a subsequent tokenize+pack stage writes token-index entries. Both layers coexist, serving record-level and token-level queries respectively. In \emph{streaming mode}, the pipeline tokenizes documents directly without producing intermediate JSONL; only token-index entries are written, making the token-index the sole provenance record.
+
+\textbf{Storage}. Token-index entries follow the same PID file pattern as document-index: each worker writes to \texttt{token-index.\{tokenizer\}.\{pid\}}, which \texttt{ob clean} merges into numbered files under \texttt{token-index.\{tokenizer\}/}. To preserve position-indexing correctness across parallel workers, \texttt{ob clean} merges PID files sequentially and computes cumulative token offsets only after all files are merged---not during write. Different tokenizers are stored in separate directories, following the same pattern as the optional embeddings directory. The tokenizer name is passed as a parameter; no tokenizer library is imported.
+
+\textbf{Token-level queries}. Because entries are written sequentially during tokenization, the $i$-th entry's token range in the packed binary can be reconstructed from the cumulative sum of preceding entries' \texttt{token\_count} values, with its length given by its own \texttt{token\_count}. This makes the token-index a position-indexed provenance layer---no per-token records are needed. \texttt{ob show -{}-author NAME -{}-tokenizer gpt2} traverses author $\rightarrow$ section $\rightarrow$ token-index, summing token counts for all matching entries. \texttt{ob revoke -{}-author NAME -{}-tokenizer gpt2} marks matching entries as revoked. \texttt{ob generate-set -{}-tokenizer gpt2 -o forget.bin} produces a binary bitmask where each bit corresponds to one token-index entry (1 = revoked, 0 = active), directly usable by unlearning algorithms. \texttt{ob status -{}-tokenizer gpt2} reports aggregate token counts.
+
+\textbf{Immutability constraint}. Because entry positions encode token ranges, the token-index does not support archive or purge operations. Revoked entries remain in the index with \texttt{revoked=true}; the bitmask produced by \texttt{generate-set} is the sole mechanism for conveying revocation to downstream unlearning algorithms. If the training pipeline is re-run with different data, the token-index is rebuilt from scratch rather than reconciled.
+
+\textbf{Framework integration}. The integration pattern is framework-agnostic: intercept each data record, register provenance metadata, and pass the record through unmodified. We validate this with two frameworks. For Datatrove~\cite{penedo2024datatrove}, we implement OBProvenanceBlock as a PipelineStep whose \texttt{run()} method receives a generator of Documents, registers authors and sections from \texttt{Document.metadata}, writes token-index entries, and yields each document to the next stage---the same interface used by Datatrove's built-in blocks (e.g., LanguageFilter, TokensCounter). For HuggingFace Datasets, an equivalent integration wraps the \texttt{.map()} callback: the function loads zhwiki data via \texttt{load\_dataset()}, applies \texttt{author\_add + register\_section + track} per document, and writes provenance alongside output. Both integrations require the same $\sim$5-line adapter and produce identical \texttt{.ob/} directories; the downstream tokenizer requires no modification. Section~\ref{sec:token-eval} reports the overhead of both integrations.

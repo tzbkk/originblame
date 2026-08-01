@@ -1,0 +1,19 @@
+\begin{table}[t]
+	\centering
+	\caption{Machine Unlearning Benchmarks: The Forget-Set Location Gap}
+	\label{tab:unlearning-benchmarks}
+	\resizebox{\columnwidth}{!}{%
+		\begin{tabular}{lccc}
+			\toprule
+			\textbf{Benchmark/Method}              & \textbf{Forget Set Source}                  & \textbf{Identifies Location?} \\
+			\midrule
+			TOFU \cite{maini2024tofu}              & Pre-defined (fictitious authors)            & $\times$                      \\
+			MUSE \cite{shi2025muse}                & Pre-defined (2 corpora)                     & $\times$                      \\
+			OpenUnlearning                         & Pre-defined                                 & $\times$                      \\
+			NPO/RMU                                & Pre-defined                                 & $\times$                      \\
+			ForSId \cite{dangelo2025forsid}        & Post-hoc inference                          & Partial                       \\
+			\rowcolor{blue!10}\textbf{OriginBlame} & \textbf{Author revocation $\to$ forget set} & \textbf{$\checkmark$}         \\
+			\bottomrule
+		\end{tabular}%
+	}
+\end{table}

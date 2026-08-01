@@ -1,0 +1,16 @@
+\begin{table}[b]
+	\centering
+	\footnotesize
+	\caption{Reconcile recovery rates. Hash = Pass~1 exact. Semantic = Pass~2 embedding (nomic-embed-text-v1.5, cosine $\geq$ 0.85). Recovery = (hash + semantic) / mutated lines. Mutations: seed\,=\,42, 10\% text edited, 5\% deleted, 5\% new.}
+	\label{tab:reconcile}
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{@{}lrrrrr@{}}
+		\toprule
+		Scale & Hash & Semantic & Recovered & New & Recovery \\
+		\midrule
+		1k    & 865   & 103   & 968   & 37  & 96.3\%   \\
+		10k   & 8,479 & 1,294 & 9,773 & 192 & 98.1\%   \\
+		100k  & 84,821 & 13,222 & 98,043 & 1,827 & 98.2\%   \\
+		\bottomrule
+	\end{tabular}
+\end{table}
