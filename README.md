@@ -66,7 +66,7 @@ Paper compiles with `pdflatex originblame.tex && bibtex originblame && pdflatex 
 | zhwiki XML dump | ~2 GB | [Wikimedia dumps](https://dumps.wikimedia.org/zhwiki/20260401/) (8 `.7z` files; URLs in `benchmarks/README.md`) |
 | Qwen3-1.7B model | 3.8 GB | `huggingface-cli download Qwen/Qwen3-1.7B --local-dir benchmarks/models/qwen3-1.7b` |
 | Linux kernel | ~4 GB | `git clone https://mirrors.ustc.edu.cn/linux.git && git checkout e75a43c7cec459a07d91ed17de4de13ede2b7758` |
-| Zhipu API key | — | Required for QA data generation in MU experiments (set `ZHIPU_API_KEY` in `.env`) |
+| Qwen3.5-9B (local) | — | QA data generation in MU experiments: served at `http://localhost:1234/v1` (LM Studio / vLLM) |
 | Embedding API | — | Required for semantic reconcile only: OpenAI-compatible API at `http://localhost:1234/v1` (LM Studio / vLLM with `nomic-embed-text-v1.5`) |
 
 All pipeline MAU unlearning results are fully deterministic given the same QA data, seed (42), and model weights. Hash-only reconcile and all query benchmarks require no API keys. See `benchmarks/README.md` for full setup instructions.

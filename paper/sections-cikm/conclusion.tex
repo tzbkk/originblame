@@ -1,3 +1,7 @@
 \section{Conclusion}
 
-OriginBlame bridges the provenance gap between contributor identity and training data through deterministic record- and token-level attribution. Record-level provenance reduces file-level over-deletion to near-parity (1--21\% pipeline overhead), and provenance-based forget sets integrate with existing unlearning algorithms. A gap remains: provenance identifies source records, but models store transformed knowledge beyond individual records---bridging this is left to future work. Our interactive demonstration lets attendees explore provenance queries, execute right-to-erasure requests, and compare deletion granularities in real time.
+OriginBlame bridges the provenance gap between contributor identity and training data through deterministic record- and token-level attribution. Record-level provenance reduces file-level over-deletion to near-parity (1--21\% pipeline overhead), and provenance-based forget sets integrate with existing unlearning algorithms.
+
+A transformation gap remains: provenance identifies source records, but trained models store transformed knowledge beyond individual records---bridging this is left to future work. Further limitations: provenance requires pipeline-level data integrity, contributor-level revocation is limited by last-modifier-only line attribution, and the current implementation supports serial pipelines only; concurrent deployment, comparison against database-backed provenance systems, and web-scale stress testing are directions for future work.
+
+Our interactive demonstration lets attendees explore provenance queries, execute right-to-erasure requests, and compare deletion granularities in real time.

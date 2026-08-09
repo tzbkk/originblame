@@ -1,22 +1,20 @@
 \section{Evaluation}
 \label{sec:evaluation}
 
-We use ``pages'' for raw source material (e.g., Wikipedia articles) and ``records'' for processed output lines (one page typically yields one record after pipeline processing).
-
 \subsection{Revocation Precision}
 
-Table~\ref{tab:revocation} reports revocation precision at 10,000 pages (HuggingFace pipeline). Without record-level provenance, revocation requires discarding entire collaborative pages, causing 2.8$\times$--44.8$\times$ over-deletion depending on the revoking author's content share. The Gini coefficient of authorship is 0.97 (where 1.0 = a single author owns all content), reflecting extreme concentration.
+Table~\ref{tab:revocation} reports revocation precision at 10,000 records (HuggingFace pipeline). Without record-level provenance, revocation requires discarding entire collaborative pages, causing 2.8$\times$--44.8$\times$ over-deletion depending on the revoking author's content share.
 
 \input{tables-cikm/table3-revocation.tex}
 
 \subsection{Computational Overhead}
 
-All query operations complete in sub-180\,ms at 220k records: \texttt{blame} 0.66\,ms, \texttt{show} 178\,ms, \texttt{revoke} 29\,ms. On zhwiki data (1k--220k records), pipeline integration adds 1--2\% throughput overhead (HuggingFace) and 9--21\% (Datatrove). Storage overhead (total/data ratio) decreases with scale: Datatrove from 2.7$\times$ to 1.6$\times$, HuggingFace from 2.4$\times$ to 1.7$\times$; this is acceptable given plain-JSONL storage that is human-readable and Git-trackable. Token-level queries add sub-150\,ms latency for 712M tokens.
+All query operations complete in sub-180\,ms at 220k records: \texttt{blame} 0.66\,ms, \texttt{show} 178\,ms, \texttt{revoke} 29\,ms. On zhwiki data (1k--220k records), pipeline integration adds 1--2\% throughput overhead (HuggingFace) and 9--21\% (Datatrove). Storage overhead (total/data ratio) decreases with scale: Datatrove from 2.7$\times$ to 1.6$\times$, HuggingFace from 2.4$\times$ to 1.7$\times$. The overhead is higher at small scales because structured provenance metadata (author identities, section hashes, licenses) is amortized over fewer records; in streaming mode, which tokenizes directly without intermediate JSONL, the overhead drops to $\sim$1.2$\times$. We retain plain-JSONL storage for human-readability and Git-trackability---properties required for compliance audits where inspectors must verify provenance without specialized tools. Token-level queries add sub-150\,ms latency for 712M tokens.
 
 \subsection{Machine Unlearning Validation}
 
-We fine-tune Qwen3-1.7B~\cite{qwen3_2025} (1.7 billion parameters) on 10k zhwiki pages and apply NPO~\cite{zhang2024npo} and RMU~\cite{li2024wmdp} under three forget-set conditions: line-level provenance (record-level revocation), page-level prototype (all records from co-authored pages), and random baseline. Unlike prior benchmarks that evaluate on fictitious data~\cite{maini2024tofu,shi2025muse} or require model-internal access~\cite{muresanu2025exact,georgiev2024attribute}, our forget sets are derived deterministically from provenance metadata alone. Table~\ref{tab:mu-results} reports per-author results. Under NPO, line-level provenance sets achieve lower retain perplexity (PPL) than random---up to 16\% reduction (Mid-share: 6.3 vs.\ 7.5)---confirming that record-level provenance identifies higher-quality forget sets. Random attains lower extraction but selects content the model learned less strongly (membership inference attack [MIA] AUC 0.47--0.58 vs.\ provenance 0.61--0.83).
+We fine-tune Qwen3-1.7B~\cite{qwen3_2025} on ChatML QA data generated from 10k zhwiki pages and apply NPO~\cite{zhang2024npo} under three forget-set conditions: line-level provenance (record-level revocation), page-level prototype (all records from co-authored pages), and random baseline. Table~\ref{tab:mu-results} reports per-author results. Under NPO, line-level provenance sets achieve lower retain perplexity (PPL) than random---up to 12\% reduction (Ohtashinichiro: 6.5 vs.\ 7.4)---confirming that record-level provenance identifies higher-quality forget sets.
 
-\noindent\textbf{Limitation: transformation gap.} Extraction on line-level provenance sets remains high (0.50--0.88 NPO; 0.74--0.88 RMU). LLM generation replaces author-specific style with the generator's own, making provenance necessary but insufficient for author-level unlearning. Bridging provenance with knowledge-level representations remains an open challenge.
+\noindent\textbf{Limitation: transformation gap.} Extraction on line-level provenance sets remains high (0.50--0.79), confirming that provenance identifies the right records but the model has already absorbed their content beyond record boundaries. This gap is especially challenging for Wikipedia, where a single contributor may edit completely unrelated topics. Frequently occurring knowledge shared across multiple contributors is harder to suppress~\cite{krishnan2025notall}, and the influence of individual records on model parameters is non-localized~\cite{hammoudeh2024influence}. Bridging provenance with knowledge-level unlearning remains an open challenge.
 
 \input{tables-cikm/table2-mu-results}
