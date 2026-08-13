@@ -32,7 +32,7 @@ DATA_JSONL = (
     ROOT / "benchmarks" / "results" / "pipeline_v2"
     / "huggingface-zhwiki-1k-ob" / "jsonl" / "data.jsonl"
 )
-FIGURE_DIR = ROOT / "paper" / "figures-cikm"
+FIGURE_DIR = ROOT / "paper" / "cikm" / "figures"
 RETRO_DIR = ROOT / "benchmarks" / "results" / "pipeline_v2" / "retroactive"
 EVIDENCE_DIR = ROOT / ".sisyphus" / "evidence"
 

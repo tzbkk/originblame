@@ -5,7 +5,7 @@
 
 Table~\ref{tab:revocation} reports revocation precision at 10,000 records (HuggingFace pipeline). Without record-level provenance, revocation requires discarding entire collaborative pages, causing 2.8$\times$--44.8$\times$ over-deletion depending on the revoking author's content share.
 
-\input{tables-cikm/table3-revocation.tex}
+\input{tables/table3-revocation.tex}
 
 \subsection{Computational Overhead}
 
@@ -17,4 +17,4 @@ We fine-tune Qwen3-1.7B~\cite{qwen3_2025} on ChatML QA data generated from 10k z
 
 \noindent\textbf{Limitation: transformation gap.} Extraction on line-level provenance sets remains high (0.50--0.79), confirming that provenance identifies the right records but the model has already absorbed their content beyond record boundaries. This gap is especially challenging for Wikipedia, where a single contributor may edit completely unrelated topics. Frequently occurring knowledge shared across multiple contributors is harder to suppress~\cite{krishnan2025notall}, and the influence of individual records on model parameters is non-localized~\cite{hammoudeh2024influence}. Bridging provenance with knowledge-level unlearning remains an open challenge.
 
-\input{tables-cikm/table2-mu-results}
+\input{tables/table2-mu-results}

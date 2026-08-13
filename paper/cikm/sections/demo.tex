@@ -2,7 +2,7 @@
 
 \begin{figure}[b]
 	\centering
-	\includegraphics[width=\columnwidth]{figures-cikm/webapp-screenshot}
+	\includegraphics[width=\columnwidth]{figures/webapp-screenshot}
 	\Description{Screenshot of the OriginBlame web application showing the Dataset Overview page with author distribution chart and statistics.}
 	\caption{Dataset Overview page showing 1,000 Wikipedia records, 681 authors, 4,278 contributors, and the top-50 author contribution chart.}
 	\label{fig:webapp}
@@ -32,7 +32,7 @@ The interface provides seven views via sidebar navigation:
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures-cikm/webapp-author-browser}
+	\includegraphics[width=\columnwidth]{figures/webapp-author-browser}
 	\Description{Screenshot of the Author Browser page showing author detail panel with sections, records as author vs.\ contributor, and a paginated record list.}
 	\caption{Author Browser on the ChatML dataset: InternetArchiveBot detail showing 3,618 sections, 12,981 records as author vs.\ 30,979 as contributor.}
 	\label{fig:author-browser}
@@ -40,7 +40,7 @@ The interface provides seven views via sidebar navigation:
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures-cikm/webapp-records-list}
+	\includegraphics[width=\columnwidth]{figures/webapp-records-list}
 	\Description{Screenshot of the Record Browser page showing a record detail panel with document hash, section hash, registered authors, contributors, license, and the full ChatML text.}
 	\caption{Record Browser detail view showing doc hash, section hash with path, registered authors vs.\ contributors, CC-BY-SA-4.0 license, and full record text.}
 	\label{fig:record-browser}
@@ -52,7 +52,7 @@ Beyond the web interface, the \texttt{ob} CLI demonstrates token-level provenanc
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures-cikm/webapp-erasure}
+	\includegraphics[width=\columnwidth]{figures/webapp-erasure}
 	\Description{Screenshot of the Right-to-Erasure page showing impact assessment and comparison bar chart for author-level revocation.}
 	\caption{Right-to-Erasure on the ChatML dataset: revoking Ohtashinichiro. The comparison chart shows dataset-level deletion (9,951) vs.\ contributor-level reference (1,191; ob tracks contributors but does not expose contributor-level revocation) vs.\ author-scope (541)---18.4$\times$ over-deletion avoided.}
 	\label{fig:erasure}

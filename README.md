@@ -55,11 +55,11 @@ For production deployment with Nginx, see `webapp/deploy/`.
 **OriginBlame: Record- and Token-Level Data Provenance for AI Training Datasets**
 
 **Full paper:** [arXiv:2607.13037](https://arxiv.org/abs/2607.13037)  
-LaTeX source: `paper/originblame.tex`
+LaTeX source: `paper/full/originblame.tex`
 
 ### Reproducibility
 
-Paper compiles with `pdflatex originblame.tex && bibtex originblame && pdflatex originblame.tex && pdflatex originblame.tex`. Benchmark reproduction requires:
+Paper compiles with `cd paper/full && pdflatex originblame.tex && bibtex originblame && pdflatex originblame.tex && pdflatex originblame.tex`. Benchmark reproduction requires:
 
 | Resource | Size | Source |
 |----------|------|--------|
@@ -202,6 +202,7 @@ Attribution uses git blame (line-level authorship) on the top N C/H files from a
 
 This repository (`originblame`) contains the paper and benchmarks:
 
-- `paper/` — LaTeX source for the papers
+- `paper/full/` — LaTeX source for the full paper (arXiv)
+- `paper/cikm/` — LaTeX source for the CIKM 2026 demo paper
 - `benchmarks/` — evaluation scripts and results
 - `webapp/` — FastAPI + React demo application with Docker support

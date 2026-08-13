@@ -1,6 +1,6 @@
 # OriginBlame Benchmarks
 
-> This directory contains benchmarks, the machine unlearning experiment, and evaluation scripts. Paper source lives at the repository root (`paper/`). The implementation of OriginBlame (the `ob` CLI and Python package) lives in [rust-originblame](https://github.com/tzbkk/rust-originblame).
+> This directory contains benchmarks, the machine unlearning experiment, and evaluation scripts. Paper source lives in `paper/full/` (full paper) and `paper/cikm/` (CIKM demo). The implementation of OriginBlame (the `ob` CLI and Python package) lives in [rust-originblame](https://github.com/tzbkk/rust-originblame).
 
 Evaluation scripts for machine unlearning (Step 1) and pipeline benchmarks (Step 2).
 

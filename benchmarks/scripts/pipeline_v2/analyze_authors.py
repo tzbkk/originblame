@@ -280,7 +280,7 @@ def main():
     parser.add_argument("ob_dir", help="Path to dataset with .ob/ directory")
     parser.add_argument("output_dir", nargs="?", default=None,
                         help="Directory for output JSON (default: same as ob_dir)")
-    parser.add_argument("--figures-dir", default="paper/figures-cikm",
+    parser.add_argument("--figures-dir", default="paper/cikm/figures",
                         help="Directory for output figures")
     args = parser.parse_args()
 
