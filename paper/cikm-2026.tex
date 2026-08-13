@@ -8,27 +8,23 @@
 \documentclass[sigconf]{acmart}
 
 %% ---- Packages ----
-\usepackage{booktabs}
 \usepackage{pifont}
-\usepackage{multirow}
-\usepackage{graphicx}
 \usepackage{colortbl}
-\usepackage{tikz}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc, backgrounds, decorations.pathreplacing, matrix}
 
 %% ---- ACM Metadata ----
 %% CIKM '26, Rome, Italy
 \copyrightyear{2026}
 \acmYear{2026}
-\setcopyright{none}
-\acmDOI{}
-\acmISBN{}
-\acmConference[CIKM '26]{Proceedings of the 35th ACM International Conference on Information and Knowledge Management}{November 7--11, 2026}{Rome, Italy}
-\acmBooktitle{Proceedings of the 35th ACM International Conference on Information and Knowledge Management (CIKM '26), November 7--11, 2026, Rome, Italy}
+\setcopyright{cc}
+\setcctype{by}
+\acmDOI{10.1145/3799682.3840254}
+\acmISBN{979-8-4007-2539-5/2026/11}
+\acmConference[CIKM '26]{Proceedings of the 35th ACM International Conference on Information and Knowledge Management}{November 07--11, 2026}{Rome, Italy}
+\acmBooktitle{Proceedings of the 35th ACM International Conference on Information and Knowledge Management (CIKM '26), November 07--11, 2026, Rome, Italy}
 
 \setlength{\emergencystretch}{12pt}
+\settopmatter{printacmref=true,printfolios=false}
+\renewcommand{\shortauthors}{Haolin Xue}
 \begin{document}
 
 %% ---- Title and Authors ----
@@ -36,7 +32,7 @@
 
 \author{Haolin Xue}
 \affiliation{
-  \institution{School of Computer Science, Northwestern Polytechnical University}
+  \institution{Northwestern Polytechnical University}
   \city{Xi'an}
   \country{China}
 }
@@ -108,6 +104,7 @@ The author accepts full responsibility for the accuracy, integrity, and original
 
 %% ---- Bibliography ----
 \bibliographystyle{ACM-Reference-Format}
+\balance
 \bibliography{references}
 
 \end{document}
