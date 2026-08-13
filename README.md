@@ -55,18 +55,18 @@ For production deployment with Nginx, see `webapp/deploy/`.
 **OriginBlame: Record- and Token-Level Data Provenance for AI Training Datasets**
 
 **Full paper:** [arXiv:2607.13037](https://arxiv.org/abs/2607.13037)  
-LaTeX source: `paper/originblame.tex`
+LaTeX source: `paper/full/originblame.tex`
 
 ### Reproducibility
 
-Paper compiles with `pdflatex originblame.tex && bibtex originblame && pdflatex originblame.tex && pdflatex originblame.tex`. Benchmark reproduction requires:
+Paper compiles with `cd paper/full && pdflatex originblame.tex && bibtex originblame && pdflatex originblame.tex && pdflatex originblame.tex`. Benchmark reproduction requires:
 
 | Resource | Size | Source |
 |----------|------|--------|
 | zhwiki XML dump | ~2 GB | [Wikimedia dumps](https://dumps.wikimedia.org/zhwiki/20260401/) (8 `.7z` files; URLs in `benchmarks/README.md`) |
 | Qwen3-1.7B model | 3.8 GB | `huggingface-cli download Qwen/Qwen3-1.7B --local-dir benchmarks/models/qwen3-1.7b` |
 | Linux kernel | ~4 GB | `git clone https://mirrors.ustc.edu.cn/linux.git && git checkout e75a43c7cec459a07d91ed17de4de13ede2b7758` |
-| Zhipu API key | — | Required for QA data generation in MU experiments (set `ZHIPU_API_KEY` in `.env`) |
+| Qwen3.5-9B (local) | — | QA data generation in MU experiments: served at `http://localhost:1234/v1` (LM Studio / vLLM) |
 | Embedding API | — | Required for semantic reconcile only: OpenAI-compatible API at `http://localhost:1234/v1` (LM Studio / vLLM with `nomic-embed-text-v1.5`) |
 
 All pipeline MAU unlearning results are fully deterministic given the same QA data, seed (42), and model weights. Hash-only reconcile and all query benchmarks require no API keys. See `benchmarks/README.md` for full setup instructions.
@@ -202,6 +202,7 @@ Attribution uses git blame (line-level authorship) on the top N C/H files from a
 
 This repository (`originblame`) contains the paper and benchmarks:
 
-- `paper/` — LaTeX source for the papers
+- `paper/full/` — LaTeX source for the full paper (arXiv)
+- `paper/cikm/` — LaTeX source for the CIKM 2026 demo paper
 - `benchmarks/` — evaluation scripts and results
 - `webapp/` — FastAPI + React demo application with Docker support

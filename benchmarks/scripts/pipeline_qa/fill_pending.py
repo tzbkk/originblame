@@ -417,8 +417,8 @@ def main() -> None:
     if args.dry_run:
         print("DRY RUN — no files will be modified")
 
-    eval_tex = paper_dir / "sections-cikm" / "evaluation.tex"
-    table2 = paper_dir / "tables-cikm" / "table2-mu-results.tex"
+    eval_tex = paper_dir / "cikm" / "sections" / "evaluation.tex"
+    table2 = paper_dir / "cikm" / "tables" / "table2-mu-results.tex"
 
     changes = 0
     if not args.dry_run:

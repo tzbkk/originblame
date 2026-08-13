@@ -18,6 +18,6 @@ logs/
 .sisyphus/run-continuation/
 
 # Generated figures (export from .odg)
-paper/figures/fig*.pdf
-paper/figures/fig*.png
-paper/originblame.pdf
+paper/full/figures/fig*.pdf
+paper/full/figures/fig*.png
+paper/full/originblame.pdf

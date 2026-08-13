@@ -1,0 +1,24 @@
+\begin{table}[t]
+	\centering
+	\footnotesize
+	\caption{Machine unlearning results per author (Qwen3-1.7B full supervised fine-tuning, NPO). Percentages are token share in the fine-tuning corpus. Arrows indicate desired direction. \textbf{Bold}: provenance outperforms random on retain PPL. Extraction = fraction of forget-set answers the model reconstructs from partial prompts.}
+	\label{tab:mu-results}
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{@{}llrrr@{}}
+		\toprule
+		Algo. & Set & Forget PPL$\uparrow$ & Retain PPL$\downarrow$ & Extraction$\downarrow$ \\
+		\midrule
+		SFT & --- & 4.5 & 5.0 & 0.76 \\
+		\midrule
+		\multicolumn{5}{l}{\textit{InternetArchiveBot (35.9\%)}}\\
+		NPO & line  & 8.3 & \textbf{7.0} & 0.50 \\
+		NPO & page  & 8.3 & 7.5 & 0.64 \\
+		NPO & rand  & 8.1 & 7.5 & 0.05 \\
+		\midrule
+		\multicolumn{5}{l}{\textit{Ohtashinichiro (5.4\%)}}\\
+		NPO & line  & 7.3 & \textbf{6.5} & 0.79 \\
+		NPO & page  & 7.2 & \textbf{5.5} & 0.96 \\
+		NPO & rand  & 8.3 & 7.4 & 0.15 \\
+		\bottomrule
+	\end{tabular}
+\end{table}

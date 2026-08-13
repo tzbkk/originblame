@@ -1,6 +1,6 @@
 # OriginBlame Benchmarks
 
-> This directory contains benchmarks, the machine unlearning experiment, and evaluation scripts. Paper source lives at the repository root (`paper/`). The implementation of OriginBlame (the `ob` CLI and Python package) lives in [rust-originblame](https://github.com/tzbkk/rust-originblame).
+> This directory contains benchmarks, the machine unlearning experiment, and evaluation scripts. Paper source lives in `paper/full/` (full paper) and `paper/cikm/` (CIKM demo). The implementation of OriginBlame (the `ob` CLI and Python package) lives in [rust-originblame](https://github.com/tzbkk/rust-originblame).
 
 Evaluation scripts for machine unlearning (Step 1) and pipeline benchmarks (Step 2).
 
@@ -74,7 +74,7 @@ The `reconcile` operation supports two modes:
 
 Tests whether ob's line-level provenance produces better forget sets for machine unlearning than random attribution.
 
-**Experimental design:** 3 forget set types × 2 unlearning algorithms × 3 authors = 18 unlearn + 9 retrain runs. Uses Qwen3-1.7B with full fine-tuning (bf16) on ChatML QA data generated from zhwiki via Zhipu GLM-4-Flash.
+**Experimental design:** 3 forget set types × 2 unlearning algorithms × 3 authors = 18 unlearn + 9 retrain runs. Uses Qwen3-1.7B with full fine-tuning (bf16) on ChatML QA data generated from zhwiki via a locally deployed Qwen3.5-9B (the full paper used Zhipu GLM-4-Flash).
 
 ### Setup
 
@@ -92,13 +92,13 @@ pip install huggingface_hub
 huggingface-cli download Qwen/Qwen3-1.7B --local-dir benchmarks/models/qwen3-1.7b
 ```
 
-API key for QA generation goes in `.env` as `ZHIPU_API_KEY=...`.
+QA data generation uses a locally deployed Qwen3.5-9B served at `http://localhost:1234/v1` (e.g., LM Studio or vLLM). No API key is required. (The full paper used the Zhipu GLM-4-Flash API instead.)
 
 ### Pipeline Phases
 
 | Phase | Script | Purpose |
 |-------|--------|---------|
-| Data | `node1_generate.py` | Wiki text → 3-5 QA pairs/doc via Zhipu API + ob provenance |
+| Data | `node1_generate.py` | Wiki text → 3-5 QA pairs/doc via local Qwen3.5-9B + ob provenance |
 | 1 | `build_forget_sets.py` | Construct forget/retain splits from ob provenance |
 | 2 | `train_sft.py` | Full FT SFT on ChatML QA data (shared base checkpoint) |
 | 3 | `train_npo.py / train_rmu.py` | Unlearning (18 runs) |
@@ -132,7 +132,7 @@ All hyperparameters, seeds, and model configuration live in a single file: [`con
 - **Seed**: `seed: 42` (configurable) — used by all training scripts, forget set random sampling, and RMU control vector generation.
 - **Model**: Qwen3-1.7B (public, fixed weights).
 - **Data source**: zhwiki 2026-04-01 dump (URLs in Data Sources section above), kernel pinned to commit `e75a43c7cec4`.
-- **Non-deterministic step**: QA data generation (`node1_generate.py`) calls the Zhipu GLM-4-Flash API, which may produce different QA pairs across runs. All downstream steps (SFT, forget sets, unlearning, evaluation) are fully deterministic given the same QA data and seed.
+- **Non-deterministic step**: QA data generation (`node1_generate.py`) calls the locally deployed Qwen3.5-9B model, which may produce different QA pairs across runs. All downstream steps (SFT, forget sets, unlearning, evaluation) are fully deterministic given the same QA data and seed.
 
 ### Evaluation Metrics
 
@@ -402,7 +402,7 @@ benchmarks/
       bench_kernel_revocation.py # File-level vs record-level precision
       extract_metrics.py       # Overhead metrics extraction
     pipeline_qa/      # MU experiment pipeline
-      node1_generate.py       # Wiki → Zhipu API → ChatML QA + .ob/ provenance
+      node1_generate.py       # Wiki → local Qwen3.5-9B → ChatML QA + .ob/ provenance
       build_forget_sets.py    # Construct forget/retain splits from ob provenance
       train_sft.py            # Full FT SFT on ChatML QA data
       train_npo.py            # NPO unlearning

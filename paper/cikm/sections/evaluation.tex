@@ -1,0 +1,20 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+\subsection{Revocation Precision}
+
+Table~\ref{tab:revocation} reports revocation precision at 10,000 records (HuggingFace pipeline). Without record-level provenance, revocation requires discarding entire collaborative pages, causing 2.8$\times$--44.8$\times$ over-deletion depending on the revoking author's content share.
+
+\input{tables/table3-revocation.tex}
+
+\subsection{Computational Overhead}
+
+\texttt{ob} provides read-only queries \texttt{blame FILE LINE} (line-level attribution) and \texttt{show} (records by author/section), plus the \texttt{revoke} mutation (Section~2.2). At 220k records, \texttt{blame} takes 0.66\,ms, \texttt{show} 178\,ms, and \texttt{revoke} 29\,ms. On zhwiki data (1k--220k records), pipeline integration adds 1--2\% throughput overhead (HuggingFace) and 9--21\% (Datatrove). Storage overhead (total/data ratio) decreases with scale: Datatrove from 2.7$\times$ to 1.6$\times$, HuggingFace from 2.4$\times$ to 1.7$\times$. The overhead is higher at small scales because provenance metadata is amortized over fewer records; in streaming mode, it drops to $\sim$1.2$\times$. We retain plain-JSONL storage for human-readability and Git-trackability, which compliance audits require. Token-level queries add sub-150\,ms latency for 712M tokens.
+
+\subsection{Machine Unlearning Validation}
+
+We fine-tune Qwen3-1.7B~\cite{qwen3_2025} on ChatML QA data generated from 10k zhwiki pages and apply NPO~\cite{zhang2024npo} under three forget-set conditions: line-level provenance (record-level revocation), page-level prototype (all records from co-authored pages), and random baseline. Table~\ref{tab:mu-results} reports per-author results. Under NPO, line-level provenance sets achieve lower retain perplexity (PPL) than random---up to 12\% reduction (Ohtashinichiro: 6.5 vs.\ 7.4)---confirming that record-level provenance identifies higher-quality forget sets.
+
+\noindent\textbf{Limitation: transformation gap.} Extraction on line-level provenance sets remains high (0.50--0.79), confirming that provenance identifies the right records but the model has already absorbed their content beyond record boundaries. This gap is especially challenging for Wikipedia, where a single contributor may edit completely unrelated topics. Frequently occurring knowledge shared across multiple contributors is harder to suppress~\cite{krishnan2025notall}, and the influence of individual records on model parameters is non-localized~\cite{hammoudeh2024influence}. Bridging provenance with knowledge-level unlearning remains an open challenge.
+
+\input{tables/table2-mu-results}

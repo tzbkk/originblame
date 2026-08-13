@@ -1,0 +1,42 @@
+\section{Introduction}
+
+Training data processing---assembly, subword tokenization, sequence packing (concatenating records into fixed-length training chunks)---destroys the mapping between individual records and their original contributors. Trainers cannot locate specific data for removal requests, license audits, or quality tracing; the only recourse is file-level over-deletion (discarding entire files when only individual records need removal).
+
+Existing tools address different parts of this gap (Table~\ref{tab:provenance-comparison}). Data versioning systems (DVC, LakeFS, Delta Lake) and experiment trackers (MLflow, Weights \& Biases [W\&B]) operate at file or dataset granularity. Provenance frameworks (yProv4ML, DLProv) and data lineage platforms (OpenLineage, DataHub) capture pipeline lineage but not per-record authorship; Chen et al.~\cite{chen2026finegrained} propose fine-grained traceability with contribution scores but focus on training-stage data usage auditing rather than authorship attribution. Dolt~\cite{dolt} versions database rows but lacks contributor-level attribution and revocation; WikiWho~\cite{flock2014wikiwho} provides token-level attribution on Wikipedia but no revocation. ForSId~\cite{dangelo2025forsid} infers forget sets post-hoc but requires a trained model, and ERASURE~\cite{dangelo2025erasure} benchmarks unlearning evaluation but does not construct forget sets from provenance. None provide record-level author attribution with deterministic queries, license tracking, and no model access.
+
+\begin{table}[t]
+	\centering
+	\small
+	\caption{Provenance tools comparison. Existing systems operate at file, dataset, or experiment granularity; none support record-level author revocation or license tracking.}
+	\label{tab:provenance-comparison}
+	\setlength{\tabcolsep}{3pt}
+	\begin{tabular}{@{}lcccc@{}}
+		\toprule
+		System & Granularity & Revocation & License & Adoption\rlap{\footnotemark} \\
+		\midrule
+		DVC~\cite{dvc} & File/dataset & \ding{55} & \ding{55} & 15.8k \\
+		LakeFS~\cite{lakefs} & Dataset/table & \ding{55} & \ding{55} & 5.5k \\
+		Delta Lake~\cite{deltalake} & Table & \ding{55} & \ding{55} & 8.9k \\
+		MLflow~\cite{mlflow} & Experiment & \ding{55} & \ding{55} & 27.5k \\
+		W\&B~\cite{wandb} & Experiment & \ding{55} & \ding{55} & 11.2k \\
+		yProv4ML~\cite{padovani2025yprov4ml} & Dataset & \ding{55} & \ding{55} & 7 \\
+		DLProv~\cite{pina2025dlprov} & Task & \ding{55} & \ding{55} & 8 \\
+		OpenLineage~\cite{openlineage} & Dataset/job & \ding{55} & \ding{55} & 2.6k \\
+		DataHub~\cite{datahub} & Table/column & \ding{55} & \ding{55} & 12.5k \\
+		Dolt~\cite{dolt} & Row (version) & \ding{55} & \ding{55} & 24.2k \\
+		WikiWho~\cite{flock2014wikiwho} & Token & \ding{55} & \ding{55} & 33 \\
+		\rowcolor{blue!10}\textbf{OriginBlame} & \textbf{Rec.+Tok.} & \textbf{\ding{51}} & \textbf{\ding{51}} & \textbf{---} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+\footnotetext{GitHub stars as of August 13, 2026.}
+
+This demonstration presents OriginBlame (\texttt{ob}), a three-layer content-addressable provenance system that propagates author identity through data processing pipelines. Our contribution is not a new provenance model but the application of content-addressable provenance to the ML training data gap, where existing tools operate at file or dataset granularity (Table~\ref{tab:provenance-comparison}). \textbf{Key contributions}: (1)~deterministic SHA-256-based provenance requiring no GPU or model access; (2)~record- and token-level attribution that reduces file-level over-deletion to near-parity; (3)~a model-free method to construct the precise forget sets that unlearning algorithms require---validated with NPO~\cite{zhang2024npo} on a 1.7B model. The live web application provides eight indexed datasets spanning three domains (Wikipedia, kernel source, and ChatML training data), enabling real-time provenance queries, three-level revocation, and cross-domain comparison.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\columnwidth]{figures/fig2}
+	\Description{Three-layer architecture diagram showing Authors, Sections, and Document-Index layers with hash-based sharding.}
+	\caption{Three-layer reference architecture with hash-based 256-bucket sharding.}
+	\label{fig:three-layer}
+\end{figure}
