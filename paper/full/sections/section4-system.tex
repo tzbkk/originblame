@@ -6,7 +6,7 @@ OriginBlame (abbreviated as ob) stores all provenance metadata in a \texttt{.ob/
 
 \textbf{Three-tier model}. ob employs a hierarchical storage architecture. As illustrated in Figure~\ref{fig:three-layer}, three core layers are linked by content-addressable hashes in a strict parent--child relationship:
 
-\textbf{Authors layer} (top) stores identities and revocation tags: \texttt{id} (SHA-256 of \texttt{name+email}), \texttt{name}, \texttt{email}, and \texttt{revoked} (boolean). The \texttt{revoked} field is the single source of truth for revocation, cascading lazily at query time; \texttt{email} serves as the lookup key for \texttt{revoke}. \textbf{Sections layer} (middle) stores file-level copyright: \texttt{section\_hash} (primary key, SHA-256 of \texttt{\{path, authors, license, year\}}), \texttt{path} (source file path, groups records by file), \texttt{authors} (list of author ids), \texttt{license}, \texttt{year}, and \texttt{revoked} (boolean). \textbf{Document-index layer} (bottom) stores per-record provenance: \texttt{line\_hash} (SHA-256 of data content), \texttt{file} (output data file), \texttt{sources} (list of section hashes identifying contributing sources), \texttt{source\_type} (origin indicator, e.g., \texttt{"track"} for explicit tracking), and \texttt{revoked} (boolean). The unique key is \texttt{(line\_hash, file, sources)}. Each document-index entry corresponds to one output record (one line in the data file), linked to its contributing sections and their authors. Document-index records do not store line numbers---\texttt{blame} computes hashes from data files at query time.
+\textbf{Authors layer} (top) stores identities and revocation tags: \texttt{id} (SHA-256 of \texttt{name+email}), \texttt{name}, \texttt{email}, and \texttt{revoked} (boolean). The \texttt{revoked} field is the single source of truth for revocation, cascading lazily at query time; \texttt{email} serves as the lookup key for \texttt{revoke}. \textbf{Sections layer} (middle) stores file-level copyright: \texttt{section\_hash} (primary key, SHA-256 of \texttt{\{path, authors, license, year\}}), \texttt{path} (source file path, groups records by file), \texttt{authors} (list of author ids), an optional \texttt{contributors} list (page-level contributors recorded alongside primary authors, used where per-page attribution differs from section authorship), \texttt{license}, \texttt{year}, and \texttt{revoked} (boolean). \textbf{Document-index layer} (bottom) stores per-record provenance: \texttt{line\_hash} (SHA-256 of data content), \texttt{file} (output data file), \texttt{sources} (list of section hashes identifying contributing sources), \texttt{source\_type} (origin indicator, e.g., \texttt{"track"} for explicit tracking and \texttt{"reconcile"} for records relinked by reconcile), and \texttt{revoked} (boolean). The unique key is \texttt{(line\_hash, file, sources)}. Each document-index entry corresponds to one output record (one line in the data file), linked to its contributing sections and their authors. Document-index records do not store line numbers---\texttt{blame} computes hashes from data files at query time.
 
 \textbf{Storage}. All core files are sharded into 256 buckets by the first two hexadecimal characters of their primary hash: \texttt{document-index/00}--\texttt{/ff}, \texttt{sections/00}--\texttt{/ff}, \texttt{authors/00}--\texttt{/ff}. Empty buckets are not created. This design enables O(1) lookup---given a \texttt{line\_hash}, \texttt{blame} directly reads \texttt{document-index/\{first two hex chars\}} without scanning unrelated buckets. Multi-process safety is achieved without locks: each process writes to isolated files (\texttt{docidx.\{pid\}}, \texttt{lock.\{pid\}}), which \texttt{ob clean} later merges into sharded buckets. Unmerged pid files block read operations until clean completes. An \texttt{embeddings.\{model\}/} directory stores per-model embedding vectors sharded into 256 buckets for reconcile (\S\ref{sec:package-ecosystem}); the core requires no ML libraries or GPU---embeddings are computed by the reconcile utility (\S\ref{sec:package-ecosystem}), not the user.
 
@@ -16,14 +16,14 @@ OriginBlame (abbreviated as ob) stores all provenance metadata in a \texttt{.ob/
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures/fig2}
+	\includegraphics[width=\columnwidth]{figures/fig2-track}
 	\caption{Three-layer reference architecture with hash-based sharding.}
 	\label{fig:three-layer}
 \end{figure}
 
 \subsection{Core Workflow}
 
-OriginBlame is designed as both a library and a CLI tool, with a Rust native implementation and optional Python bindings. Users initialize a project with \texttt{ob init}, creating the \texttt{.ob/} directory; the Python init wrapper additionally writes a \texttt{.gitignore} for temporary files. One-time setup requires three CLI calls and one Python API call: (1)~\texttt{ob init}, (2)~\texttt{ob author.add NAME EMAIL}, (3)~\texttt{ob register.add --path PATH --authors AUTHOR --license LICENSE --year YEAR}, (4)~\texttt{source.append(PATH)} (Python API). Integration into an existing data pipeline requires adding a single \texttt{track()} call at the point where each training record is written to disk---for example, inserting \texttt{track(record, file="data/train.jsonl")} immediately before writing the record to the output file. The user's existing pipeline logic remains unchanged; ob only observes the data passing through.
+OriginBlame is designed as both a library and a CLI tool. The core is a Rust native implementation (mmap-based reads, rayon parallelism, binary indexes); the \texttt{ob} Python package, installable from PyPI (\texttt{pip install originblame}), is the primary distribution channel and delegates performance-critical operations to the native backend through a three-tier fallback chain: PyO3 bindings compiled into the Rust library (fastest path, 38 bound operations), the standalone Rust \texttt{ob} binary invoked as a subprocess, and a pure-Python fallback for environments without a native build. The package ships prebuilt wheels for major platforms via CI, so no Rust toolchain is required for installation. Users initialize a project with \texttt{ob init}, creating the \texttt{.ob/} directory; the Python init wrapper additionally writes a \texttt{.gitignore} for temporary files. One-time setup requires three CLI calls and one Python API call: (1)~\texttt{ob init}, (2)~\texttt{ob author.add NAME EMAIL}, (3)~\texttt{ob register.add --path PATH --authors AUTHOR --license LICENSE --year YEAR}, (4)~\texttt{source.append(PATH)} (Python API). Integration into an existing data pipeline requires adding a single \texttt{track()} call at the point where each training record is written to disk---for example, inserting \texttt{track(record, file="data/train.jsonl")} immediately before writing the record to the output file. The user's existing pipeline logic remains unchanged; ob only observes the data passing through.
 
 \textbf{Source management}: \texttt{source.append(path)} resolves paths to section records and activates them, registering all sections associated with that path. An optional \texttt{section} parameter selects a single section by its hash. \texttt{source.pop()} removes the most recently appended source, or a specific source by file path. \texttt{with ob.sources(...):} provides scoped tracking. Track operations associate with all active sources automatically---the caller does not pass sources explicitly.
 
@@ -31,7 +31,7 @@ OriginBlame is designed as both a library and a CLI tool, with a Rust native imp
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures/fig3}
+	\includegraphics[width=\columnwidth]{figures/fig3-revoke}
 	\caption{The track() workflow. After hash computation, the system checks for duplicates and writes to process-isolated temporary files under WAL protection.}
 	\label{fig:track-flow}
 \end{figure}
@@ -56,7 +56,7 @@ ob supports revocation at three granularity levels (Figure~\ref{fig:revocation})
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures/fig4}
+	\includegraphics[width=\columnwidth]{figures/fig4-reconcile}
 	\caption{Revocation levels in ob. Author revoke cascades lazily from authors to sections to document-index. Section-level revoke marks sections. Purge physically deletes revoked entries after prior revoke.}
 	\label{fig:revocation}
 \end{figure}
@@ -74,7 +74,7 @@ The ob architecture separates a core package from an optional utility package fo
 
 \begin{figure}[t]
 	\centering
-	\includegraphics[width=\columnwidth]{figures/fig5}
+	\includegraphics[width=\columnwidth]{figures/fig5-purge}
 	\caption{Two-phase reconcile strategy. Phase 1 attempts exact hash matching; Phase 2 falls back to embedding-based semantic matching. Unmatched lines are flagged as new.}
 	\label{fig:reconcile}
 \end{figure}

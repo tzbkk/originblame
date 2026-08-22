@@ -2,7 +2,7 @@
 
 **Record- and token-level data provenance for AI training datasets.**
 
-When a data contributor requests removal, model trainers face a practical gap: unlearning algorithms require a forget set, yet no tool can locate which training records belong to a given author. Existing provenance systems operate at file or dataset level, forcing catastrophic over-deletion. We present `ob`, a record- and token-level data provenance system that propagates author identity through data processing pipelines and resolves revocation requests into precise forget sets via deterministic queries. Evaluation on 219,555 Wikipedia pages demonstrates that record-level provenance eliminates dataset-level over-deletion (from 101× to 1.3×), while integration adds 1.3–4.0% throughput overhead (HuggingFace) and 2.1–19.0% (Datatrove) on wiki data. On a 1.7B model, provenance-based forget sets improve unlearning by 42% over random baselines.
+When a data contributor requests removal, model trainers face a practical gap: unlearning algorithms require a forget set, yet no tool can locate which training records belong to a given author. Existing provenance systems operate at file or dataset level, forcing catastrophic over-deletion. We present `ob`, a record- and token-level data provenance system that propagates author identity through data processing pipelines and resolves revocation requests into precise forget sets via deterministic queries. Evaluation on 219,555 Wikipedia pages demonstrates that record-level provenance eliminates dataset-level over-deletion (from 101× to 1.3×), while integration adds 1.3–4.0% throughput overhead (HuggingFace) and 2.1–19.0% (Datatrove) on wiki data. On a 1.7B model, provenance-based forget sets consistently reduce unlearning collateral damage (retain perplexity) relative to same-size random baselines across all evaluated authors, with MIA indicating they select genuinely memorized content (single-run results; see paper v2 §5.5 for caveats).
 
 ## Install
 
@@ -74,7 +74,7 @@ All pipeline MAU unlearning results are fully deterministic given the same QA da
 ### Results
 
 > **Two papers, two experimental conditions.** Results below are drawn from two papers describing OriginBlame, run under different conditions:
-> - **Full paper**: pipeline v2 (1 record/page, 10k records at 10k scale), QLoRA fine-tuning (rank=16, 4-bit NF4), streaming token-index storage measurement, 3-run avg latency.
+> - **Full paper (v2)**: pipeline v2 (1 record/page, 10k records at 10k scale), full-parameter fine-tuning (bf16) — same MU regime as the CIKM demo paper, streaming token-index storage measurement, 3-run avg latency. v1 reported QLoRA-based MU numbers, withdrawn in v2 as unreliable (see below).
 > - **CIKM 2026 demo paper**: pipeline v2 (2 records/page, 20k records at 10k scale), full supervised fine-tuning (bf16), JSONL storage measurement, single-run latency.
 >
 > Where the two papers report different numbers under their respective conditions, both are shown side by side. Where they share data (token-level streaming and cross-domain kernel experiments), a single table is labeled accordingly.
@@ -140,26 +140,14 @@ Storage overhead: decreases with scale from 0.32× at 1k lines to 0.22× at 220k
 | 100k | 302.4M | −13.4% | −1.3% | 1.24× | 33 |
 | 219,555 | 712.4M | −2.1% | −4.0% | 1.23× | 69 |
 
-**Machine Unlearning Evaluation** — Tests whether ob's provenance-based forget sets enable effective machine unlearning. The two papers use different fine-tuning regimes:
+**Machine Unlearning Evaluation** — Tests whether ob's provenance-based forget sets enable effective machine unlearning.
 
-- **Full paper**: QLoRA (rank=16, 4-bit NF4) on 2 authors. RMU is incompatible with QLoRA, so only NPO is reported.
-- **CIKM demo paper**: Full supervised fine-tuning (bf16) on 3 authors under both NPO and RMU. 27 experiments (3 forget set types × 2 algorithms × 3 authors + 9 retrain oracle).
+- **Full paper (v2) and CIKM demo paper**: identical full supervised fine-tuning regime (bf16) on 3 authors under both NPO and RMU. 27 experiments (3 forget set types × 2 algorithms × 3 authors + 9 retrain oracle).
+- **v1 (arXiv, May 2026)**: reported QLoRA (rank=16, 4-bit NF4) results on 2 authors. **Withdrawn in v2**: QLoRA's low-rank updates suppress surface-level patterns without affecting deeper representations, producing unreliable unlearning signals. RMU was additionally incompatible with QLoRA.
 
 We deliberately use wiki authors (edits scattered across unrelated topics) as the most adversarial setting: individual contributions lack semantic cohesion. In semantically coherent scenarios (e.g., a painter's complete works), provenance's precision advantage would be substantially larger.
 
-#### Full Paper (QLoRA, 2 authors), unreliable
-
-| Algo | Author | Set | Forget PPL↑ | Retain PPL↓ | Forget ROUGE-L↓ | Retain ROUGE-L↑ |
-|------|--------|-----|------:|------:|--------:|--------:|
-| SFT | — | — | 3.51 | 3.02 | 0.395 | 0.407 |
-| NPO | Berthe (9.3%) | line | 8.97 | 4.23 | 0.150 | 0.366 |
-| NPO | Berthe (9.3%) | random | 6.43 | 5.89 | 0.239 | 0.282 |
-| NPO | Antigng (8.6%) | line | 8.96 | 4.93 | 0.142 | 0.343 |
-| NPO | Antigng (8.6%) | random | 6.20 | 6.04 | 0.278 | 0.309 |
-
-**Full paper finding:** We initially validated the pipeline on QLoRA as a lightweight integration test. NPO under QLoRA showed directional improvements (provenance-based forget sets outperformed random baselines), but RMU was incompatible with QLoRA (known limitation). We subsequently found that QLoRA's low-rank updates produce unreliable unlearning signals—they suppress surface-level patterns without affecting deeper representations. These results should be treated as preliminary and superseded by the CIKM Demo Paper below, which uses full-parameter fine-tuning and provides the definitive unlearning evaluation.
-
-#### CIKM Demo Paper (Full SFT, 3 authors)
+#### Full SFT Results (full paper v2 and CIKM demo paper)
 
 **Bold** rPPL = provenance beats random within same algorithm.
 
@@ -178,7 +166,7 @@ We deliberately use wiki authors (edits scattered across unrelated topics) as th
 | RMU | | line | 3.9 | 4.8 | 0.18 | 0.16 | 0.42 | 0.74 |
 | RMU | | page | 2.9 | 4.8 | 0.29 | 0.14 | 0.24 | 0.80 |
 | RMU | | rand | 4.9 | 4.7 | 0.18 | 0.16 | 0.52 | 0.73 |
-| NPO | Mid (11.3%) | line | 7.3 | **6.3** | 0.26 | 0.11 | 0.71 | 0.88 |
+| NPO | Fozuxilai (11.3%) | line | 7.3 | **6.3** | 0.26 | 0.11 | 0.71 | 0.88 |
 | NPO | | page | 7.8 | **5.9** | 0.19 | 0.17 | 0.78 | 0.92 |
 | NPO | | rand | 8.2 | 7.5 | 0.07 | 0.10 | 0.47 | 0.45 |
 | RMU | | line | 3.5 | 5.1 | 0.29 | 0.12 | 0.27 | 0.84 |
