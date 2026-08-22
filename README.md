@@ -73,17 +73,15 @@ All pipeline MAU unlearning results are fully deterministic given the same QA da
 
 ### Results
 
-> **Two papers, two experimental conditions.** Results below are drawn from two papers describing OriginBlame, run under different conditions:
-> - **Full paper (v2)**: pipeline v2 (1 record/page, 10k records at 10k scale), full-parameter fine-tuning (bf16) — same MU regime as the CIKM demo paper, streaming token-index storage measurement, 3-run avg latency. v1 reported QLoRA-based MU numbers, withdrawn in v2 as unreliable (see below).
-> - **CIKM 2026 demo paper**: pipeline v2 (2 records/page, 20k records at 10k scale), full supervised fine-tuning (bf16), JSONL storage measurement, single-run latency.
+> **Two papers, one pipeline.** Both papers evaluate the same `pipeline_v2` scripts. Record granularity is not a configured parameter: the MediaWiki parser splits each page into sections by heading and merges fragments under 400 characters, yielding one record per section — datasets average 1–2 records/page depending on the dump and parser state at generation time. The two papers' datasets are independent generation runs and differ in observed statistics (records/page, author shares), so per-dataset results are shown side by side. Genuine methodological differences: storage measurement (streaming token-index vs JSONL) and latency reporting (3-run avg vs single-run). Both papers use the same full-SFT (bf16) MU regime as of full-paper v2 (v1's QLoRA MU numbers are withdrawn; see below).
 >
-> Where the two papers report different numbers under their respective conditions, both are shown side by side. Where they share data (token-level streaming and cross-domain kernel experiments), a single table is labeled accordingly.
+> Where the two papers report different numbers, both are shown side by side. Where they share data (token-level streaming and cross-domain kernel experiments), a single table is labeled accordingly.
 
 Evaluated on a Chinese Wikipedia dump (219,555 pages, 482,543 contributors) at four scales (1k–220k pages):
 
-**Revocation Precision** — Line-level provenance eliminates over-deletion. The two papers measured on different pipeline versions and record counts.
+**Revocation Precision** — Line-level provenance eliminates over-deletion. The two papers measured on independently generated datasets (same scripts, different chunking snapshots; see note above).
 
-#### Full Paper (zhwiki, pipeline v2, 10k records)
+#### Full Paper dataset (zhwiki, 10k records, ~1 record/page)
 
 | Revoking Author    | Share | Lines Removed (ob) | Over-deletion (dataset-level) |
 |--------------------|-------|--------------------:|------------------------------:|
@@ -92,14 +90,14 @@ Evaluated on a Chinese Wikipedia dump (219,555 pages, 482,543 contributors) at f
 | KLBot2             | 5.0%  | 499                 | 20.0×                         |
 | HuangQQ            | 1.0%  | 99                  | 101.0×                        |
 
-#### CIKM Demo Paper (zhwiki, pipeline v2, 20k records)
+#### CIKM Demo Paper dataset (zhwiki, 10k records, ~2 records/page)
 
 | Revoking Author    | Share | Lines Removed (ob) | Over-deletion (dataset-level) |
 |--------------------|-------|--------------------:|------------------------------:|
-| InternetArchiveBot | 18.1% | 3,618               | 2.8×                          |
-| Mid-share Editor   | 6.0%  | 1,199               | 8.3×                          |
-| Ohtashinichiro     | 2.7%  | 541                 | 18.5×                         |
-| Berthe             | 1.1%  | 223                 | 44.8×                         |
+| InternetArchiveBot | 36.2% | 3,618               | 2.8×                          |
+| Fozuxilai          | 12.0% | 1,199               | 8.3×                          |
+| Ohtashinichiro     | 5.4%  | 541                 | 18.5×                         |
+| Berthe             | 2.2%  | 223                 | 44.8×                         |
 
 **Reconcile Recovery** (after 10% edit + 5% delete + 5% insert mutation):
 
@@ -173,7 +171,7 @@ We deliberately use wiki authors (edits scattered across unrelated topics) as th
 | RMU | | page | 3.0 | 5.1 | 0.28 | 0.18 | 0.23 | 0.82 |
 | RMU | | rand | 4.8 | 4.8 | 0.10 | 0.14 | 0.44 | 0.87 |
 
-**CIKM key finding:** Provenance-based forget sets consistently reduce collateral damage: retain PPL is 5–20% lower than random across all three authors, confirming that record-level targeting protects unrelated knowledge better than blind deletion. However, extraction remains high (0.50–0.88 under NPO; 0.74–0.88 under RMU) even when the model is trained to suppress the target data. This reveals a transformation gap: provenance identifies which records an author contributed, but the model has already absorbed that content into its generative distribution—pointing at the source is necessary but not sufficient for erasure. MIA AUC (0.61–0.83 for provenance vs. 0.47–0.58 for random) independently confirms provenance selects genuinely memorized data, while random forget sets dilute the signal with content the model barely learned.
+**MU key finding (both papers, full-SFT evaluation):** Provenance-based forget sets consistently reduce collateral damage: retain PPL is 7–16% lower than random for line-level sets (up to 26% for page-level) across all three authors, indicating that record-level targeting protects unrelated knowledge better than blind deletion. However, extraction remains high (0.50–0.88 under NPO; 0.74–0.88 under RMU) even when the model is trained to suppress the target data. This reveals a transformation gap: provenance identifies which records an author contributed, but the model has already absorbed that content into its generative distribution—pointing at the source is necessary but not sufficient for erasure. MIA AUC (0.61–0.83 for provenance vs. 0.47–0.58 for random) is consistent with provenance selecting genuinely memorized data, while random forget sets dilute the signal with content the model barely learned. Single-run results (seed 42); the retain-PPL advantage does not replicate on retain ROUGE-L.
 
 **Cross-Domain Generalization** — Linux kernel source code with git blame attribution (3 scales). *Shared by both papers (kernel experiments).*
 

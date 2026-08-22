@@ -268,9 +268,9 @@ All 28 pipeline runs completed successfully (16 zhwiki + 12 kernel configuration
 
 ### Revocation Precision
 
-> The full paper and CIKM demo paper report revocation precision under different pipeline versions and record counts.
+> Both papers run the same pipeline (`run_huggingface.py --scale 10k`); the tables below come from independent dataset generation runs whose section chunking produced different records/page and author shares. Chunking is deterministic given the dump and parser (`ob-util` mediawiki parser: heading-based split, ≥400-char merge) but is not a CLI parameter.
 
-#### Full Paper (zhwiki, pipeline v1, 10k records)
+#### Full Paper dataset (zhwiki, 10k records, ~1 record/page)
 
 | Revoking Author | Share | Lines Removed | Over-deletion (dataset-level) |
 |-----------------|-------|---------------|---------------------------|
@@ -279,14 +279,14 @@ All 28 pipeline runs completed successfully (16 zhwiki + 12 kernel configuration
 | KLBot2             | 5.0%  | 499   | 20.0× |
 | HuangQQ            | 1.0%  | 99    | 101.0× |
 
-#### CIKM Demo Paper (zhwiki, pipeline v2, 20k records)
+#### CIKM Demo Paper dataset (zhwiki, 10k records, ~2 records/page)
 
 | Revoking Author | Share | Lines Removed | Over-deletion (file-level) |
 |-----------------|-------|---------------|---------------------------|
-| InternetArchiveBot | 18.1% | 3,618 | 2.8× |
-| Mid-share Editor | 6.0% | 1,199 | 8.3× |
-| Ohtashinichiro | 2.7% | 541 | 18.5× |
-| Berthe | 1.1% | 223 | 44.8× |
+| InternetArchiveBot | 36.2% | 3,618 | 2.8× |
+| Fozuxilai | 12.0% | 1,199 | 8.3× |
+| Ohtashinichiro | 5.4% | 541 | 18.5× |
+| Berthe | 2.2% | 223 | 44.8× |
 
 ### Scalability (220k lines, zhwiki, HuggingFace pipeline)
 
@@ -303,29 +303,15 @@ All 28 pipeline runs completed successfully (16 zhwiki + 12 kernel configuration
 
 ### Machine Unlearning
 
-> The full paper and CIKM demo paper report MU under different fine-tuning regimes:
-> - **Full paper**: QLoRA (rank=16, 4-bit NF4), 2 authors. RMU is incompatible with QLoRA, so only NPO is reported.
-> - **CIKM demo paper**: Full supervised fine-tuning (bf16), 3 authors under both NPO and RMU.
+> Both papers use the same second-generation MU evaluation: full supervised fine-tuning (bf16), 3 authors, both NPO and RMU (3 forget set types × 2 algorithms × 3 authors = 18 unlearn + 9 retrain runs).
+>
+> **v1 withdrawal (arXiv, May 2026):** the full paper originally reported QLoRA (rank=16, 4-bit NF4) results on 2 authors, withdrawn in v2 — QLoRA's low-rank updates suppress surface-level patterns without affecting deeper representations, producing unreliable unlearning signals (RMU was additionally incompatible).
 
 Wiki authors edit pages across unrelated topics, making this the most adversarial setting for unlearning: individual contributions lack semantic cohesion.
 
-#### Full Paper (QLoRA, 2 authors)
+#### Full SFT Results (used by both papers as of full-paper v2)
 
-RMU is incompatible with QLoRA, so only NPO is reported.
-
-| Algo | Author | Set | Forget PPL↑ | Retain PPL↓ | Forget ROUGE-L↓ | Retain ROUGE-L↑ |
-|------|--------|-----|------:|------:|--------:|--------:|
-| SFT | — | — | 3.51 | 3.02 | 0.395 | 0.407 |
-| NPO | Berthe (9.3%) | line | 8.97 | 4.23 | 0.150 | 0.366 |
-| NPO | Berthe (9.3%) | random | 6.43 | 5.89 | 0.239 | 0.282 |
-| NPO | Antigng (8.6%) | line | 8.96 | 4.93 | 0.142 | 0.343 |
-| NPO | Antigng (8.6%) | random | 6.20 | 6.04 | 0.278 | 0.309 |
-
-**Full paper key finding:** Line-level provenance achieves 42% improvement in forgetting and 23% improvement in utility preservation vs random under NPO. RMU was incompatible with QLoRA (known limitation).
-
-#### CIKM Demo Paper (Full SFT, 3 authors)
-
-3 forget set types × 2 algorithms × 3 authors = 18 unlearn + 9 retrain runs. **Bold** rPPL = provenance beats random within same algorithm.
+**Bold** rPPL = provenance beats random within same algorithm.
 
 | Algo. | Author | Set | fPPL↑ | rPPL↓ | fROUGE↓ | rROUGE↑ | MIA→0.5 | Ext↓ |
 |-------|--------|-----|------:|------:|--------:|--------:|-----:|-----:|
@@ -342,14 +328,14 @@ RMU is incompatible with QLoRA, so only NPO is reported.
 | RMU | | line | 3.9 | 4.8 | 0.18 | 0.16 | 0.42 | 0.74 |
 | RMU | | page | 2.9 | 4.8 | 0.29 | 0.14 | 0.24 | 0.80 |
 | RMU | | rand | 4.9 | 4.7 | 0.18 | 0.16 | 0.52 | 0.73 |
-| NPO | Mid (11.3%) | line | 7.3 | **6.3** | 0.26 | 0.11 | 0.71 | 0.88 |
+| NPO | Fozuxilai (11.3%) | line | 7.3 | **6.3** | 0.26 | 0.11 | 0.71 | 0.88 |
 | NPO | | page | 7.8 | **5.9** | 0.19 | 0.17 | 0.78 | 0.92 |
 | NPO | | rand | 8.2 | 7.5 | 0.07 | 0.10 | 0.47 | 0.45 |
 | RMU | | line | 3.5 | 5.1 | 0.29 | 0.12 | 0.27 | 0.84 |
 | RMU | | page | 3.0 | 5.1 | 0.28 | 0.18 | 0.23 | 0.82 |
 | RMU | | rand | 4.8 | 4.8 | 0.10 | 0.14 | 0.44 | 0.87 |
 
-**CIKM key findings:** Under NPO, provenance-based forget sets (line/page) consistently achieve lower retain PPL than random across all three authors---a 5--20\% reduction in collateral damage despite widely varying author contribution shares (5.4--35.9\%). Random achieves lower extraction and forget ROUGE-L, but this reflects dilution: random includes records the model never strongly learned. MIA AUC confirms provenance selects genuinely memorized data (AUC 0.61--0.83 vs.\ 0.47--0.58 for random). RMU preserves retain near-perfectly but fails to suppress extraction (0.73--0.92 across all configurations). Truth ratio values cluster narrowly (0.60--0.66) across all conditions. In semantically coherent deletion scenarios (e.g., a painter's works), provenance's advantage would be substantially larger.
+**Key findings:** Under NPO, provenance-based forget sets achieve comparable forgetting at consistently lower retain PPL than random across all three authors — 7–16% lower for line-level, up to 26% for page-level (five of six pairwise comparisons favor provenance, one ties). The MIA column is consistent with the mechanism: provenance sets (0.61–0.83 AUC) select genuinely memorized content, whereas random sets (0.47–0.58) dilute the unlearning signal with content the model barely learned. Random achieves lower extraction, but this reflects dilution. RMU at these hyperparameters produces weak forgetting regardless of set type (extraction 0.73–0.92). Caveats: single-run results (seed 42), and the retain-PPL advantage does not replicate on retain ROUGE-L — the direction of the effect, not its magnitude, is the claim. Even with provenance sets, extraction remains high (transformation gap): pointing at the source is necessary but not sufficient for erasure. In semantically coherent deletion scenarios (e.g., a painter's works), provenance's advantage would be substantially larger.
 
 ## Completed Tasks
 
